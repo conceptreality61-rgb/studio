@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
-import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck, Bath, Droplets } from 'lucide-react';
 
 export type ServiceSubCategoryOption = {
   id: string;
@@ -71,18 +71,62 @@ export const services: Service[] = [
     name: 'Bathroom Cleaning',
     description: 'Deep cleaning for sparkling, hygienic bathrooms.',
     longDescription: 'We offer intensive bathroom cleaning services that tackle grime, soap scum, and bacteria. Our team will leave your toilets, showers, sinks, and floors sparkling clean and sanitized.',
-    icon: Wrench,
+    icon: Bath,
     imageId: 'bathroom-cleaning',
     price: 35,
+    subCategories: [
+      {
+        id: 'tasks',
+        name: 'Select Tasks',
+        type: 'multiple',
+        options: [
+          { id: 'tile-grout-cleaning', name: 'Tile and Grout Cleaning' },
+          { id: 'toilet-sanitization', name: 'Toilet Sanitization' },
+          { id: 'shower-tub-cleaning', name: 'Shower and Tub Deep Clean' },
+          { id: 'sink-mirror-polishing', name: 'Sink and Mirror Polishing' },
+        ],
+      },
+      {
+        id: 'duration',
+        name: 'Select Duration',
+        type: 'single',
+        options: [
+          { id: '1-hour', name: '1 Hour' },
+          { id: '2-hours', name: '2 Hours' },
+          { id: '3-hours', name: '3 Hours' },
+        ],
+      },
+    ],
   },
   {
     id: 'tank-cleaning',
     name: 'Tank Cleaning',
     description: 'Hygienic and safe water tank cleaning services.',
     longDescription: 'Ensure the quality of your water with our professional tank cleaning services. We use safe and effective methods to remove sediment, algae, and other contaminants from your water tank.',
-    icon: Wrench,
+    icon: Droplets,
     imageId: 'tank-cleaning',
-    price: 70,
+    price: 70, // Base price
+    subCategories: [
+      {
+        id: 'tank-size',
+        name: 'Select Tank Size',
+        type: 'single',
+        options: [
+          { id: 'size-small', name: 'Up to 500L' },
+          { id: 'size-medium', name: '500L - 1000L' },
+          { id: 'size-large', name: 'Over 1000L' },
+        ],
+      },
+       {
+        id: 'tank-type',
+        name: 'Select Tank Type',
+        type: 'single',
+        options: [
+          { id: 'type-overhead', name: 'Overhead Plastic/Syntax' },
+          { id: 'type-underground', name: 'Underground Concrete' },
+        ],
+      },
+    ]
   },
   {
     id: 'gardening',
