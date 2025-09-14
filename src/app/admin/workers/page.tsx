@@ -1,7 +1,10 @@
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 
 const workers = [
     { id: 'W001', name: 'Jackson Lee', email: 'jackson@provider.com', skills: ['Maid Service', 'Bathroom Cleaning'], status: 'Approved', rating: 4.8 },
@@ -32,6 +35,7 @@ export default function WorkersPage() {
               <TableHead>Skills</TableHead>
               <TableHead>Rating</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -57,6 +61,17 @@ export default function WorkersPage() {
                 <TableCell>{worker.rating > 0 ? worker.rating.toFixed(1) : 'N/A'}</TableCell>
                 <TableCell>
                   <Badge variant={statusVariant[worker.status] || 'default'}>{worker.status}</Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                    {worker.status === 'Pending' ? (
+                        <Button asChild variant="outline" size="sm">
+                            <Link href={`/admin/workers/verify/${worker.id}`}>Verify</Link>
+                        </Button>
+                    ) : (
+                        <Button asChild variant="ghost" size="icon">
+                           <Link href={`/admin/workers/verify/${worker.id}`}><ArrowRight className="h-4 w-4" /></Link>
+                        </Button>
+                    )}
                 </TableCell>
               </TableRow>
             ))}
