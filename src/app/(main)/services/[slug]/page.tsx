@@ -9,9 +9,12 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Clock } from 'lucide-react';
+import { Clock, Check } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 export default function ServiceDetailPage({ params }: { params: { slug: string } }) {
   const resolvedParams = React.use(params);
@@ -19,16 +22,53 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
   const router = useRouter();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string | string[]>>({});
 
   const service = services.find((s) => s.id === resolvedParams.slug);
 
   if (!service) {
     notFound();
   }
+  
+  const handleOptionChange = (subCategoryId: string, optionId: string, type: 'single' | 'multiple') => {
+    setSelectedOptions(prev => {
+      const newOptions = { ...prev };
+      if (type === 'single') {
+        newOptions[subCategoryId] = optionId;
+      } else {
+        const currentSelection = (newOptions[subCategoryId] as string[] | undefined) || [];
+        if (currentSelection.includes(optionId)) {
+          newOptions[subCategoryId] = currentSelection.filter(id => id !== optionId);
+        } else {
+          newOptions[subCategoryId] = [...currentSelection, optionId];
+        }
+      }
+      return newOptions;
+    });
+  };
+
+  const isBookingDisabled = () => {
+    if (!date || !selectedTime) return true;
+    if (service.subCategories) {
+      for (const subCategory of service.subCategories) {
+        const selection = selectedOptions[subCategory.id];
+        if (!selection || (Array.isArray(selection) && selection.length === 0)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
 
   const handleBooking = () => {
     if (user) {
-      // Proceed with booking logic
+      // Proceed with booking logic, now including selectedOptions
+      console.log({
+        serviceId: service.id,
+        date,
+        time: selectedTime,
+        options: selectedOptions,
+      });
       alert('Booking confirmed!');
       router.push('/customer/bookings');
     } else {
@@ -66,35 +106,74 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
             <Card>
               <CardContent className="p-6">
                 <h2 className="text-2xl font-bold font-headline text-center mb-4">Book This Service</h2>
-                <h3 className="font-semibold mb-2">Select a Date</h3>
-                <div className="flex justify-center rounded-md border">
-                    <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
-                        disabled={(day) => day < new Date(new Date().setDate(new Date().getDate() - 1))}
-                    />
-                </div>
                 
-                <h3 className="font-semibold mt-6 mb-2">Select a Time Slot</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {timeSlots.map((time) => (
-                    <Button
-                      key={time}
-                      variant={selectedTime === time ? 'default' : 'outline'}
-                      onClick={() => setSelectedTime(time)}
-                      className="flex items-center gap-2"
-                    >
-                      <Clock className="w-4 h-4" />
-                      {time}
-                    </Button>
-                  ))}
+                <div className='space-y-6'>
+                    <div>
+                        <h3 className="font-semibold mb-2">Select a Date</h3>
+                        <div className="flex justify-center rounded-md border">
+                            <Calendar
+                                mode="single"
+                                selected={date}
+                                onSelect={setDate}
+                                disabled={(day) => day < new Date(new Date().setDate(new Date().getDate() - 1))}
+                            />
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 className="font-semibold mb-2">Select a Time Slot</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                        {timeSlots.map((time) => (
+                            <Button
+                            key={time}
+                            variant={selectedTime === time ? 'default' : 'outline'}
+                            onClick={() => setSelectedTime(time)}
+                            className="flex items-center gap-2"
+                            >
+                            <Clock className="w-4 h-4" />
+                            {time}
+                            </Button>
+                        ))}
+                        </div>
+                    </div>
+
+                    {service.subCategories?.map(subCategory => (
+                        <div key={subCategory.id}>
+                            <h3 className="font-semibold mb-2">{subCategory.name}</h3>
+                            {subCategory.type === 'single' ? (
+                               <RadioGroup
+                                  value={selectedOptions[subCategory.id] as string || ''}
+                                  onValueChange={(value) => handleOptionChange(subCategory.id, value, 'single')}
+                                >
+                                {subCategory.options.map(option => (
+                                    <div key={option.id} className="flex items-center space-x-2">
+                                        <RadioGroupItem value={option.id} id={`${subCategory.id}-${option.id}`} />
+                                        <Label htmlFor={`${subCategory.id}-${option.id}`}>{option.name}</Label>
+                                    </div>
+                                ))}
+                               </RadioGroup>
+                            ) : (
+                                <div className="space-y-2">
+                                    {subCategory.options.map(option => (
+                                        <div key={option.id} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={`${subCategory.id}-${option.id}`}
+                                                checked={(selectedOptions[subCategory.id] as string[] | undefined)?.includes(option.id) || false}
+                                                onCheckedChange={() => handleOptionChange(subCategory.id, option.id, 'multiple')}
+                                            />
+                                            <Label htmlFor={`${subCategory.id}-${option.id}`} className="font-normal">{option.name}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
 
-                <Button size="lg" className="w-full mt-6" disabled={!date || !selectedTime} onClick={handleBooking}>
+                <Button size="lg" className="w-full mt-6" disabled={isBookingDisabled()} onClick={handleBooking}>
                   {user ? 'Confirm Booking' : 'Log in to Book'}
                 </Button>
-                {!date || !selectedTime && <p className="text-center text-sm text-muted-foreground mt-2">Please select a date and time.</p>}
+                {isBookingDisabled() && <p className="text-center text-sm text-muted-foreground mt-2">Please select a date, time, and all required options.</p>}
               </CardContent>
             </Card>
           </div>
