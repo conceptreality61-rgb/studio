@@ -24,8 +24,7 @@ type AuthFormProps = {
 
 type Role = 'customer' | 'worker' | 'admin';
 
-function AuthFormFields({ isSignUp, role }: { isSignUp?: boolean; role: Role }) {
-  const router = useRouter();
+function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean; role: Role; onAuthSuccess: (role: Role) => void; }) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,9 +32,9 @@ function AuthFormFields({ isSignUp, role }: { isSignUp?: boolean; role: Role }) 
     event.preventDefault();
     setIsLoading(true);
     const formData = new FormData(event.currentTarget);
-    const email = formData.get(`${role}-email`) as string;
-    const password = formData.get(`${role}-password`) as string;
-    const name = formData.get(`${role}-name`) as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const name = formData.get('name') as string;
 
     try {
       if (isSignUp) {
@@ -43,11 +42,11 @@ function AuthFormFields({ isSignUp, role }: { isSignUp?: boolean; role: Role }) 
         await updateProfile(userCredential.user, { displayName: name });
         // Here you would typically save role and other info to a database like Firestore
         toast({ title: 'Account created successfully!' });
-        router.push(getRedirectPath(role));
+        onAuthSuccess(role);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: 'Logged in successfully!' });
-        router.push(getRedirectPath(role));
+        onAuthSuccess(role);
       }
     } catch (error: any) {
       toast({
@@ -60,18 +59,6 @@ function AuthFormFields({ isSignUp, role }: { isSignUp?: boolean; role: Role }) 
     }
   };
 
-  const getRedirectPath = (role: Role) => {
-    switch (role) {
-      case 'admin':
-        return '/admin';
-      case 'worker':
-        return '/worker';
-      default:
-        return '/customer';
-    }
-  };
-
-
   const buttonText = isSignUp ? 'Sign Up' : 'Log In';
 
   return (
@@ -80,19 +67,19 @@ function AuthFormFields({ isSignUp, role }: { isSignUp?: boolean; role: Role }) 
         <>
           {role !== 'admin' && (
             <div className="space-y-2">
-              <Label htmlFor={`${role}-name`}>Full Name</Label>
-              <Input id={`${role}-name`} name={`${role}-name`} placeholder="John Doe" required />
+              <Label htmlFor="name">Full Name</Label>
+              <Input id="name" name="name" placeholder="John Doe" required />
             </div>
           )}
         </>
       )}
       <div className="space-y-2">
-        <Label htmlFor={`${role}-email`}>Email</Label>
-        <Input id={`${role}-email`} name={`${role}-email`} type="email" placeholder="m@example.com" required />
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" name="email" type="email" placeholder="m@example.com" required />
       </div>
       <div className="space-y-2">
-        <Label htmlFor={`${role}-password`}>Password</Label>
-        <Input id={`${role}-password`} name={`${role}-password`} type="password" required />
+        <Label htmlFor="password">Password</Label>
+        <Input id="password" name="password" type="password" required />
       </div>
       {isSignUp && role === 'worker' && (
         <div className="space-y-2">
@@ -108,8 +95,25 @@ function AuthFormFields({ isSignUp, role }: { isSignUp?: boolean; role: Role }) 
 }
 
 export function AuthForm({ isSignUp = false }: AuthFormProps) {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<Role>('customer');
+
   const title = isSignUp ? 'Create an Account' : 'Welcome Back';
   const description = isSignUp ? "Choose your role and let's get started." : 'Log in to access your dashboard.';
+
+  const handleAuthSuccess = (role: Role) => {
+    const getRedirectPath = (role: Role) => {
+      switch (role) {
+        case 'admin':
+          return '/admin';
+        case 'worker':
+          return '/worker';
+        default:
+          return '/customer';
+      }
+    };
+    router.push(getRedirectPath(role));
+  }
 
   return (
     <Card className="w-full">
@@ -118,20 +122,20 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="customer" className="w-full">
+        <Tabs defaultValue="customer" className="w-full" onValueChange={(value) => setActiveTab(value as Role)}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="customer">Customer</TabsTrigger>
             <TabsTrigger value="worker">Worker</TabsTrigger>
             <TabsTrigger value="admin">Admin</TabsTrigger>
           </TabsList>
           <TabsContent value="customer" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="customer" />
+            <AuthFormFields isSignUp={isSignUp} role="customer" onAuthSuccess={handleAuthSuccess} />
           </TabsContent>
           <TabsContent value="worker" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="worker" />
+            <AuthFormFields isSignUp={isSignUp} role="worker" onAuthSuccess={handleAuthSuccess} />
           </TabsContent>
           <TabsContent value="admin" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="admin" />
+            <AuthFormFields isSignUp={isSignUp} role="admin" onAuthSuccess={handleAuthSuccess}/>
           </TabsContent>
         </Tabs>
         <div className="mt-4 text-center text-sm">
