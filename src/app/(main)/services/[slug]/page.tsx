@@ -106,7 +106,6 @@ export default function ServiceDetailPage() {
             )}
             <div className="mt-6">
               <h1 className="text-3xl md:text-4xl font-bold font-headline">{service.name}</h1>
-              <p className="text-2xl font-semibold text-primary mt-2">${service.price}/hr</p>
               <p className="mt-4 text-muted-foreground">{service.longDescription}</p>
             </div>
           </div>
