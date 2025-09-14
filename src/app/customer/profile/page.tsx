@@ -46,8 +46,21 @@ export default function CustomerProfilePage() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleSaveChanges = (e: React.FormEvent) => {
+  const handleSaveChanges = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget;
+    const mobileInput = form.elements.namedItem('mobile-number') as HTMLInputElement;
+    const mobileNumber = mobileInput.value;
+
+    if (mobileNumber && !/^\d{10}$/.test(mobileNumber)) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Mobile Number',
+        description: 'Mobile number must be exactly 10 digits and contain no letters.',
+      });
+      return;
+    }
+
     // Logic to save changes would go here
     toast({
       title: 'Profile Updated',
@@ -97,7 +110,7 @@ export default function CustomerProfilePage() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Input id="mobile-number" type="tel" defaultValue={customerProfile.mobile.number} placeholder="10-digit number" maxLength={10} />
+                    <Input id="mobile-number" name="mobile-number" type="tel" defaultValue={customerProfile.mobile.number} placeholder="10-digit number" maxLength={10} />
                 </div>
               </div>
               <div className="space-y-2">
