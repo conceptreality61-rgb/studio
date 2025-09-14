@@ -30,6 +30,7 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
     if (user) {
       // Proceed with booking logic
       alert('Booking confirmed!');
+      router.push('/customer/bookings');
     } else {
       router.push('/login');
     }
