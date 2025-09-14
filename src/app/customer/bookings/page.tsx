@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight, Star, XCircle } from "lucide-react";
-import { differenceInHours } from 'date-fns';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,12 +38,6 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
   "In Progress": "secondary",
   Canceled: "destructive"
 };
-
-const canCancel = (bookingDate: string) => {
-    const now = new Date();
-    const serviceDate = new Date(bookingDate);
-    return differenceInHours(serviceDate, now) > 5;
-}
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState(initialBookings);
@@ -114,7 +107,7 @@ export default function BookingsPage() {
                           Leave a Review
                         </Link>
                       </Button>
-                    ) : !['Completed', 'Canceled'].includes(booking.status) && canCancel(booking.date) ? (
+                    ) : !['Completed', 'Canceled'].includes(booking.status) ? (
                       <Button variant="destructive" size="sm" onClick={() => handleCancelClick(booking.id)}>
                         <XCircle className="mr-2 h-4 w-4" />
                         Cancel
