@@ -24,6 +24,8 @@ type AuthFormProps = {
 
 type Role = 'customer' | 'worker' | 'admin';
 
+const SUPERADMIN_EMAIL = 'superadmin@cleansweep.com';
+
 function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean; role: Role; onAuthSuccess: (role: Role) => void; }) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -38,12 +40,30 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
 
     try {
       if (isSignUp) {
+        if (role === 'admin') {
+            toast({
+                variant: 'destructive',
+                title: 'Sign-up Error',
+                description: 'Admin sign-up is not allowed.',
+            });
+            setIsLoading(false);
+            return;
+        }
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
         // Here you would typically save role and other info to a database like Firestore
         toast({ title: 'Account created successfully!' });
         onAuthSuccess(role);
       } else {
+        if (role === 'admin' && email !== SUPERADMIN_EMAIL) {
+             toast({
+                variant: 'destructive',
+                title: 'Authentication Error',
+                description: 'You are not authorized to log in as an admin.',
+            });
+            setIsLoading(false);
+            return;
+        }
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: 'Logged in successfully!' });
         onAuthSuccess(role);
@@ -64,14 +84,10 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {isSignUp && (
-        <>
-          {role !== 'admin' && (
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" name="name" placeholder="John Doe" required />
-            </div>
-          )}
-        </>
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input id="name" name="name" placeholder="John Doe" required />
+          </div>
       )}
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
@@ -96,6 +112,7 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
 
 export function AuthForm({ isSignUp = false }: AuthFormProps) {
   const router = useRouter();
+  const [currentTab, setCurrentTab] = useState<Role>('customer');
 
   const title = isSignUp ? 'Create an Account' : 'Welcome Back';
   const description = isSignUp ? "Choose your role and let's get started." : 'Log in to access your dashboard.';
@@ -114,6 +131,10 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
     router.push(getRedirectPath(role));
   }
 
+  const onTabChange = (value: string) => {
+    setCurrentTab(value as Role);
+  }
+
   return (
     <Card className="w-full">
       <CardHeader className="text-center">
@@ -121,20 +142,26 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="customer" className="w-full">
+        <Tabs defaultValue="customer" className="w-full" onValueChange={onTabChange}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="customer">Customer</TabsTrigger>
             <TabsTrigger value="worker">Worker</TabsTrigger>
             <TabsTrigger value="admin">Admin</TabsTrigger>
           </TabsList>
           <TabsContent value="customer" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="customer" onAuthSuccess={handleAuthSuccess} />
+            <AuthFormFields isSignUp={isSignUp} role="customer" onAuthSuccess={() => handleAuthSuccess('customer')} />
           </TabsContent>
           <TabsContent value="worker" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="worker" onAuthSuccess={handleAuthSuccess} />
+            <AuthFormFields isSignUp={isSignUp} role="worker" onAuthSuccess={() => handleAuthSuccess('worker')} />
           </TabsContent>
           <TabsContent value="admin" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="admin" onAuthSuccess={handleAuthSuccess}/>
+            {isSignUp ? (
+                <div className="text-center text-muted-foreground p-8">
+                    Admin account cannot be created from here.
+                </div>
+            ) : (
+                <AuthFormFields isSignUp={isSignUp} role="admin" onAuthSuccess={() => handleAuthSuccess('admin')}/>
+            )}
           </TabsContent>
         </Tabs>
         <div className="mt-4 text-center text-sm">
