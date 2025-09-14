@@ -86,7 +86,7 @@ export const services: Service[] = [
           { id: 'sink-mirror-polishing', name: 'Sink and Mirror Polishing' },
         ],
       },
-      {
+       {
         id: 'num-bathrooms',
         name: 'Number of Bathrooms',
         type: 'single',
@@ -125,6 +125,16 @@ export const services: Service[] = [
         options: [
           { id: 'type-overhead', name: 'Overhead Plastic/Syntax' },
           { id: 'type-underground', name: 'Underground Concrete' },
+        ],
+      },
+      {
+        id: 'num-tanks',
+        name: 'Number of Tanks',
+        type: 'single',
+        options: [
+            { id: '1-tank', name: '1 Tank' },
+            { id: '2-tanks', name: '2 Tanks' },
+            { id: '3-tanks', name: '3 Tanks' },
         ],
       },
        {

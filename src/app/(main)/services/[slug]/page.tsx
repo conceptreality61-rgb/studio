@@ -118,7 +118,7 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
                                <RadioGroup
                                   value={selectedOptions[subCategory.id] as string || ''}
                                   onValueChange={(value) => handleOptionChange(subCategory.id, value, 'single')}
-                                  className={subCategory.id.includes('duration') ? '' : 'grid grid-cols-2 gap-2'}
+                                  className={subCategory.id.includes('duration') ? 'grid grid-cols-2 gap-2' : ''}
                                 >
                                 {subCategory.options.map(option => (
                                     <div key={option.id} className="flex items-center space-x-2">
@@ -128,7 +128,7 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
                                 ))}
                                </RadioGroup>
                             ) : (
-                                <div className="space-y-2">
+                                <div className="grid grid-cols-2 gap-2">
                                     {subCategory.options.map(option => (
                                         <div key={option.id} className="flex items-center space-x-2">
                                             <Checkbox
