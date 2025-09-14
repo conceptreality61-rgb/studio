@@ -1,10 +1,9 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { services } from '@/lib/constants';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,9 +16,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
-export default function ServiceDetailPage({ params }: { params: { slug: string } }) {
+export default function ServiceDetailPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const params = useParams();
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string | string[]>>({});
@@ -123,7 +123,7 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
                                <RadioGroup
                                   value={selectedOptions[subCategory.id] as string || ''}
                                   onValueChange={(value) => handleOptionChange(subCategory.id, value, 'single')}
-                                  className={subCategory.id.includes('duration') || subCategory.id.includes('num-bathrooms') ? 'grid grid-cols-2 gap-2' : ''}
+                                  className={subCategory.id.includes('duration') || subCategory.id.includes('num-bathrooms') || subCategory.id.includes('num-tanks') ? 'grid grid-cols-2 gap-2' : ''}
                                 >
                                 {subCategory.options.map(option => (
                                     <div key={option.id} className="flex items-center space-x-2">
