@@ -54,8 +54,13 @@ export const services: Service[] = [
         name: 'Select Duration',
         type: 'single',
         options: [
+          { id: '1-hour', name: '1 Hour' },
           { id: '2-hours', name: '2 Hours' },
-          { id: '4-hours', name: '4 Hours (Half Day)' },
+          { id: '3-hours', name: '3 Hours' },
+          { id: '4-hours', name: '4 Hours' },
+          { id: '5-hours', name: '5 Hours' },
+          { id: '6-hours', name: '6 Hours' },
+          { id: '7-hours', name: '7 Hours' },
           { id: '8-hours', name: '8 Hours (Full Day)' },
         ],
       },
@@ -106,6 +111,7 @@ export const services: Service[] = [
         options: [
           { id: '1-hour', name: '1 Hour' },
           { id: '2-hours', name: '2 Hours' },
+          { id: '3-hours', name: '3 Hours' },
           { id: '4-hours', name: '4 Hours' },
         ],
       },
