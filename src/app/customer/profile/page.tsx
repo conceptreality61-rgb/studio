@@ -106,7 +106,7 @@ export default function CustomerProfilePage() {
                         </SelectTrigger>
                         <SelectContent>
                             {countries.map(country => (
-                                <SelectItem key={country.code} value={country.code}>{country.code}</SelectItem>
+                                <SelectItem key={country.name} value={country.code}>{country.code}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -122,7 +122,7 @@ export default function CustomerProfilePage() {
                         </SelectTrigger>
                         <SelectContent>
                             {countries.map(country => (
-                                <SelectItem key={country.code} value={country.code}>{country.code}</SelectItem>
+                                <SelectItem key={country.name} value={country.code}>{country.code}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
