@@ -23,8 +23,10 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string | string[]>>({});
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     setDate(new Date());
   }, []);
 
@@ -121,7 +123,7 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
                                <RadioGroup
                                   value={selectedOptions[subCategory.id] as string || ''}
                                   onValueChange={(value) => handleOptionChange(subCategory.id, value, 'single')}
-                                  className={subCategory.id.includes('duration') ? 'grid grid-cols-2 gap-2' : ''}
+                                  className={subCategory.id.includes('duration') || subCategory.id.includes('num-bathrooms') ? 'grid grid-cols-2 gap-2' : ''}
                                 >
                                 {subCategory.options.map(option => (
                                     <div key={option.id} className="flex items-center space-x-2">
@@ -150,12 +152,14 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
                     <div>
                         <h3 className="font-semibold mb-2">Select a Date</h3>
                         <div className="flex justify-center rounded-md border">
-                            <Calendar
-                                mode="single"
-                                selected={date}
-                                onSelect={setDate}
-                                disabled={(day) => day < new Date(new Date().setDate(new Date().getDate() - 1))}
-                            />
+                           {isClient && (
+                                <Calendar
+                                    mode="single"
+                                    selected={date}
+                                    onSelect={setDate}
+                                    disabled={(day) => day < new Date(new Date().setDate(new Date().getDate() - 1))}
+                                />
+                           )}
                         </div>
                     </div>
                     
