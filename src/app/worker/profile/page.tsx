@@ -30,7 +30,7 @@ const workerProfile = {
     'gardening': ['lawn-mowing', 'pruning'],
     'maid-service': ['dish-cleaning'],
   },
-  availability: [new Date()],
+  availability: [],
 };
 
 type SelectedServices = Record<string, string[]>;
