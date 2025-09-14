@@ -1,9 +1,13 @@
+
+'use client';
+
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 const recentBookings = [
     { id: 'BK001', service: 'Maid Service', date: '2023-06-23', status: 'Completed', amount: '$50.00' },
@@ -18,10 +22,11 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 };
 
 export default function CustomerDashboardPage() {
+  const { user } = useAuth();
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Welcome, John!</CardTitle>
+        <CardTitle>Welcome, {user?.displayName ?? 'Customer'}!</CardTitle>
         <CardDescription>Here's an overview of your recent activity.</CardDescription>
       </CardHeader>
       <CardContent>

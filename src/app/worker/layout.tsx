@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -17,11 +18,13 @@ import {
 import { workerNavItems } from '@/lib/constants';
 import Logo from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useAuth } from '@/hooks/use-auth';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function WorkerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const profileImage = PlaceHolderImages.find(p => p.id === 'worker-profile');
+  const { user, loading } = useAuth();
+
 
   return (
     <SidebarProvider>
@@ -48,14 +51,28 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
         </SidebarContent>
         <SidebarFooter>
            <div className="flex items-center gap-3 p-2 rounded-md bg-secondary">
-             <Avatar>
-               <AvatarImage src={profileImage?.imageUrl} data-ai-hint={profileImage?.imageHint} />
-               <AvatarFallback>JS</AvatarFallback>
-             </Avatar>
-             <div>
-               <p className="font-semibold text-sm">Jane Smith</p>
-               <p className="text-xs text-muted-foreground">Worker</p>
-             </div>
+             {loading ? (
+                <>
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <div className='space-y-2'>
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-3 w-16" />
+                    </div>
+                </>
+             ) : user ? (
+                <>
+                <Avatar>
+                    <AvatarImage src={user.photoURL ?? undefined} />
+                    <AvatarFallback>{user.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <p className="font-semibold text-sm">{user.displayName}</p>
+                    <p className="text-xs text-muted-foreground">worker</p>
+                </div>
+                </>
+             ) : (
+                <p>Not logged in</p>
+             )}
            </div>
         </SidebarFooter>
       </Sidebar>

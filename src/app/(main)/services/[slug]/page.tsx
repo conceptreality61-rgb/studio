@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import { services } from '@/lib/constants';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,9 +11,12 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Clock } from 'lucide-react';
 import React from 'react';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function ServiceDetailPage({ params }: { params: { slug: string } }) {
   const resolvedParams = React.use(params);
+  const { user } = useAuth();
+  const router = useRouter();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
@@ -21,6 +25,15 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
   if (!service) {
     notFound();
   }
+
+  const handleBooking = () => {
+    if (user) {
+      // Proceed with booking logic
+      alert('Booking successful!');
+    } else {
+      router.push('/login');
+    }
+  };
 
   const placeholder = PlaceHolderImages.find((p) => p.id === service.imageId);
   const timeSlots = ['09:00 AM', '11:00 AM', '01:00 PM', '03:00 PM', '05:00 PM'];
@@ -77,8 +90,8 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
                   ))}
                 </div>
 
-                <Button size="lg" className="w-full mt-6" disabled={!date || !selectedTime}>
-                  Book Now
+                <Button size="lg" className="w-full mt-6" disabled={!date || !selectedTime} onClick={handleBooking}>
+                  {user ? 'Book Now' : 'Log in to Book'}
                 </Button>
                 {!date || !selectedTime && <p className="text-center text-sm text-muted-foreground mt-2">Please select a date and time.</p>}
               </CardContent>
