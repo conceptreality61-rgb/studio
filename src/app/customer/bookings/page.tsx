@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 
 const bookings = [
     { id: 'BK001', service: 'Maid Service', date: '2023-06-23', status: 'Completed', amount: '$50.00' },
@@ -28,7 +28,7 @@ export default function BookingsPage() {
     <Card>
       <CardHeader>
         <CardTitle>My Bookings</CardTitle>
-        <CardDescription>View your booking history.</CardDescription>
+        <CardDescription>View your booking history and leave reviews for completed services.</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -51,9 +51,18 @@ export default function BookingsPage() {
                 </TableCell>
                 <TableCell className="text-right">{booking.amount}</TableCell>
                  <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" asChild>
-                    <Link href={`/customer/orders/${booking.id}`}><ArrowRight className="h-4 w-4" /></Link>
-                  </Button>
+                  {booking.status === 'Completed' ? (
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/customer/review/${booking.id}`}>
+                        <Star className="mr-2 h-4 w-4" />
+                        Leave a Review
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/customer/orders/${booking.id}`}><ArrowRight className="h-4 w-4" /></Link>
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

@@ -71,6 +71,7 @@ export const adminNavItems: NavItem[] = [
 export const customerNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/customer', icon: LayoutDashboard },
   { title: 'My Bookings', href: '/customer/bookings', icon: Briefcase },
+  { title: 'My Reviews', href: '/customer/reviews', icon: Star },
   { title: 'Profile', href: '/customer/profile', icon: User },
 ];
 
