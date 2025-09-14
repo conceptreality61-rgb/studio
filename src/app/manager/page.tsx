@@ -32,7 +32,9 @@ export default function ManagerDashboardPage() {
                 <StatCard title="Total Revenue" value="$25,231.89" description="+20.1% from last month" icon={DollarSign} />
                 <StatCard title="Active Bookings" value="52" description="+12 from last month" icon={Briefcase} />
                 <StatCard title="New Customers" value="89" description="+35 this month" icon={Users} />
-                <StatCard title="Active Workers" value="12" description="2 pending verification" icon={UserCheck} />
+                <Link href="/manager/workers">
+                  <StatCard title="Active Workers" value="12" description="2 pending verification" icon={UserCheck} />
+                </Link>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
