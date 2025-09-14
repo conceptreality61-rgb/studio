@@ -101,7 +101,7 @@ export default function BookingsPage() {
               {bookings.map((booking) => (
                 <TableRow key={booking.id}>
                   <TableCell className="font-medium">{booking.service}</TableCell>
-                  <TableCell>{isClient ? new Date(booking.date).toLocaleString() : new Date(booking.date).toISOString()}</TableCell>
+                  <TableCell>{isClient ? new Date(booking.date).toLocaleString() : ''}</TableCell>
                   <TableCell>
                     <Badge variant={statusVariant[booking.status] || 'default'}>{booking.status}</Badge>
                   </TableCell>
