@@ -2,6 +2,19 @@
 import type { LucideIcon } from 'lucide-react';
 import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck } from 'lucide-react';
 
+export type ServiceSubCategoryOption = {
+  id: string;
+  name: string;
+  // Price modifier can be added later, e.g., priceModifier: 10
+};
+
+export type ServiceSubCategory = {
+  id: string;
+  name:string;
+  type: 'single' | 'multiple';
+  options: ServiceSubCategoryOption[];
+};
+
 export type Service = {
   id: string;
   name: string;
@@ -10,6 +23,7 @@ export type Service = {
   icon: LucideIcon;
   imageId: string;
   price: number;
+  subCategories?: ServiceSubCategory[];
 };
 
 export const services: Service[] = [
@@ -20,7 +34,32 @@ export const services: Service[] = [
     longDescription: 'Our professional maid services provide a thorough cleaning of your home, ensuring a spotless and healthy living environment. We cover all rooms, including dusting, vacuuming, mopping, and surface sanitization.',
     icon: Home,
     imageId: 'maid-service',
-    price: 50,
+    price: 25, // Base price per hour
+    subCategories: [
+      {
+        id: 'duration',
+        name: 'Select Duration',
+        type: 'single',
+        options: [
+          { id: '2-hours', name: '2 Hours' },
+          { id: '4-hours', name: '4 Hours (Half Day)' },
+          { id: '8-hours', name: '8 Hours (Full Day)' },
+        ],
+      },
+      {
+        id: 'tasks',
+        name: 'Select Tasks',
+        type: 'multiple',
+        options: [
+          { id: 'dish-cleaning', name: 'Dish Cleaning' },
+          { id: 'mopping', name: 'Mopping' },
+          { id: 'kitchen-cleaning', name: 'Kitchen Cleaning' },
+          { id: 'full-cooking', name: 'Full Cooking' },
+          { id: 'cooking-help', name: 'Cooking Help' },
+          { id: 'baby-care', name: 'Baby Care' },
+        ],
+      }
+    ],
   },
   {
     id: 'bathroom-cleaning',
@@ -48,6 +87,29 @@ export const services: Service[] = [
     icon: Wrench,
     imageId: 'gardening',
     price: 45,
+    subCategories: [
+       {
+        id: 'duration',
+        name: 'Select Duration',
+        type: 'single',
+        options: [
+          { id: '1-hour', name: '1 Hour' },
+          { id: '2-hours', name: '2 Hours' },
+          { id: '4-hours', name: '4 Hours' },
+        ],
+      },
+      {
+        id: 'tasks',
+        name: 'Select Tasks',
+        type: 'multiple',
+        options: [
+          { id: 'lawn-mowing', name: 'Lawn Mowing' },
+          { id: 'pruning', name: 'Pruning' },
+          { id: 'weeding', name: 'Weeding' },
+          { id: 'planting', name: 'Planting Flowers' },
+        ],
+      }
+    ]
   },
 ];
 
