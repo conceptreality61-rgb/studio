@@ -87,6 +87,17 @@ export const services: Service[] = [
         ],
       },
       {
+        id: 'num-bathrooms',
+        name: 'Number of Bathrooms',
+        type: 'single',
+        options: [
+          { id: '1-bathroom', name: '1 Bathroom' },
+          { id: '2-bathrooms', name: '2 Bathrooms' },
+          { id: '3-bathrooms', name: '3 Bathrooms' },
+          { id: '4-plus-bathrooms', name: '4+ Bathrooms' },
+        ],
+      },
+      {
         id: 'duration',
         name: 'Select Duration',
         type: 'single',
