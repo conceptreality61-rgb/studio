@@ -1,5 +1,6 @@
+
 import type { LucideIcon } from 'lucide-react';
-import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck } from 'lucide-react';
 
 export type Service = {
   id: string;
@@ -61,7 +62,7 @@ export const adminNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { title: 'Bookings', href: '/admin/bookings', icon: Briefcase },
   { title: 'Customers', href: '/admin/customers', icon: Users },
-  { title: 'Workers', href: '/admin/workers', icon: Users },
+  { title: 'Workers', href: '/admin/workers', icon: UserCheck },
   { title: 'Smart Router', href: '/admin/smart-router', icon: Route },
   { title: 'Analytics', href: '/admin/analytics', icon: BarChart },
   { title: 'Settings', href: '/admin/settings', icon: Settings },
@@ -70,7 +71,6 @@ export const adminNavItems: NavItem[] = [
 export const customerNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/customer', icon: LayoutDashboard },
   { title: 'My Bookings', href: '/customer/bookings', icon: Briefcase },
-  { title: 'My Reviews', href: '/customer/reviews', icon: Star },
   { title: 'Profile', href: '/customer/profile', icon: User },
 ];
 
