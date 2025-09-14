@@ -2,7 +2,7 @@
 import Link from "next/link";
 import StatCard from "@/components/dashboard/stat-card";
 import { DollarSign, Briefcase, Star, Clock, ArrowRight, CheckCircle, CalendarCheck } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,8 +33,8 @@ export default function WorkerDashboardPage() {
                 <div className="lg:col-span-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>My Tasks</CardTitle>
-                            <CardDescription>Your assigned and upcoming jobs.</CardDescription>
+                            <CardTitle>Recent Tasks</CardTitle>
+                            <CardDescription>Your most recent and upcoming jobs.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -68,6 +68,11 @@ export default function WorkerDashboardPage() {
                                 </TableBody>
                             </Table>
                         </CardContent>
+                        <CardFooter>
+                            <Button asChild variant="outline" className="ml-auto">
+                                <Link href="/worker/tasks">View All Tasks</Link>
+                            </Button>
+                        </CardFooter>
                     </Card>
                 </div>
                 <div className="lg:col-span-1 space-y-6">
