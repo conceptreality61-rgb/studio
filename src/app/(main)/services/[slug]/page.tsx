@@ -8,14 +8,15 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Badge } from '@/components/ui/badge';
 import { Clock } from 'lucide-react';
+import React from 'react';
 
 export default function ServiceDetailPage({ params }: { params: { slug: string } }) {
+  const resolvedParams = React.use(params);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
-  const service = services.find((s) => s.id === params.slug);
+  const service = services.find((s) => s.id === resolvedParams.slug);
 
   if (!service) {
     notFound();
