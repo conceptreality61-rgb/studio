@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -41,6 +41,12 @@ export default function WorkerProfilePage() {
   const { toast } = useToast();
   const [selectedServices, setSelectedServices] = useState<SelectedServices>(workerProfile.selectedServices);
   const [availability, setAvailability] = useState<DateRange | undefined>(workerProfile.availability);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   const handleServiceToggle = (serviceId: string, isChecked: boolean) => {
     setSelectedServices(prev => {
@@ -157,12 +163,14 @@ export default function WorkerProfilePage() {
              <div className="space-y-4">
               <Label>Set Your Availability</Label>
                <div className="flex justify-center rounded-md border">
-                <Calendar
-                    mode="range"
-                    selected={availability}
-                    onSelect={setAvailability}
-                    disabled={(day) => day < new Date(new Date().setDate(new Date().getDate() - 1))}
-                />
+                {isClient && (
+                  <Calendar
+                      mode="range"
+                      selected={availability}
+                      onSelect={setAvailability}
+                      disabled={(day) => day < new Date(new Date().setDate(new Date().getDate() - 1))}
+                  />
+                )}
                </div>
              </div>
           </div>
