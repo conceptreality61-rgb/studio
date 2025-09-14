@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -69,7 +70,6 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
         time: selectedTime,
         options: selectedOptions,
       });
-      alert('Booking confirmed!');
       router.push('/customer/bookings');
     } else {
       router.push('/login');
@@ -78,6 +78,11 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
 
   const placeholder = PlaceHolderImages.find((p) => p.id === service.imageId);
   const timeSlots = ['09:00 AM', '11:00 AM', '01:00 PM', '03:00 PM', '05:00 PM'];
+  
+  const tasksSubCategory = service.subCategories?.find(sc => sc.id === 'tasks');
+  const durationSubCategory = service.subCategories?.find(sc => sc.id === 'duration');
+  const otherSubCategories = service.subCategories?.filter(sc => sc.id !== 'tasks' && sc.id !== 'duration');
+
 
   return (
     <div className="bg-secondary">
@@ -119,25 +124,65 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
                             />
                         </div>
                     </div>
-                    
-                    <div>
-                        <h3 className="font-semibold mb-2">Select a Time Slot</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                        {timeSlots.map((time) => (
-                            <Button
-                            key={time}
-                            variant={selectedTime === time ? 'default' : 'outline'}
-                            onClick={() => setSelectedTime(time)}
-                            className="flex items-center gap-2"
-                            >
-                            <Clock className="w-4 h-4" />
-                            {time}
-                            </Button>
-                        ))}
+
+                    {tasksSubCategory && (
+                        <div key={tasksSubCategory.id}>
+                            <h3 className="font-semibold mb-2">{tasksSubCategory.name}</h3>
+                            <div className="space-y-2">
+                                {tasksSubCategory.options.map(option => (
+                                    <div key={option.id} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`${tasksSubCategory.id}-${option.id}`}
+                                            checked={(selectedOptions[tasksSubCategory.id] as string[] | undefined)?.includes(option.id) || false}
+                                            onCheckedChange={() => handleOptionChange(tasksSubCategory.id, option.id, 'multiple')}
+                                        />
+                                        <Label htmlFor={`${tasksSubCategory.id}-${option.id}`} className="font-normal">{option.name}</Label>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
+                    )}
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {durationSubCategory && (
+                          <div key={durationSubCategory.id}>
+                              <h3 className="font-semibold mb-2">{durationSubCategory.name}</h3>
+                              <RadioGroup
+                                  value={selectedOptions[durationSubCategory.id] as string || ''}
+                                  onValueChange={(value) => handleOptionChange(durationSubCategory.id, value, 'single')}
+                              >
+                              {durationSubCategory.options.map(option => (
+                                  <div key={option.id} className="flex items-center space-x-2">
+                                      <RadioGroupItem value={option.id} id={`${durationSubCategory.id}-${option.id}`} />
+                                      <Label htmlFor={`${durationSubCategory.id}-${option.id}`}>{option.name}</Label>
+                                  </div>
+                              ))}
+                              </RadioGroup>
+                          </div>
+                      )}
+
+                      <div>
+                          <h3 className="font-semibold mb-2">Select a Time Slot</h3>
+                          <RadioGroup
+                              value={selectedTime || ''}
+                              onValueChange={setSelectedTime}
+                              className="space-y-2"
+                          >
+                          {timeSlots.map((time) => (
+                              <div key={time} className="flex items-center space-x-2">
+                                  <RadioGroupItem value={time} id={`time-${time}`} />
+                                  <Label htmlFor={`time-${time}`} className="flex items-center gap-2 font-normal cursor-pointer">
+                                      <Clock className="w-4 h-4" />
+                                      {time}
+                                  </Label>
+                              </div>
+                          ))}
+                          </RadioGroup>
+                      </div>
                     </div>
 
-                    {service.subCategories?.map(subCategory => (
+
+                    {otherSubCategories?.map(subCategory => (
                         <div key={subCategory.id}>
                             <h3 className="font-semibold mb-2">{subCategory.name}</h3>
                             {subCategory.type === 'single' ? (
