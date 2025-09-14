@@ -24,7 +24,7 @@ type AuthFormProps = {
 
 type Role = 'customer' | 'worker' | 'admin';
 
-function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean; role: Role; onAuthSuccess: (role: Role) => void; }) {
+function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean; role: Role; onAuthSuccess: () => void; }) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -42,11 +42,11 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
         await updateProfile(userCredential.user, { displayName: name });
         // Here you would typically save role and other info to a database like Firestore
         toast({ title: 'Account created successfully!' });
-        onAuthSuccess(role);
+        onAuthSuccess();
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: 'Logged in successfully!' });
-        onAuthSuccess(role);
+        onAuthSuccess();
       }
     } catch (error: any) {
       toast({
@@ -101,7 +101,7 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
   const title = isSignUp ? 'Create an Account' : 'Welcome Back';
   const description = isSignUp ? "Choose your role and let's get started." : 'Log in to access your dashboard.';
 
-  const handleAuthSuccess = (role: Role) => {
+  const handleAuthSuccess = () => {
     const getRedirectPath = (selectedRole: Role) => {
       switch (selectedRole) {
         case 'admin':
@@ -112,7 +112,7 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
           return '/customer';
       }
     };
-    router.push(getRedirectPath(role));
+    router.push(getRedirectPath(activeTab));
   }
 
   return (
@@ -129,13 +129,13 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
             <TabsTrigger value="admin">Admin</TabsTrigger>
           </TabsList>
           <TabsContent value="customer" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="customer" onAuthSuccess={() => handleAuthSuccess('customer')} />
+            <AuthFormFields isSignUp={isSignUp} role="customer" onAuthSuccess={handleAuthSuccess} />
           </TabsContent>
           <TabsContent value="worker" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="worker" onAuthSuccess={() => handleAuthSuccess('worker')} />
+            <AuthFormFields isSignUp={isSignUp} role="worker" onAuthSuccess={handleAuthSuccess} />
           </TabsContent>
           <TabsContent value="admin" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="admin" onAuthSuccess={() => handleAuthSuccess('admin')}/>
+            <AuthFormFields isSignUp={isSignUp} role="admin" onAuthSuccess={handleAuthSuccess}/>
           </TabsContent>
         </Tabs>
         <div className="mt-4 text-center text-sm">
