@@ -12,10 +12,18 @@ import { useToast } from '@/hooks/use-toast';
 import { CreditCard, Landmark, Smartphone } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { countries } from '@/lib/countries';
 
 // Mock data, in a real app this would come from your backend
 const customerProfile = {
-  phone: '(555) 123-4567',
+  mobile: {
+    countryCode: '+1',
+    number: '5551234567'
+  },
+  landline: {
+    countryCode: '+1',
+    number: '5559876543'
+  },
   address: '123 Maple Street, Anytown, USA',
   paymentMethod: {
     cardType: 'Visa',
@@ -76,15 +84,43 @@ export default function CustomerProfilePage() {
             </div>
           </div>
            <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" type="tel" defaultValue={customerProfile.phone} />
-            </div>
-            <div className="space-y-2">
+              <div className="space-y-2">
+                <Label htmlFor="mobile-number">Mobile Number</Label>
+                <div className="flex gap-2">
+                    <Select defaultValue={customerProfile.mobile.countryCode}>
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue placeholder="Code" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {countries.map(country => (
+                                <SelectItem key={country.code} value={country.code}>{country.code}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Input id="mobile-number" type="tel" defaultValue={customerProfile.mobile.number} placeholder="10-digit number" maxLength={10} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="landline-number">Landline Number</Label>
+                <div className="flex gap-2">
+                    <Select defaultValue={customerProfile.landline.countryCode}>
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue placeholder="Code" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {countries.map(country => (
+                                <SelectItem key={country.code} value={country.code}>{country.code}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Input id="landline-number" type="tel" defaultValue={customerProfile.landline.number} placeholder="Landline number" />
+                </div>
+              </div>
+           </div>
+           <div className="space-y-2">
               <Label htmlFor="address">Address</Label>
               <Input id="address" defaultValue={customerProfile.address} />
             </div>
-           </div>
           
           <Separator />
 
