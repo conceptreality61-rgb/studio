@@ -38,7 +38,7 @@ const ServiceCard: FC<ServiceCardProps> = ({ service }) => {
         <CardDescription className="flex-grow">{service.description}</CardDescription>
         <Button asChild className="mt-4 w-full" variant="outline">
           <Link href={`/services/${service.id}`}>
-            Learn More <ArrowRight className="ml-2 h-4 w-4" />
+            Book Now <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
       </CardContent>
