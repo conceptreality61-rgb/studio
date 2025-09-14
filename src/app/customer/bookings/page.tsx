@@ -8,15 +8,18 @@ import { ArrowRight } from "lucide-react";
 
 const bookings = [
     { id: 'BK001', service: 'Maid Service', date: '2023-06-23', status: 'Completed', amount: '$50.00' },
-    { id: 'BK002', service: 'Gardening', date: '2023-06-24', status: 'In Progress', amount: '$90.00' },
+    { id: 'BK002', service: 'Gardening', date: '2023-06-24', status: 'Worker Assigned', amount: '$90.00' },
     { id: 'BK003', service: 'Tank Cleaning', date: '2023-05-12', status: 'Completed', amount: '$70.00' },
     { id: 'BK004', service: 'Bathroom Cleaning', date: '2023-04-18', status: 'Completed', amount: '$35.00' },
+    { id: 'BK005', service: 'Maid Service', date: '2023-06-28', status: 'Pending Admin Approval', amount: '$50.00' },
+    { id: 'BK006', service: 'Gardening', date: '2023-06-29', status: 'Canceled', amount: '$45.00' },
 ];
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
   Completed: "default",
+  "Worker Assigned": "secondary",
+  "Pending Admin Approval": "outline",
   "In Progress": "secondary",
-  Pending: "outline",
   Canceled: "destructive"
 };
 
