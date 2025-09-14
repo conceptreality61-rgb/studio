@@ -108,7 +108,6 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
             {loading ? (
                 <Skeleton className="h-8 w-8 rounded-full" />
             ) : user ? (
-                <>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -127,13 +126,13 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
                             </p>
                         </div>
                         </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout}>
+                            <DoorOpen className="mr-2 h-4 w-4" />
+                            <span>Log Out</span>
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <Button variant="outline" size="sm" onClick={handleLogout}>
-                    <DoorOpen className="mr-2 h-4 w-4" />
-                    Log Out
-                </Button>
-                </>
             ) : null}
           </div>
         </header>
