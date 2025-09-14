@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,13 @@ const bookings = [
 ];
 
 export default function SchedulePage() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    setDate(new Date());
+  }, []);
 
   const isSameDay = (d1: Date, d2: Date) => {
     return d1.getFullYear() === d2.getFullYear() &&
@@ -31,21 +38,23 @@ export default function SchedulePage() {
             <CardDescription>View your upcoming confirmed tasks.</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              className="rounded-md border"
-              modifiers={{
-                booked: bookings.map(b => b.date),
-              }}
-              modifiersStyles={{
-                booked: {
-                  color: 'hsl(var(--primary-foreground))',
-                  backgroundColor: 'hsl(var(--primary))',
-                },
-              }}
-            />
+            {isClient && (
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  className="rounded-md border"
+                  modifiers={{
+                    booked: bookings.map(b => b.date),
+                  }}
+                  modifiersStyles={{
+                    booked: {
+                      color: 'hsl(var(--primary-foreground))',
+                      backgroundColor: 'hsl(var(--primary))',
+                    },
+                  }}
+                />
+            )}
           </CardContent>
         </Card>
       </div>
