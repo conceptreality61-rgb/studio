@@ -102,8 +102,8 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
   const description = isSignUp ? "Choose your role and let's get started." : 'Log in to access your dashboard.';
 
   const handleAuthSuccess = (role: Role) => {
-    const getRedirectPath = (role: Role) => {
-      switch (role) {
+    const getRedirectPath = (selectedRole: Role) => {
+      switch (selectedRole) {
         case 'admin':
           return '/admin';
         case 'worker':
@@ -129,13 +129,13 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
             <TabsTrigger value="admin">Admin</TabsTrigger>
           </TabsList>
           <TabsContent value="customer" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="customer" onAuthSuccess={handleAuthSuccess} />
+            <AuthFormFields isSignUp={isSignUp} role="customer" onAuthSuccess={() => handleAuthSuccess('customer')} />
           </TabsContent>
           <TabsContent value="worker" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="worker" onAuthSuccess={handleAuthSuccess} />
+            <AuthFormFields isSignUp={isSignUp} role="worker" onAuthSuccess={() => handleAuthSuccess('worker')} />
           </TabsContent>
           <TabsContent value="admin" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="admin" onAuthSuccess={handleAuthSuccess}/>
+            <AuthFormFields isSignUp={isSignUp} role="admin" onAuthSuccess={() => handleAuthSuccess('admin')}/>
           </TabsContent>
         </Tabs>
         <div className="mt-4 text-center text-sm">
