@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Clock, User, Phone, Check, Star } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -24,8 +25,10 @@ const taskDetails = {
     'TSK007': { status: 'Available', description: 'Full day maid service required.' },
 };
 
-export default function TaskDetailPage({ params }: { params: { id: string } }) {
-    const taskData = taskDetails[params.id as keyof typeof taskDetails] || { status: 'Upcoming', description: 'No details available.' };
+export default function TaskDetailPage() {
+    const params = useParams();
+    const taskId = params.id as string;
+    const taskData = taskDetails[taskId as keyof typeof taskDetails] || { status: 'Upcoming', description: 'No details available.' };
     const [status, setStatus] = useState<TaskStatus>(taskData.status as TaskStatus);
     const { toast } = useToast();
     const router = useRouter();
@@ -60,7 +63,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                     <CardHeader>
                         <div className="flex justify-between items-start">
                             <div>
-                                <CardTitle>Task Details: #{params.id}</CardTitle>
+                                <CardTitle>Task Details: #{taskId}</CardTitle>
                                 <CardDescription>Gardening for Olivia Smith</CardDescription>
                             </div>
                              <Badge variant={getStatusVariant()}>{status}</Badge>
