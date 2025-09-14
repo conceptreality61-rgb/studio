@@ -18,10 +18,12 @@ import { countries } from '@/lib/countries';
 const customerProfile = {
   mobile: {
     countryCode: '+1',
+    countryName: 'United States',
     number: '5551234567'
   },
   landline: {
     countryCode: '+1',
+    countryName: 'United States',
     number: '5559876543'
   },
   address: '123 Maple Street, Anytown, USA',
@@ -100,13 +102,13 @@ export default function CustomerProfilePage() {
               <div className="space-y-2">
                 <Label htmlFor="mobile-number">Mobile Number</Label>
                 <div className="flex gap-2">
-                    <Select defaultValue={customerProfile.mobile.countryCode}>
+                    <Select defaultValue={customerProfile.mobile.countryName}>
                         <SelectTrigger className="w-[80px]">
                             <SelectValue placeholder="Code" />
                         </SelectTrigger>
                         <SelectContent>
                             {countries.map(country => (
-                                <SelectItem key={country.name} value={country.code}>{country.code}</SelectItem>
+                                <SelectItem key={country.name} value={country.name}>{country.code}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -116,13 +118,13 @@ export default function CustomerProfilePage() {
               <div className="space-y-2">
                 <Label htmlFor="landline-number">Landline Number</Label>
                 <div className="flex gap-2">
-                    <Select defaultValue={customerProfile.landline.countryCode}>
+                    <Select defaultValue={customerProfile.landline.countryName}>
                         <SelectTrigger className="w-[80px]">
                             <SelectValue placeholder="Code" />
                         </SelectTrigger>
                         <SelectContent>
                             {countries.map(country => (
-                                <SelectItem key={country.name} value={country.code}>{country.code}</SelectItem>
+                                <SelectItem key={country.name} value={country.name}>{country.code}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
