@@ -117,18 +117,20 @@ export default function WorkerProfilePage() {
                   <AccordionItem value={service.id} key={service.id}>
                     <AccordionTrigger>
                       <div className="flex items-center gap-2">
-                        <Checkbox
-                          id={`service-${service.id}`}
-                          checked={!!selectedServices[service.id]}
-                          onCheckedChange={(checked) => handleServiceToggle(service.id, !!checked)}
-                          onClick={(e) => e.stopPropagation()} // Prevent accordion from toggling
-                        />
                         <service.icon className="h-5 w-5" />
                         <span>{service.name}</span>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="pl-8 space-y-2 pt-2">
+                      <div className="pl-8 space-y-4 pt-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                              id={`service-${service.id}`}
+                              checked={!!selectedServices[service.id]}
+                              onCheckedChange={(checked) => handleServiceToggle(service.id, !!checked)}
+                          />
+                          <Label htmlFor={`service-${service.id}`} className="font-semibold">Enable this service</Label>
+                        </div>
                         {service.subCategories?.map(subCat => (
                           <div key={subCat.id}>
                             <h4 className="font-semibold text-sm mb-2">{subCat.name}</h4>
