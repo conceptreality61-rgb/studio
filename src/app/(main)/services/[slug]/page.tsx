@@ -81,7 +81,8 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
   
   const tasksSubCategory = service.subCategories?.find(sc => sc.id === 'tasks');
   const durationSubCategory = service.subCategories?.find(sc => sc.id === 'duration');
-  const otherSubCategories = service.subCategories?.filter(sc => sc.id !== 'tasks' && sc.id !== 'duration');
+  const numBathroomsSubCategory = service.subCategories?.find(sc => sc.id === 'num-bathrooms');
+  const otherSubCategories = service.subCategories?.filter(sc => sc.id !== 'tasks' && sc.id !== 'duration' && sc.id !== 'num-bathrooms');
 
 
   return (
@@ -131,6 +132,23 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
                         </div>
                     )}
 
+                    {numBathroomsSubCategory && (
+                      <div key={numBathroomsSubCategory.id}>
+                          <h3 className="font-semibold mb-2">{numBathroomsSubCategory.name}</h3>
+                          <RadioGroup
+                              value={selectedOptions[numBathroomsSubCategory.id] as string || ''}
+                              onValueChange={(value) => handleOptionChange(numBathroomsSubCategory.id, value, 'single')}
+                          >
+                          {numBathroomsSubCategory.options.map(option => (
+                              <div key={option.id} className="flex items-center space-x-2">
+                                  <RadioGroupItem value={option.id} id={`${numBathroomsSubCategory.id}-${option.id}`} />
+                                  <Label htmlFor={`${numBathroomsSubCategory.id}-${option.id}`}>{option.name}</Label>
+                              </div>
+                          ))}
+                          </RadioGroup>
+                      </div>
+                    )}
+                    
                     <div>
                         <h3 className="font-semibold mb-2">Select a Date</h3>
                         <div className="flex justify-center rounded-md border">
