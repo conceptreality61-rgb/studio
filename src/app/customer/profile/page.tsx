@@ -9,12 +9,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Textarea } from '@/components/ui/textarea';
+import { CreditCard } from 'lucide-react';
 
 // Mock data, in a real app this would come from your backend
 const customerProfile = {
   phone: '(555) 123-4567',
   address: '123 Maple Street, Anytown, USA',
+  paymentMethod: {
+    cardType: 'Visa',
+    last4: '1234',
+    expiry: '12/26',
+  }
 };
 
 export default function CustomerProfilePage() {
@@ -47,6 +52,7 @@ export default function CustomerProfilePage() {
       <CardContent>
         <form onSubmit={handleSaveChanges} className="space-y-6">
           <Separator />
+          <h3 className="text-lg font-medium">Personal Information</h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
@@ -67,6 +73,38 @@ export default function CustomerProfilePage() {
               <Input id="address" defaultValue={customerProfile.address} />
             </div>
            </div>
+          
+          <Separator />
+
+          <div>
+            <h3 className="text-lg font-medium">Payment Method</h3>
+            <p className="text-sm text-muted-foreground">Update your credit or debit card information.</p>
+            <Card className="mt-4">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <CreditCard className="w-6 h-6 text-muted-foreground" />
+                        <span className="font-semibold">{customerProfile.paymentMethod.cardType} ending in {customerProfile.paymentMethod.last4}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">Expires {customerProfile.paymentMethod.expiry}</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mt-4">
+                    <div className="space-y-2 md:col-span-12">
+                        <Label htmlFor="card-number">Card Number</Label>
+                        <Input id="card-number" placeholder="xxxx xxxx xxxx xxxx" />
+                    </div>
+                    <div className="space-y-2 md:col-span-6">
+                        <Label htmlFor="expiry-date">Expiry Date</Label>
+                        <Input id="expiry-date" placeholder="MM/YY" />
+                    </div>
+                    <div className="space-y-2 md:col-span-6">
+                        <Label htmlFor="cvv">CVV</Label>
+                        <Input id="cvv" placeholder="123" type="password" />
+                    </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           <div className="flex justify-end">
             <Button type="submit">Save Changes</Button>
