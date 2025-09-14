@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,12 @@ export default function BookingsPage() {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
   const { toast } = useToast();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   const handleCancelClick = (bookingId: string) => {
     setBookingToCancel(bookingId);
@@ -95,7 +101,7 @@ export default function BookingsPage() {
               {bookings.map((booking) => (
                 <TableRow key={booking.id}>
                   <TableCell className="font-medium">{booking.service}</TableCell>
-                  <TableCell>{new Date(booking.date).toLocaleString()}</TableCell>
+                  <TableCell>{isClient ? new Date(booking.date).toLocaleString() : new Date(booking.date).toISOString()}</TableCell>
                   <TableCell>
                     <Badge variant={statusVariant[booking.status] || 'default'}>{booking.status}</Badge>
                   </TableCell>
