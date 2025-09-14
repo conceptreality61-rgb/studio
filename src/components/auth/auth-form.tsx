@@ -22,7 +22,7 @@ type AuthFormProps = {
   isSignUp?: boolean;
 };
 
-type Role = 'customer' | 'worker' | 'admin';
+type Role = 'customer' | 'worker' | 'manager';
 
 const SUPERADMIN_EMAIL = 'superadmin@cleansweep.com';
 
@@ -40,26 +40,26 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
 
     try {
       if (isSignUp) {
-        if (role === 'admin' && email !== SUPERADMIN_EMAIL) {
+        if (role === 'manager' && email !== SUPERADMIN_EMAIL) {
             toast({
                 variant: 'destructive',
                 title: 'Sign-up Error',
-                description: 'Admin sign-up is only allowed for the superadmin email.',
+                description: 'Manager sign-up is only allowed for the superadmin email.',
             });
             setIsLoading(false);
             return;
         }
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, { displayName: name || 'Super Admin' });
+        await updateProfile(userCredential.user, { displayName: name || 'Super Manager' });
         // Here you would typically save role and other info to a database like Firestore
         toast({ title: 'Account created successfully!' });
         onAuthSuccess(role);
       } else {
-        if (role === 'admin' && email !== SUPERADMIN_EMAIL) {
+        if (role === 'manager' && email !== SUPERADMIN_EMAIL) {
              toast({
                 variant: 'destructive',
                 title: 'Authentication Error',
-                description: 'You are not authorized to log in as an admin.',
+                description: 'You are not authorized to log in as a manager.',
             });
             setIsLoading(false);
             return;
@@ -86,7 +86,7 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
       {isSignUp && (
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
-            <Input id="name" name="name" placeholder="John Doe" required={role !== 'admin'} />
+            <Input id="name" name="name" placeholder="John Doe" required={role !== 'manager'} />
           </div>
       )}
       <div className="space-y-2">
@@ -120,8 +120,8 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
   const handleAuthSuccess = (role: Role) => {
     const getRedirectPath = (selectedRole: Role) => {
       switch (selectedRole) {
-        case 'admin':
-          return '/admin';
+        case 'manager':
+          return '/manager';
         case 'worker':
           return '/worker';
         default:
@@ -146,7 +146,7 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="customer">Customer</TabsTrigger>
             <TabsTrigger value="worker">Worker</TabsTrigger>
-            <TabsTrigger value="admin">Admin</TabsTrigger>
+            <TabsTrigger value="manager">Manager</TabsTrigger>
           </TabsList>
           <TabsContent value="customer" className="mt-4">
             <AuthFormFields isSignUp={isSignUp} role="customer" onAuthSuccess={() => handleAuthSuccess('customer')} />
@@ -154,8 +154,8 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
           <TabsContent value="worker" className="mt-4">
             <AuthFormFields isSignUp={isSignUp} role="worker" onAuthSuccess={() => handleAuthSuccess('worker')} />
           </TabsContent>
-          <TabsContent value="admin" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="admin" onAuthSuccess={() => handleAuthSuccess('admin')}/>
+          <TabsContent value="manager" className="mt-4">
+            <AuthFormFields isSignUp={isSignUp} role="manager" onAuthSuccess={() => handleAuthSuccess('manager')}/>
           </TabsContent>
         </Tabs>
         <div className="mt-4 text-center text-sm">

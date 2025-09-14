@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import StatCard from "@/components/dashboard/stat-card";
-import { DollarSign, Briefcase, Star, Clock, ArrowRight, CheckCircle, CalendarCheck, Check } from 'lucide-react';
+import { DollarSign, Briefcase, Star, Clock, CheckCircle, CalendarCheck, Check } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +29,7 @@ export default function WorkerDashboardPage() {
     const handleAcceptTask = (taskId: string) => {
         setTasks(currentTasks => 
             currentTasks.map(task => 
-                task.id === taskId ? { ...task, status: 'Pending Approval' } : task
+                task.id === taskId ? { ...task, status: 'Pending Manager Approval' } : task
             )
         );
     };

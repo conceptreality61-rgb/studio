@@ -5,14 +5,14 @@ import { useState } from 'react';
 import ChatInterface from "@/components/chat-interface";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock, User, Phone, Check, Star } from "lucide-react";
+import { MapPin, Clock, User, Phone, Check } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 
-type TaskStatus = 'Upcoming' | 'In Progress' | 'Completed' | 'Pending Confirmation' | 'Pending Admin Approval' | 'Available';
+type TaskStatus = 'Upcoming' | 'In Progress' | 'Completed' | 'Pending Confirmation' | 'Pending Manager Approval' | 'Available';
 
 // Mock data, in a real app this would come from your backend
 const taskDetails = {
@@ -21,7 +21,7 @@ const taskDetails = {
     'TSK003': { status: 'Completed', description: 'Deep clean of two bathrooms.' },
     'TSK004': { status: 'Completed', description: 'Cleaning of a 1000L overhead water tank.' },
     'TSK005': { status: 'Upcoming', description: 'Weekly maid service.' },
-    'TSK006': { status: 'Pending Admin Approval', description: 'Deep clean of one bathroom.' },
+    'TSK006': { status: 'Pending Manager Approval', description: 'Deep clean of one bathroom.' },
     'TSK007': { status: 'Available', description: 'Full day maid service required.' },
 };
 
@@ -40,17 +40,17 @@ export default function TaskDetailPage() {
 
     const handleCompleteTask = () => {
         setStatus('Pending Confirmation');
-        toast({ title: 'Task Marked as Complete', description: 'Waiting for admin confirmation.' });
+        toast({ title: 'Task Marked as Complete', description: 'Waiting for manager confirmation.' });
     };
     
-    const isApproved = status !== 'Pending Admin Approval' && status !== 'Available';
+    const isApproved = status !== 'Pending Manager Approval' && status !== 'Available';
     const canStart = status === 'Upcoming' && isApproved;
     
     const getStatusVariant = () => {
         switch (status) {
             case 'In Progress': return 'secondary';
             case 'Completed': return 'default';
-            case 'Pending Admin Approval': return 'outline';
+            case 'Pending Manager Approval': return 'outline';
             case 'Upcoming': return 'outline';
             default: return 'outline';
         }
@@ -108,8 +108,8 @@ export default function TaskDetailPage() {
                          <div className="mt-6 flex gap-2">
                              {canStart && <Button onClick={handleStartTask}>Start Task</Button>}
                              {status === 'In Progress' && <Button onClick={handleCompleteTask}><Check className="mr-2" /> Mark as Complete</Button>}
-                             {status === 'Pending Admin Approval' && <Button variant="outline" disabled>Awaiting Admin Approval</Button>}
-                             {status === 'Pending Confirmation' && <Button variant="outline" disabled>Waiting for Admin Confirmation</Button>}
+                             {status === 'Pending Manager Approval' && <Button variant="outline" disabled>Awaiting Manager Approval</Button>}
+                             {status === 'Pending Confirmation' && <Button variant="outline" disabled>Waiting for Manager Confirmation</Button>}
                              {status === 'Completed' && <Button variant="ghost" disabled>Task Completed</Button>}
                          </div>
                     </CardContent>

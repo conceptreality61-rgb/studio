@@ -26,7 +26,7 @@ const initialBookings = [
     { id: 'BK002', service: 'Gardening', date: '2024-08-15T18:00:00Z', status: 'Worker Assigned', amount: '$90.00' },
     { id: 'BK003', service: 'Tank Cleaning', date: '2023-05-12T14:00:00Z', status: 'Completed', amount: '$70.00' },
     { id: 'BK004', service: 'Bathroom Cleaning', date: '2023-04-18T09:00:00Z', status: 'Completed', amount: '$35.00' },
-    { id: 'BK005', service: 'Maid Service', date: '2024-09-01T10:00:00Z', status: 'Pending Admin Approval', amount: '$50.00' },
+    { id: 'BK005', service: 'Maid Service', date: '2024-09-01T10:00:00Z', status: 'Pending Manager Approval', amount: '$50.00' },
     { id: 'BK006', service: 'Gardening', date: '2023-06-29T16:00:00Z', status: 'Canceled', amount: '$45.00' },
     { id: 'BK007', service: 'Maid Service', date: '2024-08-20T12:00:00Z', status: 'Worker Assigned', amount: '$75.00' },
 ];
@@ -34,7 +34,7 @@ const initialBookings = [
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
   Completed: "default",
   "Worker Assigned": "secondary",
-  "Pending Admin Approval": "outline",
+  "Pending Manager Approval": "outline",
   "In Progress": "secondary",
   Canceled: "destructive"
 };
