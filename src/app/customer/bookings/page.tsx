@@ -23,13 +23,13 @@ import { useToast } from '@/hooks/use-toast';
 
 
 const initialBookings = [
-    { id: 'BK001', service: 'Maid Service', date: '2023-06-23T10:00:00', status: 'Completed', amount: '$50.00' },
-    { id: 'BK002', service: 'Gardening', date: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(), status: 'Worker Assigned', amount: '$90.00' },
-    { id: 'BK003', service: 'Tank Cleaning', date: '2023-05-12T14:00:00', status: 'Completed', amount: '$70.00' },
-    { id: 'BK004', service: 'Bathroom Cleaning', date: '2023-04-18T09:00:00', status: 'Completed', amount: '$35.00' },
-    { id: 'BK005', service: 'Maid Service', date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), status: 'Pending Admin Approval', amount: '$50.00' },
-    { id: 'BK006', service: 'Gardening', date: '2023-06-29T16:00:00', status: 'Canceled', amount: '$45.00' },
-    { id: 'BK007', service: 'Maid Service', date: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(), status: 'Worker Assigned', amount: '$75.00' },
+    { id: 'BK001', service: 'Maid Service', date: '2023-06-23T10:00:00Z', status: 'Completed', amount: '$50.00' },
+    { id: 'BK002', service: 'Gardening', date: '2024-08-15T18:00:00Z', status: 'Worker Assigned', amount: '$90.00' },
+    { id: 'BK003', service: 'Tank Cleaning', date: '2023-05-12T14:00:00Z', status: 'Completed', amount: '$70.00' },
+    { id: 'BK004', service: 'Bathroom Cleaning', date: '2023-04-18T09:00:00Z', status: 'Completed', amount: '$35.00' },
+    { id: 'BK005', service: 'Maid Service', date: '2024-09-01T10:00:00Z', status: 'Pending Admin Approval', amount: '$50.00' },
+    { id: 'BK006', service: 'Gardening', date: '2023-06-29T16:00:00Z', status: 'Canceled', amount: '$45.00' },
+    { id: 'BK007', service: 'Maid Service', date: '2024-08-20T12:00:00Z', status: 'Worker Assigned', amount: '$75.00' },
 ];
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
