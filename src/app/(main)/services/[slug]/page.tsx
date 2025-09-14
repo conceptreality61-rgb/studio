@@ -113,18 +113,6 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
                 <h2 className="text-2xl font-bold font-headline text-center mb-4">Book This Service</h2>
                 
                 <div className='space-y-6'>
-                    <div>
-                        <h3 className="font-semibold mb-2">Select a Date</h3>
-                        <div className="flex justify-center rounded-md border">
-                            <Calendar
-                                mode="single"
-                                selected={date}
-                                onSelect={setDate}
-                                disabled={(day) => day < new Date(new Date().setDate(new Date().getDate() - 1))}
-                            />
-                        </div>
-                    </div>
-
                     {tasksSubCategory && (
                         <div key={tasksSubCategory.id}>
                             <h3 className="font-semibold mb-2">{tasksSubCategory.name}</h3>
@@ -142,6 +130,18 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
                             </div>
                         </div>
                     )}
+
+                    <div>
+                        <h3 className="font-semibold mb-2">Select a Date</h3>
+                        <div className="flex justify-center rounded-md border">
+                            <Calendar
+                                mode="single"
+                                selected={date}
+                                onSelect={setDate}
+                                disabled={(day) => day < new Date(new Date().setDate(new Date().getDate() - 1))}
+                            />
+                        </div>
+                    </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {durationSubCategory && (
