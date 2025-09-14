@@ -24,7 +24,7 @@ type AuthFormProps = {
 
 type Role = 'customer' | 'worker' | 'admin';
 
-function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean; role: Role; onAuthSuccess: () => void; }) {
+function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean; role: Role; onAuthSuccess: (role: Role) => void; }) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -42,11 +42,11 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
         await updateProfile(userCredential.user, { displayName: name });
         // Here you would typically save role and other info to a database like Firestore
         toast({ title: 'Account created successfully!' });
-        onAuthSuccess();
+        onAuthSuccess(role);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: 'Logged in successfully!' });
-        onAuthSuccess();
+        onAuthSuccess(role);
       }
     } catch (error: any) {
       toast({
@@ -96,12 +96,11 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
 
 export function AuthForm({ isSignUp = false }: AuthFormProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Role>('customer');
 
   const title = isSignUp ? 'Create an Account' : 'Welcome Back';
   const description = isSignUp ? "Choose your role and let's get started." : 'Log in to access your dashboard.';
 
-  const handleAuthSuccess = () => {
+  const handleAuthSuccess = (role: Role) => {
     const getRedirectPath = (selectedRole: Role) => {
       switch (selectedRole) {
         case 'admin':
@@ -112,7 +111,7 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
           return '/customer';
       }
     };
-    router.push(getRedirectPath(activeTab));
+    router.push(getRedirectPath(role));
   }
 
   return (
@@ -122,7 +121,7 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="customer" className="w-full" onValueChange={(value) => setActiveTab(value as Role)}>
+        <Tabs defaultValue="customer" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="customer">Customer</TabsTrigger>
             <TabsTrigger value="worker">Worker</TabsTrigger>
