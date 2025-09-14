@@ -29,7 +29,7 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
   const handleBooking = () => {
     if (user) {
       // Proceed with booking logic
-      alert('Booking successful!');
+      alert('Booking confirmed!');
     } else {
       router.push('/login');
     }
@@ -91,7 +91,7 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
                 </div>
 
                 <Button size="lg" className="w-full mt-6" disabled={!date || !selectedTime} onClick={handleBooking}>
-                  {user ? 'Book Now' : 'Log in to Book'}
+                  {user ? 'Confirm Booking' : 'Log in to Book'}
                 </Button>
                 {!date || !selectedTime && <p className="text-center text-sm text-muted-foreground mt-2">Please select a date and time.</p>}
               </CardContent>
