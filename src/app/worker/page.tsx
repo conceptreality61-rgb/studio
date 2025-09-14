@@ -1,6 +1,7 @@
+
 import Link from "next/link";
 import StatCard from "@/components/dashboard/stat-card";
-import { DollarSign, Briefcase, Star, Clock, ArrowRight } from 'lucide-react';
+import { DollarSign, Briefcase, Star, Clock, ArrowRight, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,8 @@ const tasks = [
     { id: 'TSK002', service: 'Maid Service', customer: 'John Doe', date: '2023-06-25', status: 'Upcoming' },
 ];
 
+const workerServices = ['Gardening', 'Maid Service'];
+
 export default function WorkerDashboardPage() {
     return (
         <div className="space-y-6">
@@ -20,45 +23,69 @@ export default function WorkerDashboardPage() {
                 <StatCard title="Your Rating" value="4.9" description="Based on 56 reviews" icon={Star} />
                 <StatCard title="Next Task" value="in 2 hours" description="Gardening for O. Smith" icon={Clock} />
             </div>
-
-             <Card>
-                <CardHeader>
-                    <CardTitle>My Tasks</CardTitle>
-                    <CardDescription>Your assigned and upcoming jobs.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Task ID</TableHead>
-                                <TableHead>Service</TableHead>
-                                <TableHead>Customer</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {tasks.map((task) => (
-                            <TableRow key={task.id}>
-                                <TableCell className="font-medium">{task.id}</TableCell>
-                                <TableCell>{task.service}</TableCell>
-                                <TableCell>{task.customer}</TableCell>
-                                <TableCell>{task.date}</TableCell>
-                                <TableCell>
-                                    <Badge variant={task.status === 'In Progress' ? 'secondary' : 'outline'}>{task.status}</Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon" asChild>
-                                        <Link href={`/worker/tasks/${task.id}`}><ArrowRight className="h-4 w-4" /></Link>
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>My Tasks</CardTitle>
+                            <CardDescription>Your assigned and upcoming jobs.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Task ID</TableHead>
+                                        <TableHead>Service</TableHead>
+                                        <TableHead>Customer</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead></TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {tasks.map((task) => (
+                                    <TableRow key={task.id}>
+                                        <TableCell className="font-medium">{task.id}</TableCell>
+                                        <TableCell>{task.service}</TableCell>
+                                        <TableCell>{task.customer}</TableCell>
+                                        <TableCell>{task.date}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={task.status === 'In Progress' ? 'secondary' : 'outline'}>{task.status}</Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button variant="ghost" size="icon" asChild>
+                                                <Link href={`/worker/tasks/${task.id}`}><ArrowRight className="h-4 w-4" /></Link>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="lg:col-span-1">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>My Services</CardTitle>
+                            <CardDescription>Services you are approved for.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ul className="space-y-2 text-sm">
+                                {workerServices.map(service => (
+                                    <li key={service} className="flex items-center">
+                                        <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                                        <span>{service}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                             <Button asChild className="w-full mt-4" variant="outline">
+                                <Link href="/worker/profile">Manage Services</Link>
+                             </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
         </div>
     );
 }
