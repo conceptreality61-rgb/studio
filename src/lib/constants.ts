@@ -37,16 +37,6 @@ export const services: Service[] = [
     price: 25, // Base price per hour
     subCategories: [
       {
-        id: 'duration',
-        name: 'Select Duration',
-        type: 'single',
-        options: [
-          { id: '2-hours', name: '2 Hours' },
-          { id: '4-hours', name: '4 Hours (Half Day)' },
-          { id: '8-hours', name: '8 Hours (Full Day)' },
-        ],
-      },
-      {
         id: 'tasks',
         name: 'Select Tasks',
         type: 'multiple',
@@ -58,7 +48,17 @@ export const services: Service[] = [
           { id: 'cooking-help', name: 'Cooking Help' },
           { id: 'baby-care', name: 'Baby Care' },
         ],
-      }
+      },
+      {
+        id: 'duration',
+        name: 'Select Duration',
+        type: 'single',
+        options: [
+          { id: '2-hours', name: '2 Hours' },
+          { id: '4-hours', name: '4 Hours (Half Day)' },
+          { id: '8-hours', name: '8 Hours (Full Day)' },
+        ],
+      },
     ],
   },
   {
@@ -89,16 +89,6 @@ export const services: Service[] = [
     price: 45,
     subCategories: [
        {
-        id: 'duration',
-        name: 'Select Duration',
-        type: 'single',
-        options: [
-          { id: '1-hour', name: '1 Hour' },
-          { id: '2-hours', name: '2 Hours' },
-          { id: '4-hours', name: '4 Hours' },
-        ],
-      },
-      {
         id: 'tasks',
         name: 'Select Tasks',
         type: 'multiple',
@@ -108,7 +98,17 @@ export const services: Service[] = [
           { id: 'weeding', name: 'Weeding' },
           { id: 'planting', name: 'Planting Flowers' },
         ],
-      }
+      },
+       {
+        id: 'duration',
+        name: 'Select Duration',
+        type: 'single',
+        options: [
+          { id: '1-hour', name: '1 Hour' },
+          { id: '2-hours', name: '2 Hours' },
+          { id: '4-hours', name: '4 Hours' },
+        ],
+      },
     ]
   },
 ];
