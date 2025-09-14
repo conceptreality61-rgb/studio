@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { notFound, useRouter } from 'next/navigation';
 import { services } from '@/lib/constants';
@@ -18,14 +18,17 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
 export default function ServiceDetailPage({ params }: { params: { slug: string } }) {
-  const resolvedParams = React.use(params);
   const { user } = useAuth();
   const router = useRouter();
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string | string[]>>({});
 
-  const service = services.find((s) => s.id === resolvedParams.slug);
+  useEffect(() => {
+    setDate(new Date());
+  }, []);
+
+  const service = services.find((s) => s.id === params.slug);
 
   if (!service) {
     notFound();
