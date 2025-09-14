@@ -1,7 +1,7 @@
 
 import Link from "next/link";
 import StatCard from "@/components/dashboard/stat-card";
-import { DollarSign, Briefcase, Star, Clock, ArrowRight, CheckCircle } from 'lucide-react';
+import { DollarSign, Briefcase, Star, Clock, ArrowRight, CheckCircle, CalendarCheck } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,12 @@ const tasks = [
 ];
 
 const workerServices = ['Gardening', 'Maid Service'];
+
+const workerAvailability = {
+    from: new Date('2024-07-01'),
+    to: new Date('2024-07-31'),
+};
+
 
 export default function WorkerDashboardPage() {
     return (
@@ -64,7 +70,7 @@ export default function WorkerDashboardPage() {
                         </CardContent>
                     </Card>
                 </div>
-                <div className="lg:col-span-1">
+                <div className="lg:col-span-1 space-y-6">
                     <Card>
                         <CardHeader>
                             <CardTitle>My Services</CardTitle>
@@ -82,6 +88,30 @@ export default function WorkerDashboardPage() {
                              <Button asChild className="w-full mt-4" variant="outline">
                                 <Link href="/worker/profile">Manage Services</Link>
                              </Button>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>My Availability</CardTitle>
+                            <CardDescription>Your current work schedule.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {workerAvailability && workerAvailability.from && workerAvailability.to ? (
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+                                        <span className="font-medium">
+                                            {workerAvailability.from.toLocaleDateString()} - {workerAvailability.to.toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">You are available for tasks within this period.</p>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">You have not set your availability.</p>
+                            )}
+                            <Button asChild className="w-full mt-4">
+                                <Link href="/worker/profile">Renew / Update</Link>
+                            </Button>
                         </CardContent>
                     </Card>
                 </div>
