@@ -16,6 +16,7 @@ import { services, Service, ServiceSubCategory } from '@/lib/constants';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
+import { type DateRange } from 'react-day-picker';
 
 // Mock data, in a real app this would come from your backend
 const workerProfile = {
@@ -30,7 +31,7 @@ const workerProfile = {
     'gardening': ['lawn-mowing', 'pruning'],
     'maid-service': ['dish-cleaning'],
   },
-  availability: [],
+  availability: undefined,
 };
 
 type SelectedServices = Record<string, string[]>;
@@ -39,7 +40,7 @@ export default function WorkerProfilePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedServices, setSelectedServices] = useState<SelectedServices>(workerProfile.selectedServices);
-  const [availability, setAvailability] = useState<Date[] | undefined>(workerProfile.availability);
+  const [availability, setAvailability] = useState<DateRange | undefined>(workerProfile.availability);
 
   const handleServiceToggle = (serviceId: string, isChecked: boolean) => {
     setSelectedServices(prev => {
@@ -122,7 +123,7 @@ export default function WorkerProfilePage() {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="pl-8 space-y-4 pt-2">
+                      <div className="pl-4 space-y-4 pt-2">
                         <div className="flex items-center space-x-2">
                           <Checkbox
                               id={`service-${service.id}`}
@@ -132,7 +133,7 @@ export default function WorkerProfilePage() {
                           <Label htmlFor={`service-${service.id}`} className="font-semibold">Enable this service</Label>
                         </div>
                         {service.subCategories?.map(subCat => (
-                          <div key={subCat.id}>
+                          <div key={subCat.id} className="pl-4">
                             <h4 className="font-semibold text-sm mb-2">{subCat.name}</h4>
                             {subCat.options.map(option => (
                               <div key={option.id} className="flex items-center space-x-2 mb-2">
@@ -157,7 +158,7 @@ export default function WorkerProfilePage() {
               <Label>Set Your Availability</Label>
                <div className="flex justify-center rounded-md border">
                 <Calendar
-                    mode="multiple"
+                    mode="range"
                     selected={availability}
                     onSelect={setAvailability}
                     disabled={(day) => day < new Date(new Date().setDate(new Date().getDate() - 1))}
