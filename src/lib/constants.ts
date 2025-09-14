@@ -119,6 +119,15 @@ export const services: Service[] = [
     price: 70, // Base price
     subCategories: [
       {
+        id: 'tank-type',
+        name: 'Select Tank Type',
+        type: 'single',
+        options: [
+          { id: 'type-overhead', name: 'Overhead Plastic/Syntax' },
+          { id: 'type-underground', name: 'Underground Concrete' },
+        ],
+      },
+       {
         id: 'tank-size',
         name: 'Select Tank Size',
         type: 'single',
@@ -126,15 +135,6 @@ export const services: Service[] = [
           { id: 'size-small', name: 'Up to 500L' },
           { id: 'size-medium', name: '500L - 1000L' },
           { id: 'size-large', name: 'Over 1000L' },
-        ],
-      },
-       {
-        id: 'tank-type',
-        name: 'Select Tank Type',
-        type: 'single',
-        options: [
-          { id: 'type-overhead', name: 'Overhead Plastic/Syntax' },
-          { id: 'type-underground', name: 'Underground Concrete' },
         ],
       },
     ]
