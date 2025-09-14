@@ -12,12 +12,14 @@ const allTasks = [
     { id: 'TSK003', service: 'Bathroom Cleaning', customer: 'Emma Brown', date: '2023-06-22', status: 'Completed' },
     { id: 'TSK004', service: 'Tank Cleaning', customer: 'Noah Williams', date: '2023-06-20', status: 'Completed' },
     { id: 'TSK005', service: 'Maid Service', customer: 'Ava Jones', date: '2023-06-28', status: 'Upcoming' },
+    { id: 'TSK006', service: 'Bathroom Cleaning', customer: 'Emma Brown', date: '2023-06-26', status: 'Pending Admin Approval' },
 ];
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
   Completed: "default",
   "In Progress": "secondary",
   Upcoming: "outline",
+  "Pending Admin Approval": "outline",
 };
 
 export default function AllTasksPage() {

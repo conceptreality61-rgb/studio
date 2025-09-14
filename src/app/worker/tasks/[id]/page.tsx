@@ -11,10 +11,22 @@ import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 
-type TaskStatus = 'Upcoming' | 'In Progress' | 'Completed' | 'Pending Confirmation';
+type TaskStatus = 'Upcoming' | 'In Progress' | 'Completed' | 'Pending Confirmation' | 'Pending Admin Approval' | 'Available';
+
+// Mock data, in a real app this would come from your backend
+const taskDetails = {
+    'TSK001': { status: 'In Progress', description: 'General garden maintenance including lawn mowing, weeding the front flower beds, and pruning the rose bushes. Customer has a lawnmower available in the shed.' },
+    'TSK002': { status: 'Upcoming', description: 'Standard maid service for a 3-bedroom house. Focus on kitchen and bathrooms.' },
+    'TSK003': { status: 'Completed', description: 'Deep clean of two bathrooms.' },
+    'TSK004': { status: 'Completed', description: 'Cleaning of a 1000L overhead water tank.' },
+    'TSK005': { status: 'Upcoming', description: 'Weekly maid service.' },
+    'TSK006': { status: 'Pending Admin Approval', description: 'Deep clean of one bathroom.' },
+    'TSK007': { status: 'Available', description: 'Full day maid service required.' },
+};
 
 export default function TaskDetailPage({ params }: { params: { id: string } }) {
-    const [status, setStatus] = useState<TaskStatus>('In Progress');
+    const taskData = taskDetails[params.id as keyof typeof taskDetails] || { status: 'Upcoming', description: 'No details available.' };
+    const [status, setStatus] = useState<TaskStatus>(taskData.status as TaskStatus);
     const { toast } = useToast();
     const router = useRouter();
 
@@ -28,8 +40,18 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
         toast({ title: 'Task Marked as Complete', description: 'Waiting for admin confirmation.' });
     };
     
-    // This would be fetched from your backend
-    const isApproved = status === 'In Progress' || status === 'Completed' || status === 'Pending Confirmation';
+    const isApproved = status !== 'Pending Admin Approval' && status !== 'Available';
+    const canStart = status === 'Upcoming' && isApproved;
+    
+    const getStatusVariant = () => {
+        switch (status) {
+            case 'In Progress': return 'secondary';
+            case 'Completed': return 'default';
+            case 'Pending Admin Approval': return 'outline';
+            case 'Upcoming': return 'outline';
+            default: return 'outline';
+        }
+    };
 
     return (
         <div className="grid lg:grid-cols-3 gap-6">
@@ -41,7 +63,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                                 <CardTitle>Task Details: #{params.id}</CardTitle>
                                 <CardDescription>Gardening for Olivia Smith</CardDescription>
                             </div>
-                             <Badge variant={status === 'In Progress' ? 'secondary' : status === 'Completed' ? 'default' : 'outline'}>{status}</Badge>
+                             <Badge variant={getStatusVariant()}>{status}</Badge>
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -71,20 +93,20 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                                 <Phone className="h-5 w-5 mt-1 text-muted-foreground" />
                                 <div>
                                     <p className="font-semibold">Contact</p>
-                                    <p className="text-muted-foreground">{isApproved ? '(555) 123-4567' : 'Protected'}</p>
+                                    <p className="text-muted-foreground">{status === 'In Progress' ? '(555) 123-4567' : 'Protected'}</p>
                                 </div>
                             </div>
                         </div>
                         <Separator className="my-6" />
                         <div>
                             <h4 className="font-semibold mb-2">Task Description</h4>
-                            <p className="text-muted-foreground">General garden maintenance including lawn mowing, weeding the front flower beds, and pruning the rose bushes. Customer has a lawnmower available in the shed.</p>
+                            <p className="text-muted-foreground">{taskData.description}</p>
                         </div>
                          <div className="mt-6 flex gap-2">
-                             {status === 'Upcoming' && isApproved && <Button onClick={handleStartTask}>Start Task</Button>}
+                             {canStart && <Button onClick={handleStartTask}>Start Task</Button>}
                              {status === 'In Progress' && <Button onClick={handleCompleteTask}><Check className="mr-2" /> Mark as Complete</Button>}
-                             {(status === 'Upcoming' && !isApproved) && <Button variant="outline" disabled>Awaiting Admin Approval</Button>}
-                             {status === 'Pending Confirmation' && <Button variant="outline" disabled>Waiting for Admin</Button>}
+                             {status === 'Pending Admin Approval' && <Button variant="outline" disabled>Awaiting Admin Approval</Button>}
+                             {status === 'Pending Confirmation' && <Button variant="outline" disabled>Waiting for Admin Confirmation</Button>}
                              {status === 'Completed' && <Button variant="ghost" disabled>Task Completed</Button>}
                          </div>
                     </CardContent>
