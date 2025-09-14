@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/use-auth";
 const recentBookings = [
     { id: 'BK001', service: 'Maid Service', date: '2023-06-23', status: 'Completed', amount: '$50.00' },
     { id: 'BK002', service: 'Gardening', date: '2023-06-24', status: 'In Progress', amount: '$90.00' },
+    { id: 'BK006', service: 'Gardening', date: '2023-06-29', status: 'Canceled', amount: '$45.00' },
 ];
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
