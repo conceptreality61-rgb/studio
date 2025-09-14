@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero",
+      "description": "A bright and clean modern living room",
+      "imageUrl": "https://picsum.photos/seed/cleansweep-hero/1280/720",
+      "imageHint": "clean livingroom"
+    },
+    {
+      "id": "maid-service",
+      "description": "A person professionally cleaning a home.",
+      "imageUrl": "https://picsum.photos/seed/maid-service/600/400",
+      "imageHint": "maid cleaning"
+    },
+    {
+      "id": "bathroom-cleaning",
+      "description": "A sparkling clean modern bathroom.",
+      "imageUrl": "https://picsum.photos/seed/bathroom-cleaning/600/400",
+      "imageHint": "clean bathroom"
+    },
+    {
+      "id": "tank-cleaning",
+      "description": "A large, clean water tank.",
+      "imageUrl": "https://picsum.photos/seed/tank-cleaning/600/400",
+      "imageHint": "water tank"
+    },
+    {
+      "id": "gardening",
+      "description": "A well-maintained, beautiful garden.",
+      "imageUrl": "https://picsum.photos/seed/gardening/600/400",
+      "imageHint": "manicured garden"
+    },
+    {
+      "id": "worker-profile",
+      "description": "Profile picture of a service worker.",
+      "imageUrl": "https://picsum.photos/seed/worker1/100/100",
+      "imageHint": "person smiling"
+    }
+  ]
 }
