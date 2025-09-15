@@ -33,7 +33,7 @@ export default function MainHeader() {
   }
 
   return (
-    <header className="bg-background/80 backdrop-blur-sm sticky top-0 z-40 border-b">
+    <header className="bg-card sticky top-0 z-40 border-b">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/">
           <Logo className="text-primary" />
