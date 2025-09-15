@@ -1,0 +1,27 @@
+
+'use server';
+
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+
+export async function createBooking(bookingData: {
+  serviceId: string;
+  serviceName: string;
+  servicePrice: number;
+  date: Date;
+  time: string;
+  options: Record<string, string | string[]>;
+  userId: string;
+  status: string;
+}) {
+  try {
+    const docRef = await addDoc(collection(db, 'bookings'), {
+      ...bookingData,
+      createdAt: serverTimestamp(),
+    });
+    return { success: true, bookingId: docRef.id };
+  } catch (error) {
+    console.error('Error creating booking: ', error);
+    return { success: false, error: 'Failed to create booking.' };
+  }
+}

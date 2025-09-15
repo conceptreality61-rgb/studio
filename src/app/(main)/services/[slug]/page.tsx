@@ -9,25 +9,28 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Clock } from 'lucide-react';
+import { Clock, Loader2 } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { createBooking } from './actions';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ServiceDetailPage() {
   const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const { toast } = useToast();
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string | string[]>>({});
   const [isClient, setIsClient] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
-    setDate(new Date());
   }, []);
 
   const service = services.find((s) => s.id === params.slug);
@@ -54,7 +57,7 @@ export default function ServiceDetailPage() {
   };
 
   const isBookingDisabled = () => {
-    if (!date || !selectedTime) return true;
+    if (!date || !selectedTime || isBooking) return true;
     if (service.subCategories) {
       for (const subCategory of service.subCategories) {
         const selection = selectedOptions[subCategory.id];
@@ -66,16 +69,40 @@ export default function ServiceDetailPage() {
     return false;
   };
 
-  const handleBooking = () => {
+  const handleBooking = async () => {
+    if (!user || !date || !selectedTime) return;
+
     if (user) {
-      // Proceed with booking logic, now including selectedOptions
-      console.log({
-        serviceId: service.id,
-        date,
-        time: selectedTime,
-        options: selectedOptions,
-      });
-      router.push('/customer/bookings');
+      setIsBooking(true);
+      try {
+        const result = await createBooking({
+          userId: user.uid,
+          serviceId: service.id,
+          serviceName: service.name,
+          servicePrice: service.price,
+          date,
+          time: selectedTime,
+          options: selectedOptions,
+          status: 'Pending Manager Approval',
+        });
+
+        if (result.success) {
+          toast({
+            title: 'Booking Successful!',
+            description: `Your booking for ${service.name} has been confirmed.`,
+          });
+          router.push('/customer/bookings');
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Booking Failed',
+          description: 'There was a problem creating your booking. Please try again.',
+        });
+        setIsBooking(false);
+      }
     } else {
       router.push('/login');
     }
@@ -183,9 +210,10 @@ export default function ServiceDetailPage() {
                 </div>
 
                 <Button size="lg" className="w-full mt-6" disabled={isBookingDisabled()} onClick={handleBooking}>
-                  {user ? 'Confirm Booking' : 'Log in to Book'}
+                  {isBooking && <Loader2 className="animate-spin" />}
+                  {user ? (isBooking ? 'Booking...' : 'Confirm Booking') : 'Log in to Book'}
                 </Button>
-                {isBookingDisabled() && <p className="text-center text-sm text-muted-foreground mt-2">Please select a date, time, and all required options.</p>}
+                {isBookingDisabled() && !isBooking && <p className="text-center text-sm text-muted-foreground mt-2">Please select a date, time, and all required options.</p>}
               </CardContent>
             </Card>
           </div>

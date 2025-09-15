@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, Star, XCircle, PlusCircle } from "lucide-react";
+import { ArrowRight, Star, XCircle, PlusCircle, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,17 +19,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
-
-const initialBookings: any[] = [
-    // { id: 'BK001', service: 'Maid Service', date: '2023-06-23T10:00:00Z', status: 'Completed', amount: '$50.00' },
-    // { id: 'BK002', service: 'Gardening', date: '2024-08-15T18:00:00Z', status: 'Worker Assigned', amount: '$90.00' },
-    // { id: 'BK003', service: 'Tank Cleaning', date: '2023-05-12T14:00:00Z', status: 'Completed', amount: '$70.00' },
-    // { id: 'BK004', service: 'Bathroom Cleaning', date: '2023-04-18T09:00:00Z', status: 'Completed', amount: '$35.00' },
-    // { id: 'BK005', service: 'Maid Service', date: '2024-09-01T10:00:00Z', status: 'Pending Manager Approval', amount: '$50.00' },
-    // { id: 'BK006', service: 'Gardening', date: '2023-06-29T16:00:00Z', status: 'Canceled', amount: '$45.00' },
-    // { id: 'BK007', service: 'Maid Service', date: '2024-08-20T12:00:00Z', status: 'Worker Assigned', amount: '$75.00' },
-];
+type Booking = {
+  id: string;
+  serviceName: string;
+  date: Timestamp;
+  status: string;
+  servicePrice: number;
+  time: string;
+};
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
   Completed: "default",
@@ -40,15 +42,39 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 };
 
 export default function BookingsPage() {
-  const [bookings, setBookings] = useState(initialBookings);
+  const { user } = useAuth();
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
   const { toast } = useToast();
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    const fetchBookings = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      };
+      
+      try {
+        const q = query(collection(db, 'bookings'), where('userId', '==', user.uid));
+        const querySnapshot = await getDocs(q);
+        const userBookings = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
+        setBookings(userBookings.sort((a, b) => b.date.toMillis() - a.date.toMillis()));
+      } catch (error) {
+        console.error("Error fetching bookings: ", error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not fetch your bookings.',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, [user, toast]);
 
 
   const handleCancelClick = (bookingId: string) => {
@@ -56,21 +82,39 @@ export default function BookingsPage() {
     setIsAlertOpen(true);
   };
 
-  const handleConfirmCancel = () => {
+  const handleConfirmCancel = async () => {
     if (bookingToCancel) {
-      setBookings(currentBookings =>
-        currentBookings.map(b =>
-          b.id === bookingToCancel ? { ...b, status: 'Canceled' } : b
-        )
-      );
-      toast({
-        title: "Booking Canceled",
-        description: `Your booking #${bookingToCancel} has been successfully canceled.`,
-      });
+        try {
+            const bookingRef = doc(db, 'bookings', bookingToCancel);
+            await updateDoc(bookingRef, { status: 'Canceled' });
+
+            setBookings(currentBookings =>
+                currentBookings.map(b =>
+                b.id === bookingToCancel ? { ...b, status: 'Canceled' } : b
+                )
+            );
+            toast({
+                title: "Booking Canceled",
+                description: `Your booking #${bookingToCancel.substring(0, 6)}... has been successfully canceled.`,
+            });
+        } catch (error) {
+             toast({
+                variant: 'destructive',
+                title: "Error",
+                description: `Failed to cancel booking.`,
+            });
+        }
     }
     setIsAlertOpen(false);
     setBookingToCancel(null);
   };
+  
+  const formatDate = (timestamp: Timestamp) => {
+    if (!timestamp) return 'N/A';
+    const date = timestamp.toDate();
+    return date.toLocaleString();
+  }
+
 
   return (
     <>
@@ -80,12 +124,18 @@ export default function BookingsPage() {
           <CardDescription>View your booking history and leave reviews for completed services.</CardDescription>
         </CardHeader>
         <CardContent>
-          {bookings.length > 0 ? (
+          {loading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : bookings.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Service</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>Date & Time</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   <TableHead></TableHead>
@@ -94,12 +144,12 @@ export default function BookingsPage() {
               <TableBody>
                 {bookings.map((booking) => (
                   <TableRow key={booking.id}>
-                    <TableCell className="font-medium">{booking.service}</TableCell>
-                    <TableCell>{isClient ? new Date(booking.date).toLocaleString() : ''}</TableCell>
+                    <TableCell className="font-medium">{booking.serviceName}</TableCell>
+                    <TableCell>{formatDate(booking.date)} at {booking.time}</TableCell>
                     <TableCell>
                       <Badge variant={statusVariant[booking.status] || 'default'}>{booking.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-right">{booking.amount}</TableCell>
+                    <TableCell className="text-right">Rs.{booking.servicePrice}/hr</TableCell>
                     <TableCell className="text-right">
                       {booking.status === 'Completed' ? (
                         <Button variant="outline" size="sm" asChild>
