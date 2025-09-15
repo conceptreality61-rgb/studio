@@ -108,7 +108,7 @@ export default function HomePage() {
                   {services.map((service) => (
                     <li key={service.id} className="flex justify-between items-center border-b pb-2">
                       <span className="text-lg">{service.name}</span>
-                      <span className="text-lg font-bold text-primary">${service.price}/hr</span>
+                      <span className="text-lg font-bold text-primary">₹{service.price}/hr</span>
                     </li>
                   ))}
                 </ul>
