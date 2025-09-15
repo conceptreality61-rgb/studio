@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "hero",
-      "description": "A bright and clean modern living room",
+      "description": "A beautiful home",
       "imageUrl": "https://picsum.photos/seed/cleansweep-hero/1280/720",
-      "imageHint": "clean livingroom"
+      "imageHint": "beautiful home"
     },
     {
       "id": "maid-service",
