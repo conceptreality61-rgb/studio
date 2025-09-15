@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, PlusCircle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
-const recentBookings = [
-    { id: 'BK001', service: 'Maid Service', date: '2023-06-23', status: 'Completed', amount: '$50.00' },
-    { id: 'BK002', service: 'Gardening', date: '2023-06-24', status: 'In Progress', amount: '$90.00' },
-    { id: 'BK006', service: 'Gardening', date: '2023-06-29', status: 'Canceled', amount: '$45.00' },
+const recentBookings: any[] = [
+    // { id: 'BK001', service: 'Maid Service', date: '2023-06-23', status: 'Completed', amount: '$50.00' },
+    // { id: 'BK002', service: 'Gardening', date: '2023-06-24', status: 'In Progress', amount: '$90.00' },
+    // { id: 'BK006', service: 'Gardening', date: '2023-06-29', status: 'Canceled', amount: '$45.00' },
 ];
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
@@ -32,34 +32,40 @@ export default function CustomerDashboardPage() {
       </CardHeader>
       <CardContent>
         <h3 className="font-semibold mb-4">Recent Bookings</h3>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Service</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {recentBookings.map((booking) => (
-              <TableRow key={booking.id}>
-                <TableCell className="font-medium">{booking.service}</TableCell>
-                <TableCell>{booking.date}</TableCell>
-                <TableCell>
-                  <Badge variant={statusVariant[booking.status] || 'default'}>{booking.status}</Badge>
-                </TableCell>
-                <TableCell className="text-right">{booking.amount}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" asChild>
-                    <Link href={`/customer/orders/${booking.id}`}><ArrowRight className="h-4 w-4" /></Link>
-                  </Button>
-                </TableCell>
+        {recentBookings.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Service</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead></TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {recentBookings.map((booking) => (
+                <TableRow key={booking.id}>
+                  <TableCell className="font-medium">{booking.service}</TableCell>
+                  <TableCell>{booking.date}</TableCell>
+                  <TableCell>
+                    <Badge variant={statusVariant[booking.status] || 'default'}>{booking.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">{booking.amount}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/customer/orders/${booking.id}`}><ArrowRight className="h-4 w-4" /></Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="text-center text-muted-foreground py-8">
+            <p>No recent bookings to display.</p>
+          </div>
+        )}
       </CardContent>
        <CardFooter className="border-t pt-6">
           <Button asChild>

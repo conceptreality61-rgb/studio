@@ -2,12 +2,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, Star, XCircle } from "lucide-react";
+import { ArrowRight, Star, XCircle, PlusCircle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,14 +21,14 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 
-const initialBookings = [
-    { id: 'BK001', service: 'Maid Service', date: '2023-06-23T10:00:00Z', status: 'Completed', amount: '$50.00' },
-    { id: 'BK002', service: 'Gardening', date: '2024-08-15T18:00:00Z', status: 'Worker Assigned', amount: '$90.00' },
-    { id: 'BK003', service: 'Tank Cleaning', date: '2023-05-12T14:00:00Z', status: 'Completed', amount: '$70.00' },
-    { id: 'BK004', service: 'Bathroom Cleaning', date: '2023-04-18T09:00:00Z', status: 'Completed', amount: '$35.00' },
-    { id: 'BK005', service: 'Maid Service', date: '2024-09-01T10:00:00Z', status: 'Pending Manager Approval', amount: '$50.00' },
-    { id: 'BK006', service: 'Gardening', date: '2023-06-29T16:00:00Z', status: 'Canceled', amount: '$45.00' },
-    { id: 'BK007', service: 'Maid Service', date: '2024-08-20T12:00:00Z', status: 'Worker Assigned', amount: '$75.00' },
+const initialBookings: any[] = [
+    // { id: 'BK001', service: 'Maid Service', date: '2023-06-23T10:00:00Z', status: 'Completed', amount: '$50.00' },
+    // { id: 'BK002', service: 'Gardening', date: '2024-08-15T18:00:00Z', status: 'Worker Assigned', amount: '$90.00' },
+    // { id: 'BK003', service: 'Tank Cleaning', date: '2023-05-12T14:00:00Z', status: 'Completed', amount: '$70.00' },
+    // { id: 'BK004', service: 'Bathroom Cleaning', date: '2023-04-18T09:00:00Z', status: 'Completed', amount: '$35.00' },
+    // { id: 'BK005', service: 'Maid Service', date: '2024-09-01T10:00:00Z', status: 'Pending Manager Approval', amount: '$50.00' },
+    // { id: 'BK006', service: 'Gardening', date: '2023-06-29T16:00:00Z', status: 'Canceled', amount: '$45.00' },
+    // { id: 'BK007', service: 'Maid Service', date: '2024-08-20T12:00:00Z', status: 'Worker Assigned', amount: '$75.00' },
 ];
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
@@ -80,48 +80,61 @@ export default function BookingsPage() {
           <CardDescription>View your booking history and leave reviews for completed services.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Service</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bookings.map((booking) => (
-                <TableRow key={booking.id}>
-                  <TableCell className="font-medium">{booking.service}</TableCell>
-                  <TableCell>{isClient ? new Date(booking.date).toLocaleString() : ''}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant[booking.status] || 'default'}>{booking.status}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">{booking.amount}</TableCell>
-                  <TableCell className="text-right">
-                    {booking.status === 'Completed' ? (
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/customer/review/${booking.id}`}>
-                          <Star className="mr-2 h-4 w-4" />
-                          Leave a Review
-                        </Link>
-                      </Button>
-                    ) : !['Completed', 'Canceled'].includes(booking.status) ? (
-                      <Button variant="destructive" size="sm" onClick={() => handleCancelClick(booking.id)}>
-                        <XCircle className="mr-2 h-4 w-4" />
-                        Cancel
-                      </Button>
-                    ) : (
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/customer/orders/${booking.id}`}><ArrowRight className="h-4 w-4" /></Link>
-                      </Button>
-                    )}
-                  </TableCell>
+          {bookings.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Service</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {bookings.map((booking) => (
+                  <TableRow key={booking.id}>
+                    <TableCell className="font-medium">{booking.service}</TableCell>
+                    <TableCell>{isClient ? new Date(booking.date).toLocaleString() : ''}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant[booking.status] || 'default'}>{booking.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">{booking.amount}</TableCell>
+                    <TableCell className="text-right">
+                      {booking.status === 'Completed' ? (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/customer/review/${booking.id}`}>
+                            <Star className="mr-2 h-4 w-4" />
+                            Leave a Review
+                          </Link>
+                        </Button>
+                      ) : !['Completed', 'Canceled'].includes(booking.status) ? (
+                        <Button variant="destructive" size="sm" onClick={() => handleCancelClick(booking.id)}>
+                          <XCircle className="mr-2 h-4 w-4" />
+                          Cancel
+                        </Button>
+                      ) : (
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link href={`/customer/orders/${booking.id}`}><ArrowRight className="h-4 w-4" /></Link>
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+             <div className="text-center text-muted-foreground py-12">
+                <p className='text-lg mb-2'>You have no bookings yet.</p>
+                <p className='mb-4'>Book a service to see it here.</p>
+                <Button asChild>
+                    <Link href="/#services">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Book New Service
+                    </Link>
+                </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
