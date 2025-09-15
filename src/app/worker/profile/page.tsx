@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, CheckCircle, Calendar as CalendarIcon } from 'lucide-react';
+import { Upload, CheckCircle, Calendar as CalendarIcon, Camera } from 'lucide-react';
 import { services, Service, ServiceSubCategory } from '@/lib/constants';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -42,10 +42,23 @@ export default function WorkerProfilePage() {
   const [selectedServices, setSelectedServices] = useState<SelectedServices>(workerProfile.selectedServices);
   const [availability, setAvailability] = useState<DateRange | undefined>(workerProfile.availability);
   const [isClient, setIsClient] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
 
   const handleServiceToggle = (serviceId: string, isChecked: boolean) => {
@@ -78,8 +91,8 @@ export default function WorkerProfilePage() {
 
   const handleSaveChanges = (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic to save changes would go here
-    console.log({ selectedServices, availability });
+    // Logic to save changes would go here, including uploading the new avatar if one was selected
+    console.log({ selectedServices, availability, avatar: avatarPreview ? 'new avatar selected' : 'no change' });
     toast({
       title: 'Profile Updated',
       description: 'Your changes have been saved successfully.',
@@ -97,10 +110,26 @@ export default function WorkerProfilePage() {
       <form onSubmit={handleSaveChanges}>
         <CardHeader>
           <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={user?.photoURL ?? `https://i.pravatar.cc/128?u=${user?.uid}`} />
-              <AvatarFallback>{user?.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
+            <div className="relative group">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={avatarPreview ?? user?.photoURL ?? `https://i.pravatar.cc/128?u=${user?.uid}`} />
+                <AvatarFallback>{user?.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Camera className="h-6 w-6 text-white" />
+              </button>
+              <Input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleAvatarChange}
+                className="hidden"
+                accept="image/*"
+              />
+            </div>
             <div>
               <CardTitle className="text-3xl">{user?.displayName}</CardTitle>
               <CardDescription className="text-base">{user?.email}</CardDescription>
