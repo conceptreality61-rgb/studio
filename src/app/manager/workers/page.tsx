@@ -1,4 +1,7 @@
 
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,22 +15,60 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, where, Timestamp } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const workers = [
-    { id: 'W001', name: 'Jane Smith', joinDate: '2023-01-10', rating: '4.9', status: 'Verified', tasks: 32 },
-    { id: 'W002', name: 'John Doe', joinDate: '2023-02-15', rating: '4.8', status: 'Verified', tasks: 28 },
-    { id: 'W003', name: 'Lucas Hernandez', joinDate: '2023-06-01', rating: 'N/A', status: 'Pending', tasks: 0 },
-    { id: 'W004', name: 'Maria Garcia', joinDate: '2023-05-20', rating: '4.7', status: 'Verified', tasks: 15 },
-    { id: 'W005', name: 'Chen Wei', joinDate: '2023-04-12', rating: 'N/A', status: 'Rejected', tasks: 0 },
-];
+type Worker = {
+    id: string;
+    displayName: string;
+    createdAt: Timestamp;
+    rating: number;
+    verificationStatus: 'Approved' | 'Pending' | 'Rejected';
+    tasksCompleted: number;
+};
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
-  Verified: "default",
+  Approved: "default",
   Pending: "secondary",
   Rejected: "destructive",
 };
 
 export default function ManagerWorkersPage() {
+    const [workers, setWorkers] = useState<Worker[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchWorkers = async () => {
+            try {
+                const q = query(collection(db, 'users'), where('role', '==', 'worker'));
+                const querySnapshot = await getDocs(q);
+                const workersData = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        displayName: data.displayName || 'N/A',
+                        createdAt: data.createdAt,
+                        rating: data.rating || 0,
+                        verificationStatus: data.verificationStatus || 'Pending',
+                        tasksCompleted: data.tasksCompleted || 0,
+                    } as Worker;
+                });
+                setWorkers(workersData);
+            } catch (error) {
+                console.error("Error fetching workers:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchWorkers();
+    }, []);
+
+    const formatDate = (timestamp?: Timestamp) => {
+        if (!timestamp) return 'N/A';
+        return timestamp.toDate().toLocaleDateString();
+    }
+
   return (
     <Card>
       <CardHeader>
@@ -35,55 +76,61 @@ export default function ManagerWorkersPage() {
         <CardDescription>Manage your team of service providers.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Worker ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Join Date</TableHead>
-              <TableHead>Rating</TableHead>
-              <TableHead>Completed Tasks</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>
-                <span className="sr-only">Actions</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {workers.map((worker) => (
-              <TableRow key={worker.id}>
-                <TableCell className="font-medium">{worker.id}</TableCell>
-                <TableCell>{worker.name}</TableCell>
-                <TableCell>{worker.joinDate}</TableCell>
-                <TableCell>{worker.rating}</TableCell>
-                <TableCell>{worker.tasks}</TableCell>
-                <TableCell>
-                  <Badge variant={statusVariant[worker.status] || 'default'}>{worker.status}</Badge>
-                </TableCell>
-                 <TableCell>
-                   <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                         {worker.status === 'Pending' && (
-                            <DropdownMenuItem asChild>
-                               <Link href={`/manager/workers/verify/${worker.id}`}>Verify Application</Link>
-                            </DropdownMenuItem>
-                         )}
-                        <DropdownMenuItem>View Profile</DropdownMenuItem>
-                        <DropdownMenuItem>Message</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        {loading ? (
+            <div className="space-y-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+            </div>
+        ) : (
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead>Worker Name</TableHead>
+                <TableHead>Join Date</TableHead>
+                <TableHead>Rating</TableHead>
+                <TableHead>Completed Tasks</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>
+                    <span className="sr-only">Actions</span>
+                </TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {workers.map((worker) => (
+                <TableRow key={worker.id}>
+                    <TableCell className="font-medium">{worker.displayName}</TableCell>
+                    <TableCell>{formatDate(worker.createdAt)}</TableCell>
+                    <TableCell>{worker.rating.toFixed(1)}</TableCell>
+                    <TableCell>{worker.tasksCompleted}</TableCell>
+                    <TableCell>
+                    <Badge variant={statusVariant[worker.verificationStatus] || 'secondary'}>{worker.verificationStatus}</Badge>
+                    </TableCell>
+                    <TableCell>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            {worker.verificationStatus === 'Pending' && (
+                                <DropdownMenuItem asChild>
+                                <Link href={`/manager/workers/verify/${worker.id}`}>Verify Application</Link>
+                                </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem>View Profile</DropdownMenuItem>
+                            <DropdownMenuItem>Message</DropdownMenuItem>
+                        </DropdownMenuContent>
+                        </DropdownMenu>
+                    </TableCell>
+                </TableRow>
+                ))}
+            </TableBody>
+            </Table>
+        )}
       </CardContent>
     </Card>
   );

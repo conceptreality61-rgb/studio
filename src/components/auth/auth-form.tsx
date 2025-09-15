@@ -8,7 +8,8 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -50,23 +51,34 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
             return;
         }
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, { displayName: name || 'Super Manager' });
-        // Here you would typically save role and other info to a database like Firestore
+        const user = userCredential.user;
+        await updateProfile(user, { displayName: name || (role === 'manager' ? 'Super Manager' : 'New User') });
+
+        // Save user role and other info to Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+            uid: user.uid,
+            email: user.email,
+            displayName: name || (role === 'manager' ? 'Super Manager' : 'New User'),
+            role: role,
+            createdAt: serverTimestamp(),
+            ...(role === 'worker' && { verificationStatus: 'Pending' })
+        });
+        
         toast({ title: 'Account created successfully!' });
         onAuthSuccess(role);
       } else {
-        if (role === 'manager' && email !== SUPERADMIN_EMAIL) {
-             toast({
-                variant: 'destructive',
-                title: 'Authentication Error',
-                description: 'You are not authorized to log in as a manager.',
-            });
-            setIsLoading(false);
-            return;
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Check user role from Firestore
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists() && userDoc.data().role === role) {
+            toast({ title: 'Logged in successfully!' });
+            onAuthSuccess(role);
+        } else {
+            await auth.signOut();
+            throw new Error(`You are not authorized to log in as a ${role}.`);
         }
-        await signInWithEmailAndPassword(auth, email, password);
-        toast({ title: 'Logged in successfully!' });
-        onAuthSuccess(role);
       }
     } catch (error: any) {
       toast({
@@ -83,26 +95,29 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {isSignUp && (
+      {isSignUp && role !== 'manager' && (
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
-            <Input id="name" name="name" placeholder="John Doe" required={role !== 'manager'} />
+            <Input id="name" name="name" placeholder="John Doe" required />
+          </div>
+      )}
+       {isSignUp && role === 'manager' && (
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input id="name" name="name" placeholder="Super Manager" defaultValue="Super Manager" />
           </div>
       )}
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+        <Input id="email" name="email" type="email" placeholder="m@example.com" required 
+            defaultValue={role === 'manager' ? SUPERADMIN_EMAIL : ''}
+            readOnly={role === 'manager'}
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
         <Input id="password" name="password" type="password" required />
       </div>
-      {isSignUp && role === 'worker' && (
-        <div className="space-y-2">
-          <Label htmlFor="worker-skills">Skills</Label>
-          <Input id="worker-skills" name="worker-skills" placeholder="e.g., Cleaning, Gardening" />
-        </div>
-      )}
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? <Loader2 className="animate-spin" /> : buttonText}
       </Button>
@@ -117,7 +132,15 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
   const title = isSignUp ? 'Create an Account' : 'Welcome Back';
   const description = isSignUp ? "Choose your role and let's get started." : 'Log in to access your dashboard.';
 
-  const handleAuthSuccess = (role: Role) => {
+  const handleAuthSuccess = async (role: Role) => {
+    // Check if user exists in Firestore, if not, wait a bit for replication
+    if (auth.currentUser) {
+        const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+        if (!userDoc.exists()) {
+            await new Promise(res => setTimeout(res, 1000));
+        }
+    }
+
     const getRedirectPath = (selectedRole: Role) => {
       switch (selectedRole) {
         case 'manager':
@@ -129,6 +152,7 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
       }
     };
     router.push(getRedirectPath(role));
+    router.refresh(); // Force a refresh to ensure layout gets user data
   }
 
   const onTabChange = (value: string) => {

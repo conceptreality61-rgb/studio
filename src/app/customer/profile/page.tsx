@@ -9,31 +9,34 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { CreditCard, Landmark, Smartphone } from 'lucide-react';
+import { CreditCard, Landmark, Smartphone, Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { countries } from '@/lib/countries';
+import React, { useState, useEffect } from 'react';
+import { db, auth } from '@/lib/firebase';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { updateProfile } from 'firebase/auth';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Mock data, in a real app this would come from your backend
-const customerProfile = {
-  mobile: {
-    countryCode: '+1',
-    countryName: 'United States',
-    number: '5551234567'
-  },
-  landline: {
-    countryCode: '+1',
-    countryName: 'United States',
-    number: '5559876543'
-  },
-  address: '123 Maple Street, Anytown, USA',
-  paymentMethod: {
-    cardType: 'Visa',
-    last4: '1234',
-    expiry: '12/26',
-  },
-  upiId: 'user@bank',
-  netBankingBank: 'sbi'
+type UserProfile = {
+  displayName?: string;
+  mobile?: {
+    countryCode: string;
+    number: string;
+  };
+  landline?: {
+    countryCode: string;
+    number: string;
+  };
+  address?: string;
+  paymentMethod?: {
+    cardType: string;
+    last4: string;
+    expiry: string;
+  };
+  upiId?: string;
+  netBankingBank?: string;
 };
 
 const banks = [
@@ -47,28 +50,106 @@ const banks = [
 export default function CustomerProfilePage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const handleSaveChanges = (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            setProfile(userDoc.data() as UserProfile);
+          } else {
+            // If no profile exists, create one with basic info
+            const initialProfile = {
+              displayName: user.displayName || '',
+              email: user.email || '',
+            };
+            setProfile(initialProfile);
+          }
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+          toast({ variant: 'destructive', title: "Error", description: "Could not fetch your profile." });
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [user, toast]);
+
+  const handleInputChange = (field: keyof UserProfile, value: any) => {
+    setProfile(p => ({ ...p, [field]: value }));
+  };
+
+  const handleNestedInputChange = (parent: keyof UserProfile, field: string, value: string) => {
+      setProfile(p => ({
+          ...p,
+          [parent]: {
+              ...(p?.[parent] as object || {}),
+              [field]: value
+          }
+      }));
+  };
+
+  const handleSaveChanges = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const mobileInput = form.elements.namedItem('mobile-number') as HTMLInputElement;
-    const mobileNumber = mobileInput.value;
+    if (!user || !profile) return;
+    setSaving(true);
 
-    if (mobileNumber && !/^\d{10}$/.test(mobileNumber)) {
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      
+      const { displayName, ...profileData } = profile;
+
+      // Update Firestore document
+      await setDoc(userRef, profileData, { merge: true });
+
+      // Update auth profile if name changed
+      if (auth.currentUser && displayName && auth.currentUser.displayName !== displayName) {
+        await updateProfile(auth.currentUser, { displayName });
+      }
+
+      toast({
+        title: 'Profile Updated',
+        description: 'Your changes have been saved successfully.',
+      });
+    } catch (error) {
+      console.error("Error saving profile:", error);
       toast({
         variant: 'destructive',
-        title: 'Invalid Mobile Number',
-        description: 'Mobile number must be exactly 10 digits and contain no letters.',
+        title: 'Update Failed',
+        description: 'There was a problem updating your profile.',
       });
-      return;
+    } finally {
+      setSaving(false);
     }
-
-    // Logic to save changes would go here
-    toast({
-      title: 'Profile Updated',
-      description: 'Your changes have been saved successfully.',
-    });
   };
+
+  if (loading) {
+      return (
+          <Card>
+              <CardHeader>
+                  <div className="flex items-center gap-4">
+                      <Skeleton className="h-20 w-20 rounded-full" />
+                      <div>
+                          <Skeleton className="h-8 w-48 mb-2" />
+                          <Skeleton className="h-5 w-64" />
+                      </div>
+                  </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+              </CardContent>
+          </Card>
+      )
+  }
 
   return (
     <Card>
@@ -76,10 +157,10 @@ export default function CustomerProfilePage() {
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20">
             <AvatarImage src={user?.photoURL ?? `https://i.pravatar.cc/128?u=${user?.uid}`} />
-            <AvatarFallback>{user?.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
+            <AvatarFallback>{profile?.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div>
-            <CardTitle className="text-3xl">{user?.displayName}</CardTitle>
+            <CardTitle className="text-3xl">{profile?.displayName}</CardTitle>
             <CardDescription className="text-base">{user?.email}</CardDescription>
           </div>
         </div>
@@ -91,50 +172,50 @@ export default function CustomerProfilePage() {
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue={user?.displayName ?? ''} />
+              <Input id="name" value={profile?.displayName ?? ''} onChange={(e) => handleInputChange('displayName', e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" defaultValue={user?.email ?? ''} readOnly />
+              <Input id="email" type="email" value={user?.email ?? ''} readOnly />
             </div>
           </div>
            <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="mobile-number">Mobile Number</Label>
                 <div className="flex gap-2">
-                    <Select defaultValue={customerProfile.mobile.countryName}>
+                    <Select value={profile?.mobile?.countryCode} onValueChange={(val) => handleNestedInputChange('mobile', 'countryCode', val)}>
                         <SelectTrigger className="w-[80px]">
                             <SelectValue placeholder="Code" />
                         </SelectTrigger>
                         <SelectContent>
                             {countries.map(country => (
-                                <SelectItem key={country.name} value={country.name}>{country.code}</SelectItem>
+                                <SelectItem key={country.name} value={country.code}>{country.code}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-                    <Input id="mobile-number" name="mobile-number" type="tel" defaultValue={customerProfile.mobile.number} placeholder="10-digit number" maxLength={10} />
+                    <Input id="mobile-number" name="mobile-number" type="tel" value={profile?.mobile?.number ?? ''} onChange={(e) => handleNestedInputChange('mobile', 'number', e.target.value)} placeholder="10-digit number" maxLength={10} />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="landline-number">Landline Number</Label>
                 <div className="flex gap-2">
-                    <Select defaultValue={customerProfile.landline.countryName}>
+                    <Select value={profile?.landline?.countryCode} onValueChange={(val) => handleNestedInputChange('landline', 'countryCode', val)}>
                         <SelectTrigger className="w-[80px]">
                             <SelectValue placeholder="Code" />
                         </SelectTrigger>
                         <SelectContent>
                             {countries.map(country => (
-                                <SelectItem key={country.name} value={country.name}>{country.code}</SelectItem>
+                                <SelectItem key={country.name} value={country.code}>{country.code}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-                    <Input id="landline-number" type="tel" defaultValue={customerProfile.landline.number} placeholder="Landline number" />
+                    <Input id="landline-number" type="tel" value={profile?.landline?.number ?? ''} onChange={(e) => handleNestedInputChange('landline', 'number', e.target.value)} placeholder="Landline number" />
                 </div>
               </div>
            </div>
            <div className="space-y-2">
               <Label htmlFor="address">Address</Label>
-              <Input id="address" defaultValue={customerProfile.address} />
+              <Input id="address" value={profile?.address ?? ''} onChange={(e) => handleInputChange('address', e.target.value)} />
             </div>
           
           <Separator />
@@ -154,9 +235,11 @@ export default function CustomerProfilePage() {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <CreditCard className="w-6 h-6 text-muted-foreground" />
-                                <span className="font-semibold">{customerProfile.paymentMethod.cardType} ending in {customerProfile.paymentMethod.last4}</span>
+                                {profile?.paymentMethod?.last4 ? (
+                                    <span className="font-semibold">{profile.paymentMethod.cardType} ending in {profile.paymentMethod.last4}</span>
+                                ) : <span className="font-semibold">No card added</span>}
                             </div>
-                            <span className="text-sm text-muted-foreground">Expires {customerProfile.paymentMethod.expiry}</span>
+                            {profile?.paymentMethod?.expiry && <span className="text-sm text-muted-foreground">Expires {profile.paymentMethod.expiry}</span>}
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mt-4">
                             <div className="space-y-2 md:col-span-12">
@@ -180,7 +263,7 @@ export default function CustomerProfilePage() {
                     <CardContent className="pt-6 space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="bank-select">Select Your Bank</Label>
-                            <Select defaultValue={customerProfile.netBankingBank}>
+                            <Select value={profile?.netBankingBank} onValueChange={(val) => handleInputChange('netBankingBank', val)}>
                                 <SelectTrigger id="bank-select">
                                     <SelectValue placeholder="Choose a bank" />
                                 </SelectTrigger>
@@ -200,7 +283,7 @@ export default function CustomerProfilePage() {
                     <CardContent className="pt-6 space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="upi-id">Your UPI ID</Label>
-                            <Input id="upi-id" placeholder="yourname@bank" defaultValue={customerProfile.upiId} />
+                            <Input id="upi-id" placeholder="yourname@bank" value={profile?.upiId ?? ''} onChange={(e) => handleInputChange('upiId', e.target.value)} />
                             <p className="text-xs text-muted-foreground">A payment request will be sent to this UPI ID.</p>
                         </div>
                     </CardContent>
@@ -210,7 +293,10 @@ export default function CustomerProfilePage() {
           </div>
 
           <div className="flex justify-end">
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit" disabled={saving}>
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
           </div>
         </form>
       </CardContent>

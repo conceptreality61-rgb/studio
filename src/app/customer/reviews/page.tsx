@@ -1,13 +1,23 @@
 
+'use client';
+
+import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Star, StarHalf } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/use-auth";
+import { db } from "@/lib/firebase";
+import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
-const reviews = [
-  { id: 'RV001', service: 'Maid Service', date: '2023-06-23', rating: 5, comment: 'Amazing job! The house has never been cleaner. The cleaner was professional and very thorough.' },
-  { id: 'RV002', service: 'Tank Cleaning', date: '2023-05-12', rating: 4, comment: 'Good service, the tank is clean. They arrived a bit late, but the work was done well.' },
-  { id: 'RV003', service: 'Bathroom Cleaning', date: '2023-04-18', rating: 5, comment: 'Excellent work. My bathroom is sparkling. Highly recommend!' },
-];
+type Review = {
+    id: string;
+    serviceName: string;
+    createdAt: Timestamp;
+    rating: number;
+    comment: string;
+};
 
 const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
@@ -23,6 +33,41 @@ const renderStars = (rating: number) => {
 };
 
 export default function ReviewsPage() {
+  const { user } = useAuth();
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const q = query(
+          collection(db, 'reviews'),
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc')
+        );
+        const querySnapshot = await getDocs(q);
+        const userReviews = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
+        setReviews(userReviews);
+      } catch (error) {
+        console.error("Error fetching reviews: ", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch your reviews.' });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReviews();
+  }, [user, toast]);
+
+  const formatDate = (timestamp: Timestamp) => {
+    if (!timestamp) return 'N/A';
+    return timestamp.toDate().toLocaleDateString();
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -30,15 +75,20 @@ export default function ReviewsPage() {
         <CardDescription>A log of all the feedback you've provided.</CardDescription>
       </CardHeader>
       <CardContent>
-        {reviews.length > 0 ? (
+        {loading ? (
+            <div className="space-y-6">
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+            </div>
+        ) : reviews.length > 0 ? (
             <div className="space-y-6">
                 {reviews.map((review, index) => (
                     <React.Fragment key={review.id}>
                         <div className="space-y-2">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h3 className="font-semibold">{review.service}</h3>
-                                    <p className="text-sm text-muted-foreground">{review.date}</p>
+                                    <h3 className="font-semibold">{review.serviceName}</h3>
+                                    <p className="text-sm text-muted-foreground">{formatDate(review.createdAt)}</p>
                                 </div>
                                 {renderStars(review.rating)}
                             </div>
@@ -58,5 +108,3 @@ export default function ReviewsPage() {
     </Card>
   );
 }
-
-import React from "react";

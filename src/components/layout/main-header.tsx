@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/logo';
 import { useAuth } from '@/hooks/use-auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,10 +18,25 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DoorOpen, LayoutDashboard } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
 
 export default function MainHeader() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          setUserRole(userDoc.data().role);
+        }
+      }
+    };
+    fetchUserRole();
+  }, [user]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -29,7 +44,20 @@ export default function MainHeader() {
   };
 
   const handleDashboard = () => {
-    router.push('/customer');
+    switch(userRole) {
+        case 'customer':
+            router.push('/customer');
+            break;
+        case 'worker':
+            router.push('/worker');
+            break;
+        case 'manager':
+            router.push('/manager');
+            break;
+        default:
+            router.push('/');
+            break;
+    }
   }
 
   return (
@@ -72,10 +100,12 @@ export default function MainHeader() {
                     </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleDashboard}>
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        <span>Dashboard</span>
-                    </DropdownMenuItem>
+                    {userRole && (
+                        <DropdownMenuItem onClick={handleDashboard}>
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            <span>Dashboard</span>
+                        </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                         <DoorOpen className="mr-2 h-4 w-4" />

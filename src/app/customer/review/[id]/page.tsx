@@ -7,19 +7,25 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Star } from 'lucide-react';
+import { Star, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { db } from '@/lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function ReviewPage() {
+  const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const bookingId = params.id as string;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
       toast({
@@ -29,20 +35,41 @@ export default function ReviewPage() {
       });
       return;
     }
+
+    if (!user) {
+        toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to submit a review.' });
+        return;
+    }
     
-    // In a real app, you'd submit this to your backend.
-    console.log({
-      bookingId: params.id,
-      rating,
-      comment,
-    });
+    setIsSubmitting(true);
+    try {
+        await setDoc(doc(db, 'reviews', `${bookingId}_${user.uid}`), {
+            bookingId,
+            userId: user.uid,
+            rating,
+            comment,
+            createdAt: serverTimestamp(),
+            serviceName: 'Service', // In a real app, you'd fetch this from the booking
+            userName: user.displayName
+        });
 
-    toast({
-      title: 'Review Submitted!',
-      description: 'Thank you for your feedback.',
-    });
+        toast({
+            title: 'Review Submitted!',
+            description: 'Thank you for your feedback.',
+        });
 
-    router.push('/customer/reviews');
+        router.push('/customer/reviews');
+
+    } catch (error) {
+        console.error('Error submitting review', error);
+        toast({
+            variant: 'destructive',
+            title: 'Submission Failed',
+            description: 'There was an error submitting your review. Please try again.'
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   return (
@@ -50,7 +77,7 @@ export default function ReviewPage() {
       <form onSubmit={handleSubmit}>
         <CardHeader>
           <CardTitle>Leave a Review</CardTitle>
-          <CardDescription>Share your experience for booking #{params.id}. How did we do?</CardDescription>
+          <CardDescription>Share your experience for booking #{bookingId}. How did we do?</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
@@ -82,7 +109,10 @@ export default function ReviewPage() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit">Submit Review</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting ? 'Submitting...' : 'Submit Review'}
+          </Button>
         </CardFooter>
       </form>
     </Card>

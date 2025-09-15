@@ -11,43 +11,70 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, CheckCircle, Calendar as CalendarIcon, Camera } from 'lucide-react';
-import { services, Service, ServiceSubCategory } from '@/lib/constants';
+import { Upload, CheckCircle, Camera, Loader2 } from 'lucide-react';
+import { services } from '@/lib/constants';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import { type DateRange } from 'react-day-picker';
-
-// Mock data, in a real app this would come from your backend
-const workerProfile = {
-  name: 'Lucas Hernandez',
-  email: 'lucas@provider.com',
-  phone: '(555) 987-6543',
-  bio: 'Dedicated and experienced worker with a passion for creating clean and beautiful spaces. I take pride in my work and always strive for customer satisfaction.',
-  verificationStatus: 'Approved', // or 'Pending', 'Rejected'
-  idUrl: 'https://picsum.photos/seed/id-doc/600/400',
-  certUrl: 'https://picsum.photos/seed/cert-doc/600/400',
-  selectedServices: {
-    'gardening': ['lawn-mowing', 'pruning'],
-    'maid-service': ['dish-cleaning'],
-  },
-  availability: undefined,
-};
+import { db, auth } from '@/lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { updateProfile } from 'firebase/auth';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type SelectedServices = Record<string, string[]>;
+type UserProfile = {
+    displayName?: string;
+    verificationStatus?: 'Approved' | 'Pending' | 'Rejected';
+    selectedServices?: SelectedServices;
+    availability?: DateRange;
+    idUrl?: string;
+    certUrl?: string;
+};
 
 export default function WorkerProfilePage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [selectedServices, setSelectedServices] = useState<SelectedServices>(workerProfile.selectedServices);
-  const [availability, setAvailability] = useState<DateRange | undefined>(workerProfile.availability);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  
+  const [selectedServices, setSelectedServices] = useState<SelectedServices>({});
+  const [availability, setAvailability] = useState<DateRange | undefined>(undefined);
   const [isClient, setIsClient] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    const fetchProfile = async () => {
+      if (user) {
+        try {
+          const docRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data() as UserProfile;
+            setProfile(data);
+            setSelectedServices(data.selectedServices || {});
+            if (data.availability?.from && data.availability?.to) {
+              setAvailability({
+                from: (data.availability.from as any).toDate(),
+                to: (data.availability.to as any).toDate(),
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching worker profile:", error);
+          toast({ variant: 'destructive', title: "Error", description: "Could not load your profile data." });
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [user, toast]);
 
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -89,14 +116,37 @@ export default function WorkerProfilePage() {
     });
   };
 
-  const handleSaveChanges = (e: React.FormEvent) => {
+  const handleSaveChanges = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic to save changes would go here, including uploading the new avatar if one was selected
-    console.log({ selectedServices, availability, avatar: avatarPreview ? 'new avatar selected' : 'no change' });
-    toast({
-      title: 'Profile Updated',
-      description: 'Your changes have been saved successfully.',
-    });
+    if (!user) return;
+    setSaving(true);
+    
+    try {
+        const userRef = doc(db, 'users', user.uid);
+        const dataToSave: Partial<UserProfile> = {
+            selectedServices,
+            availability,
+        };
+        await setDoc(userRef, dataToSave, { merge: true });
+
+        // In a real app, you'd handle file uploads to Firebase Storage here
+        // and save the URLs in `idUrl` and `certUrl` fields.
+
+        toast({
+            title: 'Profile Updated',
+            description: 'Your changes have been saved successfully.',
+        });
+
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Update Failed',
+            description: 'There was an error saving your profile.',
+        });
+    } finally {
+        setSaving(false);
+    }
   };
 
   const statusVariant = {
@@ -105,6 +155,16 @@ export default function WorkerProfilePage() {
     Rejected: 'destructive',
   } as const;
   
+  if (loading) {
+      return (
+          <Card>
+              <CardHeader><Skeleton className="h-24 w-full" /></CardHeader>
+              <CardContent><Skeleton className="h-64 w-full" /></CardContent>
+              <CardFooter><Skeleton className="h-10 w-32 ml-auto" /></CardFooter>
+          </Card>
+      )
+  }
+
   return (
     <Card>
       <form onSubmit={handleSaveChanges}>
@@ -134,10 +194,10 @@ export default function WorkerProfilePage() {
               <CardTitle className="text-3xl">{user?.displayName}</CardTitle>
               <CardDescription className="text-base">{user?.email}</CardDescription>
               <div className="mt-2 flex items-center gap-2">
-                  <Badge variant={statusVariant[workerProfile.verificationStatus] || 'outline'}>
-                      {workerProfile.verificationStatus}
+                  <Badge variant={statusVariant[profile?.verificationStatus || 'Pending'] || 'outline'}>
+                      {profile?.verificationStatus || 'Pending'}
                   </Badge>
-                  {workerProfile.verificationStatus === 'Approved' && <CheckCircle className="h-5 w-5 text-green-500" />}
+                  {profile?.verificationStatus === 'Approved' && <CheckCircle className="h-5 w-5 text-green-500" />}
               </div>
             </div>
           </div>
@@ -211,7 +271,7 @@ export default function WorkerProfilePage() {
                 <Label htmlFor="id-upload">Identification Document</Label>
                 <div className="flex items-center gap-2">
                   <Input id="id-upload" type="file" className="flex-1" />
-                   <Button variant="outline" size="icon" asChild><a href={workerProfile.idUrl} target="_blank"><Upload /></a></Button>
+                   {profile?.idUrl && <Button variant="outline" size="icon" asChild><a href={profile.idUrl} target="_blank"><Upload /></a></Button>}
                 </div>
                 <p className="text-xs text-muted-foreground">Upload a clear photo of your ID (e.g., Driver's License).</p>
               </div>
@@ -219,7 +279,7 @@ export default function WorkerProfilePage() {
                 <Label htmlFor="cert-upload">Professional Certification (Optional)</Label>
                  <div className="flex items-center gap-2">
                     <Input id="cert-upload" type="file" className="flex-1" />
-                    <Button variant="outline" size="icon" asChild><a href={workerProfile.certUrl} target="_blank"><Upload /></a></Button>
+                    {profile?.certUrl && <Button variant="outline" size="icon" asChild><a href={profile.certUrl} target="_blank"><Upload /></a></Button>}
                  </div>
                 <p className="text-xs text-muted-foreground">Upload any relevant professional certifications.</p>
               </div>
@@ -227,7 +287,10 @@ export default function WorkerProfilePage() {
           </div>
         </CardContent>
         <CardFooter className="border-t pt-6 flex justify-end">
-          <Button type="submit">Update Profile</Button>
+          <Button type="submit" disabled={saving}>
+            {saving && <Loader2 className="animate-spin mr-2" />}
+            {saving ? "Saving..." : "Update Profile"}
+          </Button>
         </CardFooter>
       </form>
     </Card>

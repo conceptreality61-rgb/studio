@@ -4,22 +4,48 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { Badge } from "@/components/ui/badge";
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const bookings = [
-  { date: new Date('2023-06-24T11:00:00'), service: 'Gardening', customer: 'Olivia Smith' },
-  { date: new Date('2023-06-25T09:00:00'), service: 'Maid Service', customer: 'John Doe' },
-  { date: new Date('2023-06-28T14:00:00'), service: 'Bathroom Cleaning', customer: 'Emma Brown' },
-];
+type Booking = {
+  date: Timestamp;
+  serviceName: string;
+  customerName: string;
+};
 
 export default function SchedulePage() {
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const { user } = useAuth();
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
-    setDate(new Date());
-  }, []);
+    const fetchBookings = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const q = query(
+          collection(db, 'bookings'),
+          where('workerId', '==', user.uid),
+          where('status', 'in', ['Worker Assigned', 'In Progress'])
+        );
+        const querySnapshot = await getDocs(q);
+        const workerBookings = querySnapshot.docs.map(doc => doc.data() as Booking);
+        setBookings(workerBookings);
+      } catch (error) {
+        console.error("Error fetching schedule:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBookings();
+  }, [user]);
 
   const isSameDay = (d1: Date, d2: Date) => {
     return d1.getFullYear() === d2.getFullYear() &&
@@ -27,7 +53,8 @@ export default function SchedulePage() {
            d1.getDate() === d2.getDate();
   };
 
-  const bookingsForSelectedDay = date ? bookings.filter(b => isSameDay(b.date, date)) : [];
+  const bookedDates = bookings.map(b => b.date.toDate());
+  const bookingsForSelectedDay = date ? bookings.filter(b => isSameDay(b.date.toDate(), date)) : [];
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -38,14 +65,14 @@ export default function SchedulePage() {
             <CardDescription>View your upcoming confirmed tasks.</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
-            {isClient && (
+            {loading ? <Skeleton className="w-full h-[300px]" /> : (isClient && (
                 <Calendar
                   mode="single"
                   selected={date}
                   onSelect={setDate}
                   className="rounded-md border"
                   modifiers={{
-                    booked: bookings.map(b => b.date),
+                    booked: bookedDates,
                   }}
                   modifiersStyles={{
                     booked: {
@@ -54,7 +81,7 @@ export default function SchedulePage() {
                     },
                   }}
                 />
-            )}
+            ))}
           </CardContent>
         </Card>
       </div>
@@ -66,20 +93,20 @@ export default function SchedulePage() {
              </CardTitle>
           </CardHeader>
           <CardContent>
-            {bookingsForSelectedDay.length > 0 ? (
+            {loading ? <Skeleton className="h-24" /> : bookingsForSelectedDay.length > 0 ? (
               <ul className="space-y-4">
                 {bookingsForSelectedDay.map(booking => (
-                  <li key={booking.date.toISOString()} className="p-3 rounded-md bg-secondary">
-                    <p className="font-semibold">{booking.service}</p>
-                    <p className="text-sm text-muted-foreground">For: {booking.customer}</p>
+                  <li key={booking.date.toDate().toISOString()} className="p-3 rounded-md bg-secondary">
+                    <p className="font-semibold">{booking.serviceName}</p>
+                    <p className="text-sm text-muted-foreground">For: {booking.customerName}</p>
                     <p className="text-sm text-muted-foreground">
-                      Time: {booking.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      Time: {booking.date.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-center text-muted-foreground">No tasks scheduled for this day.</p>
+              <p className="text-center text-muted-foreground py-10">No tasks scheduled for this day.</p>
             )}
           </CardContent>
         </Card>

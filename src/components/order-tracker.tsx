@@ -1,25 +1,56 @@
+
 'use client';
 
 import { cn } from "@/lib/utils"
-import { CheckCircle, Loader, Clock } from "lucide-react";
+import { CheckCircle, Loader, Clock, UserCheck, Check, FileCheck } from "lucide-react";
+import { useMemo } from "react";
 
 type Step = {
   name: string;
   status: 'complete' | 'current' | 'upcoming';
+  icon: React.ReactNode;
 };
 
-const steps: Step[] = [
-  { name: 'Booking Confirmed', status: 'complete' },
-  { name: 'Worker Assigned', status: 'complete' },
-  { name: 'On The Way', status: 'current' },
-  { name: 'Service Completed', status: 'upcoming' },
-];
+type OrderTrackerProps = {
+    status?: string;
+}
 
-export default function OrderTracker() {
+export default function OrderTracker({ status }: OrderTrackerProps) {
+
+  const steps: Step[] = useMemo(() => [
+    { name: 'Pending Approval', status: 'upcoming', icon: <FileCheck /> },
+    { name: 'Worker Assigned', status: 'upcoming', icon: <UserCheck /> },
+    { name: 'In Progress', status: 'upcoming', icon: <Loader className="animate-spin" /> },
+    { name: 'Service Completed', status: 'upcoming', icon: <Check /> },
+  ], []);
+
+  const currentStepIndex = useMemo(() => {
+    switch (status) {
+        case 'Pending Manager Approval': return 0;
+        case 'Worker Assigned': return 1;
+        case 'In Progress': return 2;
+        case 'Completed': return 3;
+        default: return -1;
+    }
+  }, [status]);
+  
+  const processedSteps = useMemo(() => {
+    return steps.map((step, index) => {
+        if (index < currentStepIndex) {
+            return { ...step, status: 'complete', icon: <CheckCircle /> };
+        }
+        if (index === currentStepIndex) {
+            return { ...step, status: 'current' };
+        }
+        return { ...step, status: 'upcoming', icon: <Clock /> };
+    })
+  }, [steps, currentStepIndex]);
+
+
   return (
     <nav aria-label="Progress">
       <ol role="list" className="overflow-hidden">
-        {steps.map((step, stepIdx) => (
+        {processedSteps.map((step, stepIdx) => (
           <li key={step.name} className={cn(stepIdx !== steps.length - 1 ? 'pb-10' : '', 'relative')}>
             {stepIdx !== steps.length - 1 ? (
               <div className="absolute left-4 top-4 -ml-px mt-0.5 h-full w-0.5 bg-border" />
@@ -32,9 +63,9 @@ export default function OrderTracker() {
                   step.status === 'current' ? 'bg-primary/80 border-2 border-primary' : '',
                   step.status === 'upcoming' ? 'bg-secondary border-2 border-border' : ''
                 )}>
-                  {step.status === 'complete' && <CheckCircle className="h-5 w-5 text-primary-foreground" />}
-                  {step.status === 'current' && <Loader className="h-5 w-5 text-primary-foreground animate-spin" />}
-                  {step.status === 'upcoming' && <Clock className="h-5 w-5 text-muted-foreground" />}
+                  <div className="h-5 w-5 text-primary-foreground flex items-center justify-center">
+                    {step.icon}
+                  </div>
                 </span>
               </span>
               <span className="ml-4 flex min-w-0 flex-col">
@@ -42,10 +73,8 @@ export default function OrderTracker() {
                   'text-sm font-semibold',
                   step.status === 'current' ? 'text-primary' : ''
                 )}>{step.name}</span>
-                <span className="text-sm text-muted-foreground">
-                    {step.status === 'complete' && 'Completed'}
-                    {step.status === 'current' && 'In Progress'}
-                    {step.status === 'upcoming' && 'Pending'}
+                <span className="text-sm text-muted-foreground capitalize">
+                   {step.status}
                 </span>
               </span>
             </div>

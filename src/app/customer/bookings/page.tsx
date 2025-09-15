@@ -21,7 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, Timestamp, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type Booking = {
@@ -57,10 +57,14 @@ export default function BookingsPage() {
       };
       
       try {
-        const q = query(collection(db, 'bookings'), where('userId', '==', user.uid));
+        const q = query(
+          collection(db, 'bookings'), 
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc')
+        );
         const querySnapshot = await getDocs(q);
         const userBookings = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
-        setBookings(userBookings.sort((a, b) => b.date.toMillis() - a.date.toMillis()));
+        setBookings(userBookings);
       } catch (error) {
         console.error("Error fetching bookings: ", error);
         toast({
@@ -95,7 +99,7 @@ export default function BookingsPage() {
             );
             toast({
                 title: "Booking Canceled",
-                description: `Your booking #${bookingToCancel.substring(0, 6)}... has been successfully canceled.`,
+                description: `Your booking has been successfully canceled.`,
             });
         } catch (error) {
              toast({
@@ -112,7 +116,7 @@ export default function BookingsPage() {
   const formatDate = (timestamp: Timestamp) => {
     if (!timestamp) return 'N/A';
     const date = timestamp.toDate();
-    return date.toLocaleString();
+    return date.toLocaleDateString();
   }
 
 
