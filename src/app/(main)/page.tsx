@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -23,7 +24,7 @@ export default function HomePage() {
             data-ai-hint={heroImage.imageHint}
           />
         )}
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/70 to-accent/70" />
         <div className="relative container mx-auto h-full flex flex-col items-center justify-center text-center">
           <h1 className="text-4xl md:text-6xl font-headline font-bold drop-shadow-lg">
             Your Home, Spotlessly Clean
