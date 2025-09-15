@@ -35,6 +35,18 @@
       "description": "Profile picture of a service worker.",
       "imageUrl": "https://picsum.photos/seed/worker1/100/100",
       "imageHint": "person smiling"
+    },
+    {
+      "id": "app-icon-192",
+      "description": "App icon 192x192",
+      "imageUrl": "https://picsum.photos/seed/app-icon/192/192",
+      "imageHint": "C S logo"
+    },
+    {
+      "id": "app-icon-512",
+      "description": "App icon 512x512",
+      "imageUrl": "https://picsum.photos/seed/app-icon/512/512",
+      "imageHint": "C S logo"
     }
   ]
 }
