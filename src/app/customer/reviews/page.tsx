@@ -47,8 +47,7 @@ export default function ReviewsPage() {
       try {
         const q = query(
           collection(db, 'reviews'),
-          where('userId', '==', user.uid),
-          orderBy('createdAt', 'desc')
+          where('userId', '==', user.uid)
         );
         const querySnapshot = await getDocs(q);
         const userReviews = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
