@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
-import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck, Bath, Droplets, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck, Bath, Droplets, Sparkles, DoorOpen } from 'lucide-react';
 
 export type ServiceSubCategoryOption = {
   id: string;
@@ -189,6 +189,7 @@ export type NavItem = {
   href: string;
   icon: LucideIcon;
   label?: string;
+  action?: () => void;
 };
 
 export const managerNavItems: NavItem[] = [
@@ -206,6 +207,7 @@ export const customerNavItems: NavItem[] = [
   { title: 'My Bookings', href: '/customer/bookings', icon: Briefcase },
   { title: 'My Reviews', href: '/customer/reviews', icon: Star },
   { title: 'Profile', href: '/customer/profile', icon: User },
+  { title: 'Log Out', href: '#', icon: DoorOpen },
 ];
 
 export const workerNavItems: NavItem[] = [
