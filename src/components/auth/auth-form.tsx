@@ -50,7 +50,6 @@ function getRedirectPath(role: Role) {
   }
 };
 
-// Separate component for the fields to avoid re-rendering the whole form on tab change
 function SignUpFormFields({ role, onAuthSuccess }: { role: Role; onAuthSuccess: (role: Role) => void; }) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -77,7 +76,6 @@ function SignUpFormFields({ role, onAuthSuccess }: { role: Role; onAuthSuccess: 
         const user = userCredential.user;
         await updateProfile(user, { displayName: name || (role === 'manager' ? 'Super Manager' : 'New User') });
 
-        // Save user role and other info to Firestore
         await setDoc(doc(db, 'users', user.uid), {
             uid: user.uid,
             email: user.email,
@@ -132,7 +130,7 @@ function SignUpFormFields({ role, onAuthSuccess }: { role: Role; onAuthSuccess: 
   );
 }
 
-function LoginForm({ onAuthSuccess }: { onAuthSuccess: (role: Role) => void; }) {
+function LoginForm({ role, onAuthSuccess }: { role: Role, onAuthSuccess: (role: Role) => void; }) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
@@ -152,8 +150,13 @@ function LoginForm({ onAuthSuccess }: { onAuthSuccess: (role: Role) => void; }) 
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists()) {
           const userRole = userDoc.data().role as Role;
-          toast({ title: 'Logged in successfully!' });
-          onAuthSuccess(userRole);
+          if (userRole === role) {
+            toast({ title: 'Logged in successfully!' });
+            onAuthSuccess(userRole);
+          } else {
+            await auth.signOut();
+            throw new Error(`You are not authorized to log in as a ${role}.`);
+          }
       } else {
           await auth.signOut();
           throw new Error(`Your user data could not be found. Please try signing up again or contact support.`);
@@ -195,12 +198,15 @@ function LoginForm({ onAuthSuccess }: { onAuthSuccess: (role: Role) => void; }) 
   return (
      <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+        <Label htmlFor={`${role}-email`}>Email</Label>
+        <Input id={`${role}-email`} name="email" type="email" placeholder="m@example.com" required 
+         defaultValue={role === 'manager' ? SUPERADMIN_EMAIL : ''}
+         readOnly={role === 'manager'}
+        />
       </div>
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor={`${role}-password`}>Password</Label>
              <AlertDialog>
                 <AlertDialogTrigger asChild>
                     <button type="button" className="text-sm font-medium text-primary hover:underline">Forgot Password?</button>
@@ -226,7 +232,7 @@ function LoginForm({ onAuthSuccess }: { onAuthSuccess: (role: Role) => void; }) 
                 </AlertDialogContent>
             </AlertDialog>
         </div>
-        <Input id="password" name="password" type="password" required />
+        <Input id={`${role}-password`} name="password" type="password" required />
       </div>
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? <Loader2 className="animate-spin" /> : 'Log In'}
@@ -239,11 +245,9 @@ function LoginForm({ onAuthSuccess }: { onAuthSuccess: (role: Role) => void; }) 
 export function AuthForm({ isSignUp = false }: AuthFormProps) {
   const router = useRouter();
 
-  const handleAuthSuccess = async (role: Role) => {
+  const handleAuthSuccess = (role: Role) => {
     const path = getRedirectPath(role);
     router.push(path);
-    // Use timeout to allow state to propagate before refresh
-    setTimeout(() => router.refresh(), 500);
   };
   
   if (isSignUp) {
@@ -289,7 +293,22 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
         <CardDescription>Log in to access your dashboard.</CardDescription>
       </CardHeader>
       <CardContent>
-        <LoginForm onAuthSuccess={handleAuthSuccess} />
+        <Tabs defaultValue="customer" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="customer">Customer</TabsTrigger>
+              <TabsTrigger value="worker">Worker</TabsTrigger>
+              <TabsTrigger value="manager">Manager</TabsTrigger>
+            </TabsList>
+            <TabsContent value="customer" className="mt-4">
+              <LoginForm role="customer" onAuthSuccess={handleAuthSuccess} />
+            </TabsContent>
+            <TabsContent value="worker" className="mt-4">
+              <LoginForm role="worker" onAuthSuccess={handleAuthSuccess} />
+            </TabsContent>
+            <TabsContent value="manager" className="mt-4">
+              <LoginForm role="manager" onAuthSuccess={handleAuthSuccess}/>
+            </TabsContent>
+          </Tabs>
         <div className="mt-4 text-center text-sm">
           Don't have an account?{' '}
           <Link href="/signup" className="underline hover:text-primary">
