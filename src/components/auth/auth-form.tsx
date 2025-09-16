@@ -201,10 +201,11 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
   const handleAuthSuccess = async (role: Role) => {
     // Check if user exists in Firestore, if not, wait a bit for replication
     if (auth.currentUser) {
-        const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
-        if (!userDoc.exists()) {
-            await new Promise(res => setTimeout(res, 1000));
-        }
+      let userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+      if (!userDoc.exists()) {
+        await new Promise((res) => setTimeout(res, 1500)); // Wait 1.5 seconds
+        userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid)); // Re-check
+      }
     }
 
     const getRedirectPath = (selectedRole: Role) => {
@@ -219,7 +220,7 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
     };
     router.push(getRedirectPath(role));
     router.refresh(); // Force a refresh to ensure layout gets user data
-  }
+  };
 
   const onTabChange = (value: string) => {
     setCurrentTab(value as Role);
