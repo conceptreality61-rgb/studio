@@ -5,26 +5,23 @@ import { db } from '@/lib/firebase-admin';
 import * as admin from 'firebase-admin';
 import { z } from 'zod';
 
-// This schema is now only for type inference and is a simplified representation.
-// The primary validation is handled on the client in page.tsx.
 const createWorkerSchema = z.object({
-  displayName: z.string(),
-  fatherName: z.string(),
-  mobile: z.string(),
-  aadharNumber: z.string(),
-  workerGroup: z.string(),
-  services: z.array(z.string()),
+  displayName: z.string().min(2, "Name must be at least 2 characters."),
+  fatherName: z.string().min(2, "Father's name must be at least 2 characters."),
+  mobile: z.string().regex(/^\d{10}$/, "Mobile must be a 10-digit number."),
+  aadharNumber: z.string().regex(/^\d{12}$/, "Aadhar must be a 12-digit number."),
+  workerGroup: z.string().min(1, "Worker group is required."),
+  services: z.array(z.string()).min(1, "At least one service must be selected."),
 });
 
 export async function createWorker(values: z.infer<typeof createWorkerSchema>) {
   try {
-    // We still validate to ensure the data is correct before it goes to the database.
     const validatedValues = createWorkerSchema.parse(values);
 
     await db.collection('users').add({
       ...validatedValues,
       role: 'worker',
-      verificationStatus: 'Approved', // Manually created workers are pre-approved
+      verificationStatus: 'Approved', 
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -32,7 +29,6 @@ export async function createWorker(values: z.infer<typeof createWorkerSchema>) {
   } catch (error: any) {
     let errorMessage = 'Failed to create worker.';
     if (error instanceof z.ZodError) {
-        // If validation fails, construct a clear error message.
         errorMessage = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(' ');
     } else {
         console.error('Error creating worker:', error);
