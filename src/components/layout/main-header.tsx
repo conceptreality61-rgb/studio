@@ -115,10 +115,10 @@ export default function MainHeader() {
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" asChild>
+              <Button variant="ghost" asChild className="text-base">
                 <Link href="/login">Log In</Link>
               </Button>
-              <Button asChild>
+              <Button asChild className="text-base">
                 <Link href="/signup">Sign Up</Link>
               </Button>
             </>
