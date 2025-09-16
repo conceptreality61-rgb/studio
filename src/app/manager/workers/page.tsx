@@ -26,6 +26,7 @@ type Worker = {
     rating: number;
     verificationStatus: 'Approved' | 'Pending' | 'Rejected';
     tasksCompleted: number;
+    services?: string[];
 };
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
@@ -52,6 +53,7 @@ export default function ManagerWorkersPage() {
                         rating: data.rating || 0,
                         verificationStatus: data.verificationStatus || 'Pending',
                         tasksCompleted: data.tasksCompleted || 0,
+                        services: data.services || [],
                     } as Worker;
                 });
                 setWorkers(workersData);

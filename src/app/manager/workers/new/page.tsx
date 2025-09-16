@@ -7,20 +7,26 @@ import * as z from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { createWorker } from './actions';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { services } from '@/lib/constants';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
 
 const formSchema = z.object({
   displayName: z.string().min(2, { message: "Name must be at least 2 characters." }),
   fatherName: z.string().min(2, { message: "Father's name must be at least 2 characters." }),
   mobile: z.string().regex(/^\d{10}$/, { message: "Mobile must be a 10-digit number." }),
   idNumber: z.string().min(5, { message: "ID number must be at least 5 characters." }),
-  services: z.string().optional(),
+  services: z.array(z.string()).refine(value => value.some(item => item), {
+    message: "You have to select at least one service.",
+  }),
+  // Note: File inputs are not part of the Zod schema for client-side validation
+  // as their handling is more complex (upload, etc.). We'll handle them separately.
 });
 
 export default function NewWorkerPage() {
@@ -34,14 +40,24 @@ export default function NewWorkerPage() {
       fatherName: "",
       mobile: "",
       idNumber: "",
-      services: "",
+      services: [],
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const result = await createWorker(values);
+      // In a real application, you would handle file uploads here.
+      // For example, upload to Firebase Storage and get the URLs.
+      // const photoUrl = await uploadFile(photo);
+      // const aadharUrl = await uploadFile(aadhar);
+      // const voterIdUrl = await uploadFile(voterId);
+
+      const result = await createWorker({
+        ...values,
+        // photoUrl, aadharUrl, voterIdUrl
+      });
+
       if (result.success) {
         toast({
           title: "Worker Created",
@@ -63,7 +79,7 @@ export default function NewWorkerPage() {
   }
 
   return (
-    <Card className="max-w-2xl mx-auto">
+    <Card className="max-w-3xl mx-auto">
       <CardHeader>
         <CardTitle>Create a New Worker Profile</CardTitle>
         <CardDescription>
@@ -73,6 +89,7 @@ export default function NewWorkerPage() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
+            <h3 className="text-lg font-medium">Personal Details</h3>
             <div className="grid md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -120,28 +137,99 @@ export default function NewWorkerPage() {
                   name="idNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>ID Number</FormLabel>
+                      <FormLabel>Aadhar Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Aadhar or Voter ID" {...field} />
+                        <Input placeholder="12-digit Aadhar number" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
             </div>
+
+            <Separator />
+            
+            <h3 className="text-lg font-medium">Assign Services</h3>
              <FormField
               control={form.control}
               name="services"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
-                  <FormLabel>Services Provided</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="e.g., House Cleaning, Gardening" {...field} />
-                  </FormControl>
+                  <div className="mb-4">
+                     <FormDescription>
+                        Select the services this worker is qualified to perform.
+                    </FormDescription>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {services.map((item) => (
+                      <FormField
+                        key={item.id}
+                        control={form.control}
+                        name="services"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={item.id}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(item.id)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...(field.value || []), item.id])
+                                      : field.onChange(
+                                          field.value?.filter(
+                                            (value) => value !== item.id
+                                          )
+                                        )
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {item.name}
+                              </FormLabel>
+                            </FormItem>
+                          )
+                        }}
+                      />
+                    ))}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            
+            <Separator />
+
+            <div className="space-y-4">
+                <h3 className="text-lg font-medium">Upload Documents</h3>
+                <FormDescription>Upload a clear photo and scans of the worker's identification documents.</FormDescription>
+                <div className="grid md:grid-cols-3 gap-6 pt-2">
+                    <FormItem>
+                        <FormLabel>Worker's Photo</FormLabel>
+                        <FormControl>
+                            <Input type="file" accept="image/*" />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    <FormItem>
+                        <FormLabel>Aadhar Card</FormLabel>
+                        <FormControl>
+                             <Input type="file" accept="image/*,application/pdf" />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    <FormItem>
+                        <FormLabel>Voter ID</FormLabel>
+                        <FormControl>
+                             <Input type="file" accept="image/*,application/pdf" />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                </div>
+            </div>
+
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={isLoading}>
@@ -154,5 +242,3 @@ export default function NewWorkerPage() {
     </Card>
   );
 }
-
-    

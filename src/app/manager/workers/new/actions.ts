@@ -10,18 +10,19 @@ const createWorkerSchema = z.object({
   fatherName: z.string().min(2, "Father's name is required."),
   mobile: z.string().regex(/^\d{10}$/, "Mobile must be a 10-digit number."),
   idNumber: z.string().min(5, "ID number is required."),
-  services: z.string().optional(),
+  services: z.array(z.string()).optional(),
+  // The file fields are not validated here as they are handled separately
+  // in a real app (e.g., uploaded to a storage service).
 });
 
 export async function createWorker(values: z.infer<typeof createWorkerSchema>) {
   try {
     const validatedValues = createWorkerSchema.parse(values);
 
-    // This action now just adds a document to Firestore, no Auth.
     await addDoc(collection(db, 'users'), {
       ...validatedValues,
       role: 'worker',
-      verificationStatus: 'Approved', // Workers created by managers are pre-approved
+      verificationStatus: 'Approved',
       createdAt: serverTimestamp(),
     });
 
@@ -36,5 +37,3 @@ export async function createWorker(values: z.infer<typeof createWorkerSchema>) {
     return { success: false, error: errorMessage };
   }
 }
-
-    
