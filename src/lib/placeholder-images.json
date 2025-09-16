@@ -27,9 +27,9 @@
     },
     {
       "id": "gardening",
-      "description": "A beautiful villa garden area.",
-      "imageUrl": "https://images.unsplash.com/photo-1614531334963-4a16546aee43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx2aWxsYSUyMGdhcmRlbnxlbnwwfHx8fDE3NjEyNzkyMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "villa garden"
+      "description": "A neat and clean home garden.",
+      "imageUrl": "https://images.unsplash.com/photo-1604754742629-1e58a1399432?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxuZWF0JTIwY2xlYW4lMjBob21lJTIwZ2FyZGVufGVufDB8fHx8MTcyMjE5MzYwNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "home garden"
     },
     {
       "id": "worker-profile",
