@@ -68,13 +68,13 @@ export default function MainHeader() {
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
           <Link href="/#services" className="transition-colors hover:text-primary">
-            Services
+            Our Services
           </Link>
           <Link href="/#how-it-works" className="transition-colors hover:text-primary">
             How It Works
           </Link>
-          <Link href="/#pricing" className="transition-colors hover:text-primary">
-            Pricing
+          <Link href="/#testimonials" className="transition-colors hover:text-primary">
+            Testimonials
           </Link>
         </nav>
         <div className="flex items-center gap-4">
