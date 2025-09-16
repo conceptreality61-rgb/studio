@@ -37,7 +37,7 @@ type AuthFormProps = {
 
 type Role = 'customer' | 'worker' | 'manager';
 
-const SUPERADMIN_EMAIL = 'superadmin@cleansweep.com';
+const SUPERADMIN_EMAIL = 'conceptreality61@gmail.com';
 
 function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean; role: Role; onAuthSuccess: (role: Role) => void; }) {
   const { toast } = useToast();
