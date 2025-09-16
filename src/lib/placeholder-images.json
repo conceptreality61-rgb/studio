@@ -3,8 +3,8 @@
     {
       "id": "hero",
       "description": "A beautiful, modern, clean house, representing complete home care services.",
-      "imageUrl": "https://images.unsplash.com/photo-1556020685-ae41abfc9365?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxjbGVhbiUyMGhvbWUlMjBpbnRlcmlvcnxlbnwwfHx8fDE3NjA0ODI2NTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "bright clean interior"
+      "imageUrl": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBob3VzZSUyMGV4dGVyaW9yfGVufDB8fHx8MTc2MDQ4MzA0N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "modern house exterior"
     },
     {
       "id": "maid-service",
