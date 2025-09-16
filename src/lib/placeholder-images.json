@@ -3,7 +3,7 @@
     {
       "id": "hero",
       "description": "A beautiful home",
-      "imageUrl": "https://picsum.photos/seed/cleansweep-hero/1280/720",
+      "imageUrl": "/custom-hero-background.jpg",
       "imageHint": "beautiful home"
     },
     {
