@@ -22,7 +22,7 @@ const formSchema = z.object({
   displayName: z.string().min(2, { message: "Name must be at least 2 characters." }),
   fatherName: z.string().min(2, { message: "Father's name must be at least 2 characters." }),
   mobile: z.string().regex(/^\d{10}$/, { message: "Mobile must be a 10-digit number." }),
-  idNumber: z.string().min(5, { message: "ID number must be at least 5 characters." }),
+  aadharNumber: z.string().regex(/^\d{12}$/, { message: "Aadhar must be a 12-digit number." }),
   workerGroup: z.string({ required_error: "Please select a worker group." }),
   services: z.array(z.string()).refine(value => value.some(item => item), {
     message: "You have to select at least one service.",
@@ -41,7 +41,7 @@ export default function NewWorkerPage() {
       displayName: "",
       fatherName: "",
       mobile: "",
-      idNumber: "",
+      aadharNumber: "",
       services: [],
     },
   });
@@ -136,7 +136,7 @@ export default function NewWorkerPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="idNumber"
+                  name="aadharNumber"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Aadhar Number</FormLabel>
