@@ -3,7 +3,7 @@
     {
       "id": "hero",
       "description": "A beautiful home",
-      "imageUrl": "/custom-hero-background.jpg",
+      "imageUrl": "/my-hero-background.jpg",
       "imageHint": "beautiful home"
     },
     {
@@ -39,13 +39,13 @@
     {
       "id": "app-icon-192",
       "description": "App icon 192x192",
-      "imageUrl": "https://picsum.photos/seed/app-icon/192/192",
+      "imageUrl": "/icons/icon-192x192.png",
       "imageHint": "C S logo"
     },
     {
       "id": "app-icon-512",
       "description": "App icon 512x512",
-      "imageUrl": "https://picsum.photos/seed/app-icon/512/512",
+      "imageUrl": "/icons/icon-512x512.png",
       "imageHint": "C S logo"
     }
   ]
