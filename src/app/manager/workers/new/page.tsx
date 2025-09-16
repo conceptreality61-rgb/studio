@@ -16,12 +16,14 @@ import { useRouter } from 'next/navigation';
 import { services } from '@/lib/constants';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   displayName: z.string().min(2, { message: "Name must be at least 2 characters." }),
   fatherName: z.string().min(2, { message: "Father's name must be at least 2 characters." }),
   mobile: z.string().regex(/^\d{10}$/, { message: "Mobile must be a 10-digit number." }),
   idNumber: z.string().min(5, { message: "ID number must be at least 5 characters." }),
+  workerGroup: z.string({ required_error: "Please select a worker group." }),
   services: z.array(z.string()).refine(value => value.some(item => item), {
     message: "You have to select at least one service.",
   }),
@@ -148,16 +150,43 @@ export default function NewWorkerPage() {
             </div>
 
             <Separator />
-            
-            <h3 className="text-lg font-medium">Assign Services</h3>
+
+            <h3 className="text-lg font-medium">Assign Group & Services</h3>
+            <div className="grid md:grid-cols-2 gap-6">
+                 <FormField
+                  control={form.control}
+                  name="workerGroup"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Worker Group</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a primary group" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {services.map((service) => (
+                            <SelectItem key={service.id} value={service.name}>
+                              {service.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
              <FormField
               control={form.control}
               name="services"
               render={() => (
                 <FormItem>
                   <div className="mb-4">
+                     <FormLabel>Allowed Services</FormLabel>
                      <FormDescription>
-                        Select the services this worker is qualified to perform.
+                        Select all the services this worker is qualified to perform.
                     </FormDescription>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

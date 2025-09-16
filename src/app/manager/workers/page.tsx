@@ -26,6 +26,7 @@ type Worker = {
     rating: number;
     verificationStatus: 'Approved' | 'Pending' | 'Rejected';
     tasksCompleted: number;
+    workerGroup?: string;
     services?: string[];
 };
 
@@ -53,6 +54,7 @@ export default function ManagerWorkersPage() {
                         rating: data.rating || 0,
                         verificationStatus: data.verificationStatus || 'Pending',
                         tasksCompleted: data.tasksCompleted || 0,
+                        workerGroup: data.workerGroup || 'N/A',
                         services: data.services || [],
                     } as Worker;
                 });
@@ -97,7 +99,7 @@ export default function ManagerWorkersPage() {
             <TableHeader>
                 <TableRow>
                 <TableHead>Worker Name</TableHead>
-                <TableHead>Join Date</TableHead>
+                <TableHead>Group</TableHead>
                 <TableHead>Rating</TableHead>
                 <TableHead>Completed Tasks</TableHead>
                 <TableHead>Status</TableHead>
@@ -110,7 +112,7 @@ export default function ManagerWorkersPage() {
                 {workers.map((worker) => (
                 <TableRow key={worker.id}>
                     <TableCell className="font-medium">{worker.displayName}</TableCell>
-                    <TableCell>{formatDate(worker.createdAt)}</TableCell>
+                    <TableCell>{worker.workerGroup}</TableCell>
                     <TableCell>{worker.rating.toFixed(1)}</TableCell>
                     <TableCell>{worker.tasksCompleted}</TableCell>
                     <TableCell>

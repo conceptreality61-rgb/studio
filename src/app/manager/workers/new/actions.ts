@@ -10,6 +10,7 @@ const createWorkerSchema = z.object({
   fatherName: z.string().min(2, "Father's name is required."),
   mobile: z.string().regex(/^\d{10}$/, "Mobile must be a 10-digit number."),
   idNumber: z.string().min(5, "ID number is required."),
+  workerGroup: z.string().min(1, "Worker group is required."),
   services: z.array(z.string()).optional(),
   // The file fields are not validated here as they are handled separately
   // in a real app (e.g., uploaded to a storage service).
@@ -32,9 +33,10 @@ export async function createWorker(values: z.infer<typeof createWorkerSchema>) {
     let errorMessage = 'Failed to create worker.';
     if (error instanceof z.ZodError) {
         errorMessage = error.errors.map(e => e.message).join(' ');
+    } else {
+        console.error('Error creating worker:', error);
     }
     
-    console.error('Error creating worker:', error);
     return { success: false, error: errorMessage };
   }
 }
