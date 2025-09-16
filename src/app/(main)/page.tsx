@@ -33,7 +33,7 @@ export default function HomePage() {
             Book trusted and professional household services in just a few clicks.
             From cleaning to gardening, we've got you covered.
           </p>
-          <Button size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
+          <Button size="lg" className="mt-8 bg-red-500 hover:bg-red-600 text-white" asChild>
             <Link href="#services">Book a Service</Link>
           </Button>
         </div>
@@ -97,7 +97,7 @@ export default function HomePage() {
 
       <section id="pricing" className="py-16 md:py-24 bg-background">
         <div className="container max-w-4xl text-center">
-          <h2 className="text-3xl md:text-4xl font-headline font-bold">Transparent Pricing</h2>
+          <h2 className="text-3xl md:text-4xl font_headline font-bold">Transparent Pricing</h2>
           <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
             No hidden fees. Simple, upfront pricing for all our services.
           </p>
