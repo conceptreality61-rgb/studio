@@ -128,30 +128,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="pricing" className="py-16 md:py-24 bg-background">
-        <div className="container max-w-4xl text-center">
-          <h2 className="text-3xl md:text-4xl font_headline font-bold">Transparent Pricing</h2>
-          <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
-            No hidden fees. Simple, upfront pricing for all our services.
-          </p>
-          <div className="mt-12 flex justify-center">
-            <Card className="w-full">
-              <div className="p-6">
-                <ul className="space-y-4">
-                  {services.map((service) => (
-                    <li key={service.id} className="flex justify-between items-center border-b pb-2">
-                      <span className="text-lg">{service.name}</span>
-                      <span className="text-lg font-bold text-primary">Rs.{service.price}/hr</span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-sm text-muted-foreground mt-4">* Prices may vary based on specific requirements.</p>
-              </div>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       <section id="testimonials" className="py-16 md:py-24 bg-secondary">
         <div className="container">
           <div className="text-center">
