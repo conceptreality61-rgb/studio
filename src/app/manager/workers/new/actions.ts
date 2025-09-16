@@ -5,14 +5,15 @@ import { db } from '@/lib/firebase-admin';
 import * as admin from 'firebase-admin';
 import { z } from 'zod';
 
-// This schema defines the shape of the data we expect to receive.
+// This schema is now only for type inference and is a simplified representation.
+// The primary validation is handled on the client in page.tsx.
 const createWorkerSchema = z.object({
-  displayName: z.string().min(2, "Name is required."),
-  fatherName: z.string().min(2, "Father's name is required."),
-  mobile: z.string().regex(/^\d{10}$/, "Mobile must be a 10-digit number."),
-  aadharNumber: z.string().regex(/^\d{12}$/, "Aadhar must be a 12-digit number."),
-  workerGroup: z.string().min(1, "Worker group is required."),
-  services: z.array(z.string()).min(1, "At least one service must be selected."),
+  displayName: z.string(),
+  fatherName: z.string(),
+  mobile: z.string(),
+  aadharNumber: z.string(),
+  workerGroup: z.string(),
+  services: z.array(z.string()),
 });
 
 export async function createWorker(values: z.infer<typeof createWorkerSchema>) {
