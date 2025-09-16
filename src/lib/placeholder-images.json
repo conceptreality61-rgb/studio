@@ -9,9 +9,9 @@
     },
     {
       "id": "house-cleaning",
-      "description": "A bright, clean, and modern living room.",
-      "imageUrl": "https://images.unsplash.com/photo-1558913936-f9e04f3759c5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjbGVhbiUyMGxpdmluZyUyMHJvb218ZW58MHx8fHwxNzYwODQ2NzQxfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "clean living room"
+      "description": "A person professionally cleaning a surface.",
+      "imageUrl": "https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxjbGVhbmluZyUyMHNlcnZpY2V8ZW58MHx8fHwxNzYwODQ3MDU0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cleaning service"
     },
     {
       "id": "bathroom-cleaning",
