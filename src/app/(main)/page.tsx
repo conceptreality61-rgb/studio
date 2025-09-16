@@ -24,7 +24,7 @@ export default function HomePage() {
             data-ai-hint={heroImage.imageHint}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/50 to-accent/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-accent/30" />
         <div className="relative container mx-auto h-full flex flex-col items-center justify-center text-center">
           <h1 className="text-4xl md:text-6xl font-headline font-bold drop-shadow-lg">
             Your Home, Spotlessly Clean
