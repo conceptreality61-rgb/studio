@@ -57,13 +57,13 @@ export default function HomePage() {
             data-ai-hint={heroImage.imageHint}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/30 to-background/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/30 via-transparent to-background/30" />
         <div className="relative container mx-auto h-full flex flex-col items-center justify-center text-center">
           <h1 className="text-4xl md:text-6xl font-headline font-bold drop-shadow-lg text-white">
             Your Home, Spotlessly Clean
           </h1>
           <p className="mt-4 max-w-2xl text-xl md:text-2xl drop-shadow-md text-white font-bold">
-            Book trusted and professional household services in just a few clicks. From cleaning to gardening, we've got you covered.
+            Book trusted and professional household services in just a few clicks. From spotless bathrooms to healthy gardens, we make your home shine inside and out.
           </p>
           <Button size="lg" className="mt-12 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full" asChild>
             <Link href="#services">Book a Service</Link>
