@@ -66,7 +66,7 @@ export default function MainHeader() {
         <Link href="/">
           <Logo className="text-primary" />
         </Link>
-        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+        <nav className="hidden md:flex items-center space-x-6 text-base font-medium">
           <Link href="/#services" className="transition-colors hover:text-primary">
             Our Services
           </Link>
