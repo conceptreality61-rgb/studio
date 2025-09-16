@@ -28,11 +28,17 @@ if (!admin.apps.length) {
       'This will only work in a hosted Google Cloud environment. ' +
       'For local development, set the FIREBASE_SERVICE_ACCOUNT_KEY environment variable.'
     );
-    admin.initializeApp();
+    // In a non-Google Cloud environment, initializeApp() without credentials will fail.
+    // We can check for a specific environment variable that indicates a GCP environment.
+    if (process.env.GCP_PROJECT) {
+      admin.initializeApp();
+    } else {
+        console.log('Skipping Firebase Admin SDK initialization due to missing credentials in a non-GCP environment.');
+    }
   }
 }
 
-const auth = admin.auth();
-const db = admin.firestore();
+const auth = admin.apps.length ? admin.auth() : ({} as admin.auth.Auth);
+const db = admin.apps.length ? admin.firestore() : ({} as admin.firestore.Firestore);
 
 export { auth, db };
