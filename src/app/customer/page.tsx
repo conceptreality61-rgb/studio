@@ -43,12 +43,11 @@ export default function CustomerDashboardPage() {
         const q = query(
             collection(db, 'bookings'), 
             where('userId', '==', user.uid),
-            orderBy('createdAt', 'desc'),
             limit(3)
         );
         const querySnapshot = await getDocs(q);
         const bookings = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
-        setRecentBookings(bookings);
+        setRecentBookings(bookings.sort((a, b) => (b as any).createdAt.toMillis() - (a as any).createdAt.toMillis()));
       } catch (error) {
         console.error("Error fetching recent bookings: ", error);
       } finally {

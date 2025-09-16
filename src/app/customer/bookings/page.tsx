@@ -59,12 +59,11 @@ export default function BookingsPage() {
       try {
         const q = query(
           collection(db, 'bookings'), 
-          where('userId', '==', user.uid),
-          orderBy('createdAt', 'desc')
+          where('userId', '==', user.uid)
         );
         const querySnapshot = await getDocs(q);
         const userBookings = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
-        setBookings(userBookings);
+        setBookings(userBookings.sort((a, b) => (b as any).createdAt.toMillis() - (a as any).createdAt.toMillis()));
       } catch (error) {
         console.error("Error fetching bookings: ", error);
         toast({

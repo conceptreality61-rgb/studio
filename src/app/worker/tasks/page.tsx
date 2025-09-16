@@ -43,12 +43,11 @@ export default function AllTasksPage() {
       try {
         const q = query(
           collection(db, 'bookings'),
-          where('workerId', '==', user.uid),
-          orderBy('createdAt', 'desc')
+          where('workerId', '==', user.uid)
         );
         const querySnapshot = await getDocs(q);
         const workerTasks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
-        setTasks(workerTasks);
+        setTasks(workerTasks.sort((a, b) => (b as any).createdAt.toMillis() - (a as any).createdAt.toMillis()));
       } catch (error) {
         console.error("Error fetching tasks:", error);
       } finally {
