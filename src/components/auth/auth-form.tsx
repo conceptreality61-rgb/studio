@@ -85,14 +85,16 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Check user role from Firestore
+        // Fetch user role from Firestore to ensure correct redirection
         const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists() && userDoc.data().role === role) {
+        if (userDoc.exists()) {
+            const userRole = userDoc.data().role;
             toast({ title: 'Logged in successfully!' });
-            onAuthSuccess(role);
+            onAuthSuccess(userRole);
         } else {
+             // This case might happen due to replication lag or if the user document was never created
             await auth.signOut();
-            throw new Error(`You are not authorized to log in as a ${role}.`);
+            throw new Error(`User data not found. Please try again or contact support if the problem persists.`);
         }
       }
     } catch (error: any) {
@@ -199,15 +201,6 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
   const description = isSignUp ? "Choose your role and let's get started." : 'Log in to access your dashboard.';
 
   const handleAuthSuccess = async (role: Role) => {
-    // Check if user exists in Firestore, if not, wait a bit for replication
-    if (auth.currentUser) {
-      let userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-      if (!userDoc.exists()) {
-        await new Promise((res) => setTimeout(res, 1500)); // Wait 1.5 seconds
-        userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid)); // Re-check
-      }
-    }
-
     const getRedirectPath = (selectedRole: Role) => {
       switch (selectedRole) {
         case 'manager':
@@ -240,13 +233,13 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
             <TabsTrigger value="manager">Manager</TabsTrigger>
           </TabsList>
           <TabsContent value="customer" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="customer" onAuthSuccess={() => handleAuthSuccess('customer')} />
+            <AuthFormFields isSignUp={isSignUp} role="customer" onAuthSuccess={handleAuthSuccess} />
           </TabsContent>
           <TabsContent value="worker" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="worker" onAuthSuccess={() => handleAuthSuccess('worker')} />
+            <AuthFormFields isSignUp={isSignUp} role="worker" onAuthSuccess={handleAuthSuccess} />
           </TabsContent>
           <TabsContent value="manager" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="manager" onAuthSuccess={() => handleAuthSuccess('manager')}/>
+            <AuthFormFields isSignUp={isSignUp} role="manager" onAuthSuccess={handleAuthSuccess}/>
           </TabsContent>
         </Tabs>
         <div className="mt-4 text-center text-sm">
