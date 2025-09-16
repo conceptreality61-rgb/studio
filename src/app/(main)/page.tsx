@@ -63,7 +63,7 @@ export default function HomePage() {
             Your Home, Spotlessly Clean
           </h1>
           <p className="mt-4 max-w-2xl text-xl md:text-2xl drop-shadow-md text-white font-bold">
-            Book trusted and professional household services in just a few clicks. From spotless bathrooms to healthy gardens, we make your home shine inside and out.
+            Book trusted and professional household services in just a few clicks. "From spotless bathrooms to healthy gardens, we make your home shine inside and out."
           </p>
           <Button size="lg" className="mt-12 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full" asChild>
             <Link href="#services">Book a Service</Link>
@@ -76,7 +76,7 @@ export default function HomePage() {
           <div className="text-center">
             <h2 className="text-3xl md:text-4xl font-headline font-bold">Our Services</h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
-              Choose from a variety of professional services to keep your home in perfect shape.
+              Your home deserves the best care. Choose a service and let our experts do the rest.
             </p>
           </div>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
