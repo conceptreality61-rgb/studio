@@ -210,11 +210,4 @@ export const customerNavItems: NavItem[] = [
   { title: 'Log Out', href: '#', icon: DoorOpen, action: 'logout' },
 ];
 
-export const workerNavItems: NavItem[] = [
-  { title: 'Dashboard', href: '/worker', icon: LayoutDashboard },
-  { title: 'My Tasks', href: '/worker/tasks', icon: Briefcase },
-  { title: 'Schedule', href: '/worker/schedule', icon: Calendar },
-  { title: 'Earnings', href: '/worker/earnings', icon: Wallet },
-  { title: 'Chat', href: '/worker/chat', icon: MessageSquare },
-  { title: 'Profile', href: '/worker/profile', icon: User },
-];
+    

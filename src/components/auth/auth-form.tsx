@@ -316,3 +316,5 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
     </Card>
   );
 }
+
+    

@@ -7,7 +7,7 @@ import * as z from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { createWorker } from './actions';
@@ -17,8 +17,10 @@ import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   displayName: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email({ message: "Please enter a valid email." }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  fatherName: z.string().min(2, { message: "Father's name must be at least 2 characters." }),
+  mobile: z.string().regex(/^\d{10}$/, { message: "Mobile must be a 10-digit number." }),
+  idNumber: z.string().min(5, { message: "ID number must be at least 5 characters." }),
+  services: z.string().optional(),
 });
 
 export default function NewWorkerPage() {
@@ -29,8 +31,10 @@ export default function NewWorkerPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       displayName: "",
-      email: "",
-      password: "",
+      fatherName: "",
+      mobile: "",
+      idNumber: "",
+      services: "",
     },
   });
 
@@ -41,7 +45,7 @@ export default function NewWorkerPage() {
       if (result.success) {
         toast({
           title: "Worker Created",
-          description: `An account for ${values.displayName} has been created.`,
+          description: `The profile for ${values.displayName} has been created.`,
         });
         router.push('/manager/workers');
       } else {
@@ -61,48 +65,78 @@ export default function NewWorkerPage() {
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Create a New Worker</CardTitle>
+        <CardTitle>Create a New Worker Profile</CardTitle>
         <CardDescription>
-          Create a new account for a service provider. They will be able to log in with the email and password you set.
+          Manually enter the details for a new service provider. This will not create a login account.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
-            <FormField
+            <div className="grid md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="displayName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="fatherName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Father's Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Robert Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+             <div className="grid md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="mobile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mobile Number</FormLabel>
+                      <FormControl>
+                        <Input type="tel" placeholder="10-digit number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="idNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ID Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Aadhar or Voter ID" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+             <FormField
               control={form.control}
-              name="displayName"
+              name="services"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>Services Provided</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Address</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="worker@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <Textarea placeholder="e.g., House Cleaning, Gardening" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -112,7 +146,7 @@ export default function NewWorkerPage() {
           <CardFooter>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLoading ? 'Creating...' : 'Create Worker Account'}
+              {isLoading ? 'Creating...' : 'Create Worker Profile'}
             </Button>
           </CardFooter>
         </form>
@@ -120,3 +154,5 @@ export default function NewWorkerPage() {
     </Card>
   );
 }
+
+    
