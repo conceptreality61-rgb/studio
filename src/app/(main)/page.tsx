@@ -33,7 +33,7 @@ export default function HomePage() {
             Book trusted and professional household services in just a few clicks.
             From cleaning to gardening, we've got you covered.
           </p>
-          <Button size="lg" className="mt-12 bg-red-500 hover:bg-red-600 text-white font-bold" asChild>
+          <Button size="lg" className="mt-12 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full" asChild>
             <Link href="#services">Book a Service</Link>
           </Button>
         </div>
