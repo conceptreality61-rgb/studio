@@ -21,6 +21,17 @@ import { DoorOpen, LayoutDashboard } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 
+function getRedirectPath(role: string) {
+  switch (role) {
+    case 'manager':
+      return '/manager';
+    case 'worker':
+      return '/worker';
+    default:
+      return '/customer';
+  }
+};
+
 export default function MainHeader() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -28,35 +39,31 @@ export default function MainHeader() {
 
   useEffect(() => {
     const fetchUserRole = async () => {
-      if (user) {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          setUserRole(userDoc.data().role);
+      if (user && !userRole) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            setUserRole(userDoc.data().role);
+          }
+        } catch (error) {
+          console.error("Failed to fetch user role:", error);
         }
+      } else if (!user) {
+        setUserRole(null);
       }
     };
     fetchUserRole();
-  }, [user]);
+  }, [user, userRole]);
 
   const handleLogout = async () => {
     await signOut(auth);
+    setUserRole(null);
     router.push('/');
   };
 
   const handleDashboard = () => {
-    switch(userRole) {
-        case 'customer':
-            router.push('/customer');
-            break;
-        case 'worker':
-            router.push('/worker');
-            break;
-        case 'manager':
-            router.push('/manager');
-            break;
-        default:
-            router.push('/');
-            break;
+    if(userRole) {
+      router.push(getRedirectPath(userRole));
     }
   }
 

@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import {
   AlertDialog,
@@ -39,12 +39,21 @@ type Role = 'customer' | 'worker' | 'manager';
 
 const SUPERADMIN_EMAIL = 'manager@cleansweep.com';
 
-function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean; role: Role; onAuthSuccess: (role: Role) => void; }) {
+function getRedirectPath(role: Role) {
+  switch (role) {
+    case 'manager':
+      return '/manager';
+    case 'worker':
+      return '/worker';
+    default:
+      return '/customer';
+  }
+};
+
+// Separate component for the fields to avoid re-rendering the whole form on tab change
+function SignUpFormFields({ role, onAuthSuccess }: { role: Role; onAuthSuccess: (role: Role) => void; }) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
-
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -55,7 +64,6 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
     const name = formData.get('name') as string;
 
     try {
-      if (isSignUp) {
         if (role === 'manager' && email !== SUPERADMIN_EMAIL) {
             toast({
                 variant: 'destructive',
@@ -81,22 +89,6 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
         
         toast({ title: 'Account created successfully!' });
         onAuthSuccess(role);
-      } else {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Fetch user role from Firestore to ensure correct redirection
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-            const userRole = userDoc.data().role;
-            toast({ title: 'Logged in successfully!' });
-            onAuthSuccess(userRole);
-        } else {
-             // This case might happen due to replication lag or if the user document was never created
-            await auth.signOut();
-            throw new Error(`User data not found. Please try again or contact support if the problem persists.`);
-        }
-      }
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -108,6 +100,75 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
     }
   };
 
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {role !== 'manager' && (
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input id="name" name="name" placeholder="John Doe" required />
+          </div>
+      )}
+       {role === 'manager' && (
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input id="name" name="name" placeholder="Super Manager" defaultValue="Super Manager" />
+          </div>
+      )}
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" name="email" type="email" placeholder="m@example.com" required 
+            defaultValue={role === 'manager' ? SUPERADMIN_EMAIL : ''}
+            readOnly={role === 'manager'}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <Input id="password" name="password" type="password" required />
+      </div>
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? <Loader2 className="animate-spin" /> : 'Sign Up'}
+      </Button>
+    </form>
+  );
+}
+
+function LoginForm({ onAuthSuccess }: { onAuthSuccess: (role: Role) => void; }) {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsLoading(true);
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+          const userRole = userDoc.data().role as Role;
+          toast({ title: 'Logged in successfully!' });
+          onAuthSuccess(userRole);
+      } else {
+          await auth.signOut();
+          throw new Error(`Your user data could not be found. Please try signing up again or contact support.`);
+      }
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Error',
+        description: error.message,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   const handlePasswordReset = async () => {
     if (!resetEmail) {
         toast({ variant: 'destructive', title: 'Error', description: 'Please enter your email address.' });
@@ -131,133 +192,109 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
     }
   }
 
-  const buttonText = isSignUp ? 'Sign Up' : 'Log In';
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {isSignUp && role !== 'manager' && (
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input id="name" name="name" placeholder="John Doe" required />
-          </div>
-      )}
-       {isSignUp && role === 'manager' && (
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input id="name" name="name" placeholder="Super Manager" defaultValue="Super Manager" />
-          </div>
-      )}
+     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" placeholder="m@example.com" required 
-            defaultValue={role === 'manager' ? SUPERADMIN_EMAIL : ''}
-            readOnly={role === 'manager'}
-        />
+        <Input id="email" name="email" type="email" placeholder="m@example.com" required />
       </div>
       <div className="space-y-2">
         <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
-            {!isSignUp && (
-                 <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <button type="button" className="text-sm font-medium text-primary hover:underline">Forgot Password?</button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Reset Your Password</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Enter your email address below and we'll send you a link to reset your password.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <div className="space-y-2">
-                            <Label htmlFor="reset-email">Email Address</Label>
-                            <Input id="reset-email" type="email" placeholder="you@example.com" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} />
-                        </div>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handlePasswordReset} disabled={isResetting}>
-                                {isResetting && <Loader2 className="animate-spin" />}
-                                {isResetting ? 'Sending...' : 'Send Reset Link'}
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            )}
+             <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <button type="button" className="text-sm font-medium text-primary hover:underline">Forgot Password?</button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Reset Your Password</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Enter your email address below and we'll send you a link to reset your password.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="space-y-2">
+                        <Label htmlFor="reset-email">Email Address</Label>
+                        <Input id="reset-email" type="email" placeholder="you@example.com" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} />
+                    </div>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handlePasswordReset} disabled={isResetting}>
+                            {isResetting && <Loader2 className="animate-spin" />}
+                            {isResetting ? 'Sending...' : 'Send Reset Link'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
         <Input id="password" name="password" type="password" required />
       </div>
       <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? <Loader2 className="animate-spin" /> : buttonText}
+        {isLoading ? <Loader2 className="animate-spin" /> : 'Log In'}
       </Button>
     </form>
-  );
+  )
 }
+
 
 export function AuthForm({ isSignUp = false }: AuthFormProps) {
   const router = useRouter();
-  const [currentTab, setCurrentTab] = useState<Role>('customer');
-
-  const title = isSignUp ? 'Create an Account' : 'Welcome Back';
-  const description = isSignUp ? "Choose your role and let's get started." : 'Log in to access your dashboard.';
 
   const handleAuthSuccess = async (role: Role) => {
-    const getRedirectPath = (selectedRole: Role) => {
-      switch (selectedRole) {
-        case 'manager':
-          return '/manager';
-        case 'worker':
-          return '/worker';
-        default:
-          return '/customer';
-      }
-    };
-    router.push(getRedirectPath(role));
-    router.refresh(); // Force a refresh to ensure layout gets user data
+    const path = getRedirectPath(role);
+    router.push(path);
+    // Use timeout to allow state to propagate before refresh
+    setTimeout(() => router.refresh(), 500);
   };
-
-  const onTabChange = (value: string) => {
-    setCurrentTab(value as Role);
-  }
-
-  return (
-    <Card className="w-full">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-headline">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="customer" className="w-full" onValueChange={onTabChange}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="customer">Customer</TabsTrigger>
-            <TabsTrigger value="worker">Worker</TabsTrigger>
-            <TabsTrigger value="manager">Manager</TabsTrigger>
-          </TabsList>
-          <TabsContent value="customer" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="customer" onAuthSuccess={handleAuthSuccess} />
-          </TabsContent>
-          <TabsContent value="worker" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="worker" onAuthSuccess={handleAuthSuccess} />
-          </TabsContent>
-          <TabsContent value="manager" className="mt-4">
-            <AuthFormFields isSignUp={isSignUp} role="manager" onAuthSuccess={handleAuthSuccess}/>
-          </TabsContent>
-        </Tabs>
-        <div className="mt-4 text-center text-sm">
-          {isSignUp ? (
-            <>
+  
+  if (isSignUp) {
+    return (
+      <Card className="w-full">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
+          <CardDescription>Choose your role and let's get started.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="customer" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="customer">Customer</TabsTrigger>
+              <TabsTrigger value="worker">Worker</TabsTrigger>
+              <TabsTrigger value="manager">Manager</TabsTrigger>
+            </TabsList>
+            <TabsContent value="customer" className="mt-4">
+              <SignUpFormFields role="customer" onAuthSuccess={handleAuthSuccess} />
+            </TabsContent>
+            <TabsContent value="worker" className="mt-4">
+              <SignUpFormFields role="worker" onAuthSuccess={handleAuthSuccess} />
+            </TabsContent>
+            <TabsContent value="manager" className="mt-4">
+              <SignUpFormFields role="manager" onAuthSuccess={handleAuthSuccess}/>
+            </TabsContent>
+          </Tabs>
+          <div className="mt-4 text-center text-sm">
               Already have an account?{' '}
               <Link href="/login" className="underline hover:text-primary">
                 Log In
               </Link>
-            </>
-          ) : (
-            <>
-              Don't have an account?{' '}
-              <Link href="/signup" className="underline hover:text-primary">
-                Sign Up
-              </Link>
-            </>
-          )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Login Form
+  return (
+    <Card className="w-full">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
+        <CardDescription>Log in to access your dashboard.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <LoginForm onAuthSuccess={handleAuthSuccess} />
+        <div className="mt-4 text-center text-sm">
+          Don't have an account?{' '}
+          <Link href="/signup" className="underline hover:text-primary">
+            Sign Up
+          </Link>
         </div>
       </CardContent>
     </Card>
