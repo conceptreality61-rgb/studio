@@ -189,7 +189,7 @@ export type NavItem = {
   href: string;
   icon: LucideIcon;
   label?: string;
-  action?: () => void;
+  action?: 'logout';
 };
 
 export const managerNavItems: NavItem[] = [
@@ -207,7 +207,7 @@ export const customerNavItems: NavItem[] = [
   { title: 'My Bookings', href: '/customer/bookings', icon: Briefcase },
   { title: 'My Reviews', href: '/customer/reviews', icon: Star },
   { title: 'Profile', href: '/customer/profile', icon: User },
-  { title: 'Log Out', href: '#', icon: DoorOpen },
+  { title: 'Log Out', href: '#', icon: DoorOpen, action: 'logout' },
 ];
 
 export const workerNavItems: NavItem[] = [

@@ -45,7 +45,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
           <SidebarMenu>
             {customerNavItems.map((item) => (
               <SidebarMenuItem key={item.href}>
-                {item.title === 'Log Out' ? (
+                {item.action === 'logout' ? (
                   <SidebarMenuButton
                     onClick={handleLogout}
                     tooltip={item.title}
