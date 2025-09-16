@@ -63,8 +63,7 @@ export default function HomePage() {
             Your Home, Spotlessly Clean
           </h1>
           <p className="mt-4 max-w-2xl text-xl md:text-2xl drop-shadow-md text-white font-bold">
-            Book trusted and professional household services in just a few clicks.
-            From cleaning to gardening, we've got you covered.
+            From spotless bathrooms to healthy gardens, we make your home shine inside and out.
           </p>
           <Button size="lg" className="mt-12 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full" asChild>
             <Link href="#services">Book a Service</Link>
