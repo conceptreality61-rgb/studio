@@ -62,17 +62,17 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-           <div className="flex items-center gap-3 p-2 rounded-md bg-secondary">
+           <div className="rounded-md bg-secondary p-2">
              {loading ? (
-                <>
+                <div className="flex items-center gap-3">
                     <Skeleton className="h-10 w-10 rounded-full" />
                     <div className='space-y-2'>
                         <Skeleton className="h-4 w-20" />
                         <Skeleton className="h-3 w-16" />
                     </div>
-                </>
+                </div>
              ) : user ? (
-                <>
+                <div className="flex items-center gap-3">
                 <Avatar>
                     <AvatarImage src={user.photoURL ?? undefined} />
                     <AvatarFallback>{user.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
@@ -81,15 +81,15 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
                     <p className="font-semibold text-sm">{user.displayName}</p>
                     <p className="text-xs text-muted-foreground">worker</p>
                 </div>
-                </>
+                </div>
              ) : (
                 <p>Not logged in</p>
              )}
+            <Button variant="ghost" className="w-full justify-start mt-2" onClick={handleLogout}>
+                <DoorOpen className="mr-2" />
+                <span>Log Out</span>
+            </Button>
            </div>
-           <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-              <DoorOpen className="mr-2" />
-              <span>Log Out</span>
-           </Button>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
