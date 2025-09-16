@@ -9,11 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { CreditCard, Landmark, Smartphone, Loader2 } from 'lucide-react';
+import { CreditCard, Landmark, Smartphone, Loader2, Camera } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { countries } from '@/lib/countries';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db, auth } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
@@ -53,6 +53,8 @@ export default function CustomerProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -96,6 +98,18 @@ export default function CustomerProfilePage() {
       }));
   };
 
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      // In a real app, you would upload the file here
+    }
+  };
+
   const handleSaveChanges = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user || !profile) return;
@@ -113,6 +127,10 @@ export default function CustomerProfilePage() {
       if (auth.currentUser && displayName && auth.currentUser.displayName !== displayName) {
         await updateProfile(auth.currentUser, { displayName });
       }
+
+      // Note: In a real app, if avatarPreview has a value,
+      // you would upload the file to Firebase Storage, get the URL,
+      // and update the user's photoURL in both Firebase Auth and Firestore.
 
       toast({
         title: 'Profile Updated',
@@ -155,10 +173,26 @@ export default function CustomerProfilePage() {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-4">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={user?.photoURL ?? `https://i.pravatar.cc/128?u=${user?.uid}`} />
-            <AvatarFallback>{profile?.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
-          </Avatar>
+            <div className="relative group">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={avatarPreview ?? user?.photoURL ?? `https://i.pravatar.cc/128?u=${user?.uid}`} />
+                <AvatarFallback>{profile?.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Camera className="h-6 w-6 text-white" />
+              </button>
+              <Input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleAvatarChange}
+                className="hidden"
+                accept="image/*"
+              />
+            </div>
           <div>
             <CardTitle className="text-3xl">{profile?.displayName}</CardTitle>
             <CardDescription className="text-base">{user?.email}</CardDescription>
@@ -303,3 +337,5 @@ export default function CustomerProfilePage() {
     </Card>
   );
 }
+
+    
