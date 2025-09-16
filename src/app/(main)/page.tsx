@@ -13,7 +13,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col">
-      <section className="relative w-full h-[60vh] md:h-[70vh] text-white">
+      <section className="relative w-full h-[60vh] md:h-[70vh]">
         {heroImage && (
           <Image
             src={heroImage.imageUrl}
@@ -24,12 +24,12 @@ export default function HomePage() {
             data-ai-hint={heroImage.imageHint}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-accent/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/30 to-background/30" />
         <div className="relative container mx-auto h-full flex flex-col items-center justify-center text-center">
-          <h1 className="text-4xl md:text-6xl font-headline font-bold drop-shadow-lg text-white">
+          <h1 className="text-4xl md:text-6xl font-headline font-bold drop-shadow-lg text-primary">
             Your Home, Spotlessly Clean
           </h1>
-          <p className="mt-4 max-w-2xl text-lg md:text-xl drop-shadow-md">
+          <p className="mt-4 max-w-2xl text-lg md:text-xl drop-shadow-md text-white">
             Book trusted and professional household services in just a few clicks.
             From cleaning to gardening, we've got you covered.
           </p>
