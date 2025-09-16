@@ -51,7 +51,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                     tooltip={item.title}
                   >
                     <item.icon />
-                    <span>{item.title}</span>
+                    <span className={item.title === 'Dashboard' ? 'font-bold text-base' : ''}>{item.title}</span>
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
