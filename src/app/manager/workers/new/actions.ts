@@ -13,10 +13,6 @@ export async function createWorker(values: {
   services: string[];
 }) {
   try {
-    if (!db.collection) {
-        throw new Error("Firebase Admin SDK not initialized. Firestore is unavailable.");
-    }
-      
     await db.collection('users').add({
       ...values,
       role: 'worker',
