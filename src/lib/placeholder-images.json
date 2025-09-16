@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "hero",
-      "description": "A beautiful home",
+      "description": "A collage representing various home services like cleaning and gardening.",
       "imageUrl": "/my-hero-background.jpg",
-      "imageHint": "beautiful home"
+      "imageHint": "home services collage"
     },
     {
       "id": "maid-service",
