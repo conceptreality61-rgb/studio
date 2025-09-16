@@ -24,7 +24,7 @@ const formSchema = z.object({
   mobile: z.string().regex(/^\d{10}$/, { message: "Mobile must be a 10-digit number." }),
   aadharNumber: z.string().regex(/^\d{12}$/, { message: "Aadhar must be a 12-digit number." }),
   workerGroup: z.string({ required_error: "Please select a worker group." }),
-  services: z.array(z.string()).refine(value => value.some(item => item), {
+  services: z.array(z.string()).min(1, {
     message: "You have to select at least one service.",
   }),
   // Note: File inputs are not part of the Zod schema for client-side validation
@@ -271,3 +271,5 @@ export default function NewWorkerPage() {
     </Card>
   );
 }
+
+    
