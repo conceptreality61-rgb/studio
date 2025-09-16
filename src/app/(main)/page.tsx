@@ -29,7 +29,7 @@ export default function HomePage() {
           <h1 className="text-4xl md:text-6xl font-headline font-bold drop-shadow-lg text-primary">
             Your Home, Spotlessly Clean
           </h1>
-          <p className="mt-4 max-w-2xl text-lg md:text-xl drop-shadow-md text-white">
+          <p className="mt-4 max-w-2xl text-lg md:text-xl drop-shadow-md text-primary font-bold">
             Book trusted and professional household services in just a few clicks.
             From cleaning to gardening, we've got you covered.
           </p>
