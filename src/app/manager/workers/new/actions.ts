@@ -4,8 +4,6 @@
 import { db } from '@/lib/firebase-admin';
 import * as admin from 'firebase-admin';
 
-// The form values are validated on the client-side using a Zod schema in the page.tsx file.
-// This server action receives the validated data.
 export async function createWorker(values: {
   displayName: string;
   fatherName: string;
@@ -15,8 +13,10 @@ export async function createWorker(values: {
   services: string[];
 }) {
   try {
-    // The 'values' object is already validated by the form on the client.
-    // We can proceed to save it directly.
+    if (!db.collection) {
+        throw new Error("Firebase Admin SDK not initialized. Firestore is unavailable.");
+    }
+      
     await db.collection('users').add({
       ...values,
       role: 'worker',
@@ -27,6 +27,7 @@ export async function createWorker(values: {
     return { success: true };
   } catch (error: any) {
     console.error('Error creating worker:', error);
-    return { success: false, error: 'An unexpected error occurred on the server.' };
+    // Return a more specific error message if possible
+    return { success: false, error: error.message || 'An unexpected error occurred on the server.' };
   }
 }
