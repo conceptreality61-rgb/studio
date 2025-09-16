@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
-import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck, Bath, Droplets } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck, Bath, Droplets, Sparkles } from 'lucide-react';
 
 export type ServiceSubCategoryOption = {
   id: string;
@@ -28,12 +28,12 @@ export type Service = {
 
 export const services: Service[] = [
   {
-    id: 'maid-service',
-    name: 'Maid Service',
+    id: 'house-cleaning',
+    name: 'House Cleaning',
     description: 'Professional home cleaning for a spotless living space.',
-    longDescription: 'Our professional maid services provide a thorough cleaning of your home, ensuring a spotless and healthy living environment. We cover all rooms, including dusting, vacuuming, mopping, and surface sanitization.',
-    icon: Home,
-    imageId: 'maid-service',
+    longDescription: 'Our professional house cleaning services provide a thorough cleaning of your home, ensuring a spotless and healthy living environment. We cover all rooms, including dusting, vacuuming, mopping, and surface sanitization.',
+    icon: Sparkles,
+    imageId: 'house-cleaning',
     price: 25, // Base price per hour
     subCategories: [
       {
