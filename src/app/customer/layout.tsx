@@ -13,7 +13,6 @@ import {
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
-  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { customerNavItems } from '@/lib/constants';
 import Logo from '@/components/logo';
@@ -34,6 +33,13 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
     await signOut(auth);
     router.push('/login');
   };
+
+  const isNavItemActive = (itemHref: string) => {
+    if (itemHref === '/customer') {
+      return pathname === itemHref;
+    }
+    return pathname.startsWith(itemHref);
+  }
 
   return (
     <SidebarProvider>
@@ -56,7 +62,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                 ) : (
                   <Link href={item.href}>
                     <SidebarMenuButton
-                      isActive={pathname.startsWith(item.href)}
+                      isActive={isNavItemActive(item.href)}
                       tooltip={item.title}
                     >
                       <item.icon />
@@ -68,8 +74,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
             ))}
           </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter>
-           <div className="rounded-md bg-secondary p-2">
+        <div className="p-2">
              {loading ? (
                 <div className="flex items-center gap-3">
                     <Skeleton className="h-10 w-10 rounded-full" />
@@ -79,21 +84,20 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                     </div>
                 </div>
              ) : user ? (
-                <div className="flex items-center gap-3">
-                <Avatar>
-                    <AvatarImage src={user.photoURL ?? undefined} />
-                    <AvatarFallback>{user.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div>
-                    <p className="font-semibold text-sm">{user.displayName}</p>
-                    <p className="text-xs text-muted-foreground">customer</p>
-                </div>
+                <div className="flex items-center gap-3 p-2 rounded-md bg-secondary">
+                  <Avatar>
+                      <AvatarImage src={user.photoURL ?? undefined} />
+                      <AvatarFallback>{user.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                      <p className="font-semibold text-sm">{user.displayName}</p>
+                      <p className="text-xs text-muted-foreground">customer</p>
+                  </div>
                 </div>
              ) : (
                 <p>Not logged in</p>
              )}
-           </div>
-        </SidebarFooter>
+        </div>
       </Sidebar>
       <SidebarInset>
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
