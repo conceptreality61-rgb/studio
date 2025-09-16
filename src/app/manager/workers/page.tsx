@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, where, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -71,9 +71,17 @@ export default function ManagerWorkersPage() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Workers</CardTitle>
-        <CardDescription>Manage your team of service providers.</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+            <CardTitle>Workers</CardTitle>
+            <CardDescription>Manage your team of service providers.</CardDescription>
+        </div>
+        <Button asChild>
+            <Link href="/manager/workers/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Create Worker
+            </Link>
+        </Button>
       </CardHeader>
       <CardContent>
         {loading ? (
