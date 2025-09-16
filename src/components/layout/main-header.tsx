@@ -108,13 +108,13 @@ export default function MainHeader() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     {userRole && (
-                        <DropdownMenuItem onClick={handleDashboard}>
+                        <DropdownMenuItem onClick={handleDashboard} className="cursor-pointer">
                             <LayoutDashboard className="mr-2 h-4 w-4" />
-                            <span>Dashboard</span>
+                            <span className="font-bold text-base">Dashboard</span>
                         </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
+                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                         <DoorOpen className="mr-2 h-4 w-4" />
                         <span>Log Out</span>
                     </DropdownMenuItem>
