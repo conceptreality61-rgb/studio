@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/firebase-admin';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import * as admin from 'firebase-admin';
 import { z } from 'zod';
 
 const createWorkerSchema = z.object({
@@ -19,11 +19,12 @@ export async function createWorker(values: z.infer<typeof createWorkerSchema>) {
   try {
     const validatedValues = createWorkerSchema.parse(values);
 
-    await addDoc(collection(db, 'users'), {
+    // Use the admin SDK's methods to add a document
+    await db.collection('users').add({
       ...validatedValues,
       role: 'worker',
       verificationStatus: 'Approved',
-      createdAt: serverTimestamp(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     return { success: true };
