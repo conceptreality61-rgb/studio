@@ -6,7 +6,7 @@ export default function Logo({ className }: { className?: string }) {
       <div className="bg-primary p-2 rounded-lg">
         <Brush className="text-primary-foreground h-6 w-6" />
       </div>
-      <span className="font-headline text-green-600">CleanSweep</span>
+      <span className="font-headline bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 bg-clip-text text-transparent">CleanSweep</span>
     </div>
   );
 }
