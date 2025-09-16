@@ -5,11 +5,44 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import ServiceCard from '@/components/service-card';
 import { services } from '@/lib/constants';
-import { CheckCircle, Users, Calendar } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { CheckCircle, Users, Calendar, Star } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function HomePage() {
   const heroImage = PlaceHolderImages.find((p) => p.id === 'hero');
+
+  const testimonials = [
+    {
+      name: 'Sarah L.',
+      location: 'Mumbai',
+      rating: 5,
+      comment: "The cleaning service was impeccable! My home has never looked this good. The team was professional, punctual, and paid attention to every little detail. Highly recommended!",
+      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
+    },
+    {
+      name: 'Rajesh K.',
+      location: 'Delhi',
+      rating: 5,
+      comment: "I've tried several gardening services before, but CleanSweep is by far the best. My garden is thriving, and the team is so knowledgeable and friendly.",
+      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026705d',
+    },
+    {
+      name: 'Priya M.',
+      location: 'Bangalore',
+      rating: 4,
+      comment: "The booking process was so simple and convenient. The bathroom cleaning was thorough, though they were a little late. Overall, a great experience.",
+      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026706d',
+    },
+     {
+      name: 'Amit S.',
+      location: 'Pune',
+      rating: 5,
+      comment: "Finally, a reliable service for water tank cleaning. They were professional, efficient, and now I have peace of mind about my water quality. Excellent job!",
+      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026707d',
+    },
+  ];
 
   return (
     <div className="flex flex-col">
@@ -116,6 +149,53 @@ export default function HomePage() {
               </div>
             </Card>
           </div>
+        </div>
+      </section>
+
+      <section id="testimonials" className="py-16 md:py-24 bg-secondary">
+        <div className="container">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-headline font-bold">What Our Customers Say</h2>
+            <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
+              Read real stories from satisfied customers.
+            </p>
+          </div>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full max-w-4xl mx-auto mt-12"
+          >
+            <CarouselContent>
+              {testimonials.map((testimonial, index) => (
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-1">
+                    <Card className="h-full">
+                      <CardContent className="pt-6 flex flex-col items-center text-center h-full">
+                        <Avatar className="mb-4 h-16 w-16">
+                          <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                          <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex items-center gap-0.5 mb-2">
+                            {[...Array(5)].map((_, i) => (
+                                <Star key={i} className={`h-5 w-5 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+                            ))}
+                        </div>
+                        <p className="text-muted-foreground italic flex-grow">"{testimonial.comment}"</p>
+                        <div className="mt-4">
+                          <p className="font-semibold">{testimonial.name}</p>
+                          <p className="text-sm text-muted-foreground">{testimonial.location}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
         </div>
       </section>
     </div>
