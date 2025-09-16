@@ -7,6 +7,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
@@ -18,6 +19,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 type AuthFormProps = {
   isSignUp?: boolean;
@@ -30,6 +42,9 @@ const SUPERADMIN_EMAIL = 'superadmin@cleansweep.com';
 function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean; role: Role; onAuthSuccess: (role: Role) => void; }) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -91,6 +106,29 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
     }
   };
 
+  const handlePasswordReset = async () => {
+    if (!resetEmail) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Please enter your email address.' });
+        return;
+    }
+    setIsResetting(true);
+    try {
+        await sendPasswordResetEmail(auth, resetEmail);
+        toast({
+            title: 'Password Reset Email Sent',
+            description: 'Check your inbox for a link to reset your password.',
+        });
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: error.message,
+        });
+    } finally {
+        setIsResetting(false);
+    }
+  }
+
   const buttonText = isSignUp ? 'Sign Up' : 'Log In';
 
   return (
@@ -115,7 +153,35 @@ function AuthFormFields({ isSignUp, role, onAuthSuccess }: { isSignUp?: boolean;
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <div className="flex items-center justify-between">
+            <Label htmlFor="password">Password</Label>
+            {!isSignUp && (
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <button type="button" className="text-sm font-medium text-primary hover:underline">Forgot Password?</button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Reset Your Password</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Enter your email address below and we'll send you a link to reset your password.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <div className="space-y-2">
+                            <Label htmlFor="reset-email">Email Address</Label>
+                            <Input id="reset-email" type="email" placeholder="you@example.com" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} />
+                        </div>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handlePasswordReset} disabled={isResetting}>
+                                {isResetting && <Loader2 className="animate-spin" />}
+                                {isResetting ? 'Sending...' : 'Send Reset Link'}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
+        </div>
         <Input id="password" name="password" type="password" required />
       </div>
       <Button type="submit" className="w-full" disabled={isLoading}>
