@@ -59,7 +59,7 @@ export default function HomePage() {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background/30 via-transparent to-background/30" />
         <div className="relative container mx-auto h-full flex flex-col items-center justify-center text-center">
-          <h1 className="text-4xl md:text-6xl font-headline font-bold drop-shadow-lg text-white">
+          <h1 className="text-4xl md:text-6xl font-headline font-bold drop-shadow-lg bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 bg-clip-text text-transparent">
             Your Home, Spotlessly Clean
           </h1>
           <p className="mt-4 max-w-2xl text-xl md:text-2xl drop-shadow-md text-white font-bold">
