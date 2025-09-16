@@ -11,7 +11,7 @@ export default function MainFooter() {
             <Link href="/">
               <Logo className="text-primary justify-center md:justify-start"/>
             </Link>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-base font-bold text-muted-foreground">
               Your Home, Spotlessly Clean.
             </p>
           </div>
