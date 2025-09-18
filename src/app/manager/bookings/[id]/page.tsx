@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { assignWorkerToBooking } from './actions';
 import { useToast } from '@/hooks/use-toast';
+import { addHours, differenceInHours, startOfDay, endOfDay } from 'date-fns';
 
 type Booking = {
   id: string;
@@ -63,6 +64,23 @@ export default function ManagerBookingDetailPage() {
   const [selectedWorkerId, setSelectedWorkerId] = useState<string | undefined>(undefined);
   const [isAssigning, setIsAssigning] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // A helper function to parse time strings like "09:00 AM" into a Date object
+  const parseTime = (date: Date, timeStr: string) => {
+    const [time, modifier] = timeStr.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+
+    if (modifier === 'PM' && hours < 12) {
+      hours += 12;
+    }
+    if (modifier === 'AM' && hours === 12) {
+      hours = 0;
+    }
+    const newDate = new Date(date);
+    newDate.setHours(hours, minutes, 0, 0);
+    return newDate;
+  };
+
 
   useEffect(() => {
     const fetchBookingAndWorkers = async () => {
@@ -77,7 +95,6 @@ export default function ManagerBookingDetailPage() {
           const bookingData = { id: docSnap.id, ...docSnap.data() } as Booking;
           setBooking(bookingData);
           
-          // Fetch customer
           if (bookingData.userId) {
               const userDocRef = doc(db, 'users', bookingData.userId);
               const userDocSnap = await getDoc(userDocRef);
@@ -86,14 +103,44 @@ export default function ManagerBookingDetailPage() {
               }
           }
 
-          // Fetch workers if needed
           if (['Pending Manager Approval', 'Worker Assigned'].includes(bookingData.status)) {
+            const bookingDate = bookingData.date.toDate();
+            const startOfBookingDay = startOfDay(bookingDate);
+            const endOfBookingDay = endOfDay(bookingDate);
+
+            // 1. Fetch all bookings for the same day
+            const bookingsQuery = query(
+              collection(db, 'bookings'),
+              where('date', '>=', startOfBookingDay),
+              where('date', '<=', endOfBookingDay)
+            );
+            const dayBookingsSnapshot = await getDocs(bookingsQuery);
+            const dayBookings = dayBookingsSnapshot.docs.map(d => d.data() as Booking);
+
+            // 2. Fetch all workers
             const workersQuery = query(collection(db, 'workers'), orderBy('displayName'));
             const workersSnapshot = await getDocs(workersQuery);
             const allWorkersData = workersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Worker));
-            // Filter workers based on the booking's service type
+            
+            // 3. Filter workers by service qualification
             const qualifiedWorkers = allWorkersData.filter(worker => worker.services?.includes(bookingData.serviceId));
-            setWorkers(qualifiedWorkers);
+
+            // 4. Filter out workers with scheduling conflicts
+            const currentBookingTime = parseTime(bookingDate, bookingData.time);
+
+            const availableWorkers = qualifiedWorkers.filter(worker => {
+              const workerBookings = dayBookings.filter(b => b.workerId === worker.id && b.id !== bookingData.id);
+              if (workerBookings.length === 0) return true; // Worker is free
+
+              // Check for conflicts
+              return workerBookings.every(wb => {
+                const existingBookingTime = parseTime(wb.date.toDate(), wb.time);
+                const hoursDifference = Math.abs(differenceInHours(currentBookingTime, existingBookingTime));
+                return hoursDifference >= 2;
+              });
+            });
+
+            setWorkers(availableWorkers);
           }
 
         } else {
@@ -132,7 +179,7 @@ export default function ManagerBookingDetailPage() {
           toast({ title: 'Worker Assigned', description: `Assigned ${worker.displayName} to the booking.` });
           // Optimistically update UI
           setBooking(prev => prev ? { ...prev, status: 'Worker Assigned', workerId: worker.id, workerName: worker.displayName } : null);
-          setSelectedWorkerId(undefined); // Reset select
+          setSelectedWorkerId(undefined);
       } else {
           toast({ variant: 'destructive', title: 'Assignment Failed', description: result.error });
       }
@@ -203,7 +250,7 @@ export default function ManagerBookingDetailPage() {
                             <div className="flex items-center gap-4">
                                 <Select onValueChange={setSelectedWorkerId} value={selectedWorkerId}>
                                     <SelectTrigger className="w-[280px]">
-                                        <SelectValue placeholder="Select a qualified worker" />
+                                        <SelectValue placeholder="Select an available worker" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {workers.map(worker => (
@@ -217,7 +264,7 @@ export default function ManagerBookingDetailPage() {
                                 </Button>
                             </div>
                         ) : (
-                            <p className="text-sm text-muted-foreground">No qualified workers found for this service. Please assign a service to a worker first.</p>
+                            <p className="text-sm text-muted-foreground">No qualified and available workers found for this service and time slot.</p>
                         )}
                     </div>
                 </div>
@@ -241,3 +288,5 @@ export default function ManagerBookingDetailPage() {
     </div>
   );
 }
+
+    
