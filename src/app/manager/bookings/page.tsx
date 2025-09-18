@@ -147,7 +147,7 @@ export default function ManagerBookingsPage() {
             <Table>
             <TableHeader>
                 <TableRow>
-                <TableHead>Booking ID</TableHead>
+                <TableHead><b>Booking ID</b></TableHead>
                 <TableHead>Service</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Assigned Worker</TableHead>
