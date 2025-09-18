@@ -47,11 +47,11 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 };
 
 const rowStatusHighlight: { [key: string]: string } = {
-  'Pending Manager Approval': 'bg-red-200 hover:bg-red-300/80',
-  'Worker Assigned': 'bg-sky-200 hover:bg-sky-300/80',
-  'In Progress': 'bg-indigo-200 hover:bg-indigo-300/80',
-  'Completed': 'bg-green-200 hover:bg-green-300/80',
-  'Canceled': 'bg-gray-200 hover:bg-gray-300/80',
+  'Pending Manager Approval': 'bg-red-400 hover:bg-red-400/80',
+  'Worker Assigned': 'bg-sky-400 hover:bg-sky-400/80',
+  'In Progress': 'bg-indigo-400 hover:bg-indigo-400/80',
+  'Completed': 'bg-green-400 hover:bg-green-400/80',
+  'Canceled': 'bg-gray-400 hover:bg-gray-400/80',
 };
 
 
@@ -67,6 +67,25 @@ export default function ManagerBookingsPage() {
                 const bookingsQuery = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
                 const bookingsSnapshot = await getDocs(bookingsQuery);
                 const bookingsData = bookingsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
+                
+                const statusOrder = {
+                    'Pending Manager Approval': 1,
+                    'Worker Assigned': 2,
+                    'In Progress': 3,
+                    'Completed': 4,
+                    'Canceled': 5,
+                };
+                
+                bookingsData.sort((a, b) => {
+                    const orderA = statusOrder[a.status] || 99;
+                    const orderB = statusOrder[b.status] || 99;
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+                    // If statuses are the same, sort by date (newest first)
+                    return b.date.toMillis() - a.date.toMillis();
+                });
+                
                 setBookings(bookingsData);
 
                 const workersQuery = query(collection(db, 'workers'), orderBy('displayName'));
