@@ -56,3 +56,13 @@ export async function refuseJob(bookingId: string, workerId: string) {
     return { success: false, error: 'Failed to refuse job.' };
   }
 }
+
+export async function completeJob(bookingId: string) {
+  try {
+    const bookingRef = doc(db, 'bookings', bookingId);
+    await updateDoc(bookingRef, { status: 'Completed' });
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: 'Failed to complete job.' };
+  }
+}

@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { assignWorkerToBooking, acceptJob, refuseJob } from './actions';
+import { assignWorkerToBooking, acceptJob, refuseJob, completeJob } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { addHours, differenceInHours, startOfDay, endOfDay } from 'date-fns';
 
@@ -219,14 +219,102 @@ export default function ManagerBookingDetailPage() {
     const result = await refuseJob(booking.id, booking.workerId);
     if (result.success) {
       toast({ title: 'Job Refused', description: 'The job has been returned for re-assignment.' });
-      setBooking(prev => prev ? { ...prev, status: 'Pending Manager Approval', workerId: undefined, workerName: undefined } : null);
+      setBooking(prev => prev ? { ...prev, status: 'Pending Manager Approval', workerId: undefined, workerName: undefined, refusedBy: [...(prev.refusedBy || []), prev.workerId!] } : null);
     } else {
       toast({ variant: 'destructive', title: 'Error', description: result.error });
     }
     setIsSubmitting(false);
   };
   
+  const handleComplete = async () => {
+    if (!booking) return;
+    setIsSubmitting(true);
+    const result = await completeJob(booking.id);
+    if (result.success) {
+      toast({ title: 'Job Completed!', description: 'The job has been marked as completed.' });
+      setBooking(prev => prev ? { ...prev, status: 'Completed' } : null);
+    } else {
+      toast({ variant: 'destructive', title: 'Error', description: result.error });
+    }
+    setIsSubmitting(false);
+  };
+
   const isAssignmentDisabled = isAssigning || !selectedWorkerId || selectedWorkerId === booking?.workerId;
+
+  const renderActions = () => {
+    if (!booking) return null;
+
+    switch (booking.status) {
+      case 'Pending Manager Approval':
+        return (
+          <>
+            <h3 className="font-semibold mb-4 text-lg">Assign Worker</h3>
+            {loading ? <Skeleton className="h-10 w-full" /> : workers.length > 0 ? (
+                <div className="flex items-center gap-4">
+                    <Select onValueChange={setSelectedWorkerId} value={selectedWorkerId}>
+                        <SelectTrigger className="w-[280px]">
+                            <SelectValue placeholder="Select an available worker" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {workers.map(worker => (
+                                <SelectItem key={worker.id} value={worker.id}>{worker.displayName}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Button onClick={handleAssignWorker} disabled={isAssignmentDisabled}>
+                        {isAssigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Assign
+                    </Button>
+                </div>
+            ) : (
+                <p className="text-sm text-muted-foreground">No qualified and available workers found for this service and time slot.</p>
+            )}
+            {booking?.refusedBy && booking.refusedBy.length > 0 && (
+              <p className="text-xs text-destructive mt-2">Note: This job was previously refused by {booking.refusedBy.length} worker(s).</p>
+            )}
+          </>
+        );
+
+      case 'Worker Assigned':
+        return (
+            <>
+                <h3 className="font-semibold mb-4 text-lg">Worker Actions</h3>
+                <div className="flex items-center gap-4">
+                    <p className="text-sm text-muted-foreground">Confirm with <strong>{booking.workerName}</strong> and update status:</p>
+                    <Button size="sm" variant="destructive" onClick={handleRefuse} disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : <XCircle />}
+                        Refuse Job
+                    </Button>
+                    <Button size="sm" onClick={handleAccept} disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : <CheckCircle />}
+                        Accept Job
+                    </Button>
+                </div>
+            </>
+        );
+    
+      case 'In Progress':
+        return (
+            <>
+                <h3 className="font-semibold mb-4 text-lg">Update Progress</h3>
+                <div className="flex items-center gap-4">
+                    <p className="text-sm text-muted-foreground">Update job handled by <strong>{booking.workerName}</strong>:</p>
+                    <Button size="sm" variant="destructive" onClick={handleRefuse} disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : <XCircle />}
+                        Refuse / Re-assign
+                    </Button>
+                    <Button size="sm" onClick={handleComplete} disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : <CheckCircle />}
+                        Mark as Complete
+                    </Button>
+                </div>
+            </>
+        );
+
+      default:
+        return null;
+    }
+  }
 
   return (
     <div className="grid gap-6">
@@ -281,52 +369,11 @@ export default function ManagerBookingDetailPage() {
                     <p>Customer details not found.</p>
                  )}
             </div>
-            {booking && ['Pending Manager Approval', 'Worker Assigned'].includes(booking.status) && (
+            {booking && !['Completed', 'Canceled'].includes(booking.status) && (
                 <div className="md:col-span-2">
                     <Separator />
                     <div className="pt-6">
-                        <h3 className="font-semibold mb-4 text-lg">{booking.status === 'Worker Assigned' ? 'Worker Actions / Re-assign' : 'Assign Worker'}</h3>
-                        {booking.status === 'Pending Manager Approval' && (
-                            <>
-                            {loading ? <Skeleton className="h-10 w-full" /> : workers.length > 0 ? (
-                                <div className="flex items-center gap-4">
-                                    <Select onValueChange={setSelectedWorkerId} value={selectedWorkerId}>
-                                        <SelectTrigger className="w-[280px]">
-                                            <SelectValue placeholder="Select an available worker" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {workers.map(worker => (
-                                                <SelectItem key={worker.id} value={worker.id}>{worker.displayName}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <Button onClick={handleAssignWorker} disabled={isAssignmentDisabled}>
-                                        {isAssigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                        Assign
-                                    </Button>
-                                </div>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No qualified and available workers found for this service and time slot.</p>
-                            )}
-                            </>
-                        )}
-
-                        {booking.status === 'Worker Assigned' && (
-                             <div className="flex items-center gap-4">
-                                <p className="text-sm text-muted-foreground">Confirm with <strong>{booking.workerName}</strong> and update status:</p>
-                                <Button size="sm" variant="destructive" onClick={handleRefuse} disabled={isSubmitting}>
-                                    {isSubmitting ? <Loader2 className="animate-spin" /> : <XCircle />}
-                                    Refuse Job
-                                </Button>
-                                <Button size="sm" onClick={handleAccept} disabled={isSubmitting}>
-                                    {isSubmitting ? <Loader2 className="animate-spin" /> : <CheckCircle />}
-                                    Accept Job
-                                </Button>
-                            </div>
-                        )}
-                        {booking?.refusedBy && booking.refusedBy.length > 0 && (
-                            <p className="text-xs text-destructive mt-2">Note: This job was previously refused by {booking.refusedBy.length} worker(s).</p>
-                        )}
+                       {renderActions()}
                     </div>
                 </div>
             )}
