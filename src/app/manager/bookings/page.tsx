@@ -13,14 +13,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, ArrowUpDown } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MoreHorizontal, ArrowUpDown, Calendar as CalendarIcon, Search } from "lucide-react";
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, updateDoc, query, orderBy, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 
 type Booking = {
   id: string;
@@ -49,9 +52,11 @@ const statusVariant: { [key: string]: any } = {
 
 export default function ManagerBookingsPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
-    const [workers, setWorkers] = useState<Worker[]>([]);
+    const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -74,16 +79,11 @@ export default function ManagerBookingsPage() {
                     if (orderA !== orderB) {
                         return orderA - orderB;
                     }
-                    // If statuses are the same, sort by date (newest first)
                     return b.date.toMillis() - a.date.toMillis();
                 });
                 
                 setBookings(bookingsData);
-
-                const workersQuery = query(collection(db, 'workers'), orderBy('displayName'));
-                const workersSnapshot = await getDocs(workersQuery);
-                const workersData = workersSnapshot.docs.map(doc => ({ id: doc.id, displayName: doc.data().displayName } as Worker));
-                setWorkers(workersData);
+                setFilteredBookings(bookingsData);
 
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -94,36 +94,27 @@ export default function ManagerBookingsPage() {
         };
         fetchData();
     }, [toast]);
-
-    const handleWorkerChange = async (bookingId: string, workerId: string) => {
-        const selectedWorker = workers.find(w => w.id === workerId);
-        if (!selectedWorker) return;
-
-        try {
-            const bookingRef = doc(db, 'bookings', bookingId);
-            await updateDoc(bookingRef, {
-                workerId: workerId,
-                workerName: selectedWorker.displayName,
-                status: 'Worker Assigned'
-            });
-
-            setBookings(currentBookings =>
-                currentBookings.map(b =>
-                    b.id === bookingId ? { 
-                        ...b, 
-                        workerId: workerId, 
-                        workerName: selectedWorker.displayName, 
-                        status: 'Worker Assigned' 
-                    } : b
-                )
-            );
-            toast({ title: "Worker Assigned", description: `${selectedWorker.displayName} has been assigned to booking #${bookingId.substring(0,6)}.`});
-        } catch (error) {
-            console.error("Error assigning worker: ", error);
-            toast({ variant: 'destructive', title: "Error", description: "Failed to assign worker." });
-        }
-    };
     
+    useEffect(() => {
+        const lowercasedFilter = searchTerm.toLowerCase();
+        const filteredData = bookings.filter((booking) => {
+            const matchesSearchTerm = (
+                booking.id.toLowerCase().includes(lowercasedFilter) ||
+                booking.serviceName.toLowerCase().includes(lowercasedFilter) ||
+                booking.customerName.toLowerCase().includes(lowercasedFilter) ||
+                (booking.workerName && booking.workerName.toLowerCase().includes(lowercasedFilter))
+            );
+            
+            const matchesDate = selectedDate
+                ? format(booking.date.toDate(), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+                : true;
+
+            return matchesSearchTerm && matchesDate;
+        });
+        setFilteredBookings(filteredData);
+    }, [searchTerm, selectedDate, bookings]);
+
+
     const formatDate = (timestamp: Timestamp) => {
         if (!timestamp) return 'N/A';
         return timestamp.toDate().toLocaleDateString();
@@ -135,6 +126,41 @@ export default function ManagerBookingsPage() {
       <CardHeader>
         <CardTitle>All Bookings</CardTitle>
         <CardDescription>Manage and assign all customer bookings.</CardDescription>
+        <div className="flex flex-col sm:flex-row items-center gap-2 pt-4">
+            <div className="relative w-full">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search by ID, service, customer..."
+                className="pl-8 sm:w-64"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+             <Popover>
+                <PopoverTrigger asChild>
+                <Button
+                    variant={"outline"}
+                    className={cn(
+                    "w-full sm:w-auto justify-start text-left font-normal",
+                    !selectedDate && "text-muted-foreground"
+                    )}
+                >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    initialFocus
+                />
+                </PopoverContent>
+            </Popover>
+            {selectedDate && <Button variant="ghost" onClick={() => setSelectedDate(undefined)}>Clear Date</Button>}
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -161,7 +187,7 @@ export default function ManagerBookingsPage() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {bookings.map((booking, index) => (
+                {filteredBookings.map((booking, index) => (
                 <TableRow key={booking.id}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell className="font-medium">{booking.id.substring(0, 6)}</TableCell>
@@ -174,11 +200,6 @@ export default function ManagerBookingsPage() {
                     <TableCell>
                       <Badge 
                         variant={statusVariant[booking.status] || 'default'}
-                        className={cn(
-                            {'bg-sky-500 text-white': booking.status === 'Worker Assigned'},
-                            {'bg-indigo-500 text-white': booking.status === 'In Progress'},
-                            {'bg-green-500 text-white': booking.status === 'Completed'},
-                        )}
                       >
                         {booking.status}
                       </Badge>
