@@ -179,12 +179,24 @@ export default function ManagerWorkerProfilePage() {
   return (
     <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-             <StatCard title="Assigned Jobs" value={String(stats.assigned)} description="Waiting for acceptance" icon={Clock} />
-             <StatCard title="In Progress Jobs" value={String(stats.inProgress)} description="Currently active" icon={PlayCircle} />
-             <StatCard title="Completed Jobs" value={String(stats.completed)} description="Successfully finished" icon={CheckCircle} />
-             <StatCard title="CANCELLED BY MANAGER" value={String(stats.canceled)} description="Jobs re-assigned by manager" icon={XCircle} />
-             <StatCard title="Refused Jobs" value={String(stats.refused)} description="Jobs refused by worker" icon={Ban} />
-             <StatCard title="Canceled by Customer" value={String(stats.customerCanceled)} description="Jobs canceled by customer" icon={UserX} />
+            <Link href={`/manager/bookings?worker=${worker.displayName}&status=Worker Assigned`}>
+                <StatCard title="Assigned Jobs" value={String(stats.assigned)} description="Waiting for acceptance" icon={Clock} />
+            </Link>
+            <Link href={`/manager/bookings?worker=${worker.displayName}&status=In Progress`}>
+                <StatCard title="In Progress Jobs" value={String(stats.inProgress)} description="Currently active" icon={PlayCircle} />
+            </Link>
+            <Link href={`/manager/bookings?worker=${worker.displayName}&status=Completed`}>
+                <StatCard title="Completed Jobs" value={String(stats.completed)} description="Successfully finished" icon={CheckCircle} />
+            </Link>
+            <Link href={`/manager/bookings?worker=${worker.displayName}&reassigned=true`}>
+                <StatCard title="CANCELLED BY MANAGER" value={String(stats.canceled)} description="Jobs re-assigned by manager" icon={XCircle} />
+            </Link>
+            <Link href={`/manager/bookings?worker=${worker.displayName}&refused=true`}>
+                <StatCard title="Refused Jobs" value={String(stats.refused)} description="Jobs refused by worker" icon={Ban} />
+            </Link>
+            <Link href={`/manager/bookings?worker=${worker.displayName}&status=Canceled`}>
+                <StatCard title="Canceled by Customer" value={String(stats.customerCanceled)} description="Jobs canceled by customer" icon={UserX} />
+            </Link>
         </div>
 
         <Card>
@@ -302,3 +314,5 @@ export default function ManagerWorkerProfilePage() {
     </div>
   );
 }
+
+    

@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, ArrowUpDown, Calendar as CalendarIcon, Search } from "lucide-react";
+import { MoreHorizontal, ArrowUpDown, Calendar as CalendarIcon, Search, X } from "lucide-react";
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, updateDoc, query, orderBy, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,6 +35,8 @@ type Booking = {
   date: Timestamp;
   status: 'Pending Manager Approval' | 'Worker Assigned' | 'Completed' | 'Canceled' | 'In Progress';
   servicePrice: number;
+  refusedBy?: string[];
+  canceledWorkerIds?: string[];
 };
 
 type Worker = {
@@ -51,12 +54,23 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 
 
 export default function ManagerBookingsPage() {
+    const searchParams = useSearchParams();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+    
+    // State for filters
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+    const [statusFilter, setStatusFilter] = useState<string | null>(null);
+    const [workerFilter, setWorkerFilter] = useState<string | null>(null);
+
+    useEffect(() => {
+        setSearchTerm(searchParams.get('worker') || '');
+        setStatusFilter(searchParams.get('status'));
+        setWorkerFilter(searchParams.get('worker'));
+    }, [searchParams]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -83,7 +97,6 @@ export default function ManagerBookingsPage() {
                 });
                 
                 setBookings(bookingsData);
-                setFilteredBookings(bookingsData);
 
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -96,23 +109,38 @@ export default function ManagerBookingsPage() {
     }, [toast]);
     
     useEffect(() => {
-        const lowercasedFilter = searchTerm.toLowerCase();
+        const lowercasedSearch = searchTerm.toLowerCase();
+
         const filteredData = bookings.filter((booking) => {
             const matchesSearchTerm = (
-                (booking.id && booking.id.toLowerCase().includes(lowercasedFilter)) ||
-                (booking.serviceName && booking.serviceName.toLowerCase().includes(lowercasedFilter)) ||
-                (booking.customerName && booking.customerName.toLowerCase().includes(lowercasedFilter)) ||
-                (booking.workerName && booking.workerName.toLowerCase().includes(lowercasedFilter))
+                booking.id.toLowerCase().includes(lowercasedSearch) ||
+                booking.serviceName.toLowerCase().includes(lowercasedSearch) ||
+                booking.customerName.toLowerCase().includes(lowercasedSearch) ||
+                (booking.workerName && booking.workerName.toLowerCase().includes(lowercasedSearch))
             );
             
             const matchesDate = selectedDate
                 ? format(booking.date.toDate(), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
                 : true;
+            
+            const matchesStatus = statusFilter ? booking.status === statusFilter : true;
+            
+            const matchesWorker = workerFilter ? booking.workerName === workerFilter : true;
 
-            return matchesSearchTerm && matchesDate;
+            return matchesSearchTerm && matchesDate && matchesStatus && matchesWorker;
         });
         setFilteredBookings(filteredData);
-    }, [searchTerm, selectedDate, bookings]);
+    }, [searchTerm, selectedDate, statusFilter, workerFilter, bookings]);
+
+    const clearFilters = () => {
+        setSearchTerm('');
+        setSelectedDate(undefined);
+        setStatusFilter(null);
+        setWorkerFilter(null);
+        router.push('/manager/bookings');
+    };
+    
+    const router = useRouter();
 
 
     const formatDate = (timestamp: Timestamp) => {
@@ -159,7 +187,7 @@ export default function ManagerBookingsPage() {
                 />
                 </PopoverContent>
             </Popover>
-            {selectedDate && <Button variant="ghost" onClick={() => setSelectedDate(undefined)}>Clear Date</Button>}
+            {(selectedDate || statusFilter || workerFilter) && <Button variant="ghost" onClick={clearFilters}><X className="mr-2 h-4 w-4"/>Clear Filters</Button>}
         </div>
       </CardHeader>
       <CardContent>
@@ -231,3 +259,5 @@ export default function ManagerBookingsPage() {
     </Card>
   );
 }
+
+    
