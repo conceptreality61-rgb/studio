@@ -24,11 +24,17 @@ import { Button } from '@/components/ui/button';
 import { DoorOpen } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import React, { useEffect, useState } from 'react';
 
 export default function ManagerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, loading } = useRequireAuth('manager');
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -42,7 +48,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
     return pathname.startsWith(itemHref);
   }
 
-  if (loading || !user) {
+  if (!isClient || loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Skeleton className="h-screen w-full" />
