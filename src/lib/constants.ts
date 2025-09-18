@@ -196,8 +196,6 @@ export const managerNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/manager', icon: LayoutDashboard },
   { title: 'Bookings', href: '/manager/bookings', icon: Briefcase },
   { title: 'Customers', href: '/manager/customers', icon: Users },
-  { title: 'Workers', href: '/manager/workers', icon: UserCheck },
-  { title: 'Smart Router', href: '/manager/smart-router', icon: Route },
   { title: 'Analytics', href: '/manager/analytics', icon: BarChart },
   { title: 'Settings', href: '/manager/settings', icon: Settings },
 ];
