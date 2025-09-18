@@ -6,9 +6,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
-import { doc, getDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, Mail, Phone, Home, Briefcase, Calendar, Car, ShieldCheck, BadgeCheck, Loader2, Eye } from 'lucide-react';
+import { User, Mail, Phone, Home, Briefcase, Calendar as CalendarIcon, Car, ShieldCheck, BadgeCheck, Loader2, Eye, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { updateWorkerStatus } from './actions';
 import { useToast } from '@/hooks/use-toast';
+import StatCard from '@/components/dashboard/stat-card';
 
 
 type Worker = {
@@ -37,6 +38,12 @@ type Worker = {
     status: 'Active' | 'Inactive';
 };
 
+type WorkerStats = {
+    current: number;
+    completed: number;
+    canceled: number;
+};
+
 const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: React.ReactNode }) => (
     <div className="flex items-start gap-3">
         <Icon className="w-5 h-5 text-muted-foreground mt-1" />
@@ -52,19 +59,44 @@ export default function ManagerWorkerProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
   const [worker, setWorker] = useState<Worker | null>(null);
+  const [stats, setStats] = useState<WorkerStats>({ current: 0, completed: 0, canceled: 0 });
   const [loading, setLoading] = useState(true);
   const [isSavingStatus, setIsSavingStatus] = useState(false);
   const workerId = params.id as string;
 
   useEffect(() => {
-    const fetchWorker = async () => {
+    const fetchWorkerAndStats = async () => {
       if (!workerId) return;
       try {
+        // Fetch worker
         const docRef = doc(db, 'workers', workerId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setWorker({ id: docSnap.id, ...docSnap.data() } as Worker);
+          const workerData = { id: docSnap.id, ...docSnap.data() } as Worker;
+          setWorker(workerData);
+
+          // Fetch bookings to calculate stats
+          const bookingsQuery = query(collection(db, 'bookings'), where('workerId', '==', workerId));
+          const bookingsSnapshot = await getDocs(bookingsQuery);
+          
+          let current = 0;
+          let completed = 0;
+          let canceled = 0;
+
+          bookingsSnapshot.forEach(doc => {
+            const booking = doc.data();
+            if (['Worker Assigned', 'In Progress'].includes(booking.status)) {
+              current++;
+            } else if (booking.status === 'Completed') {
+              completed++;
+            } else if (booking.status === 'Canceled') {
+              canceled++;
+            }
+          });
+
+          setStats({ current, completed, canceled });
+
         } else {
           console.log("No such document!");
           router.push('/manager/workers');
@@ -76,7 +108,7 @@ export default function ManagerWorkerProfilePage() {
       }
     };
 
-    fetchWorker();
+    fetchWorkerAndStats();
   }, [workerId, router]);
   
   const handleStatusChange = async (newStatus: 'Active' | 'Inactive') => {
@@ -137,6 +169,12 @@ export default function ManagerWorkerProfilePage() {
 
   return (
     <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-3">
+             <StatCard title="Current Jobs" value={String(stats.current)} description="Assigned or In Progress" icon={Clock} />
+             <StatCard title="Completed Jobs" value={String(stats.completed)} description="Successfully finished" icon={CheckCircle} />
+             <StatCard title="Canceled Jobs" value={String(stats.canceled)} description="Canceled by customer or manager" icon={XCircle} />
+        </div>
+
         <Card>
             <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -158,7 +196,7 @@ export default function ManagerWorkerProfilePage() {
                             <DetailItem icon={Mail} label="Email" value={worker.email} />
                             <DetailItem icon={Phone} label="Mobile" value={worker.mobile} />
                             <DetailItem icon={Home} label="Address" value={worker.address} />
-                            <DetailItem icon={Calendar} label="Join Date" value={formatDate(worker.createdAt)} />
+                            <DetailItem icon={CalendarIcon} label="Join Date" value={formatDate(worker.createdAt)} />
                         </div>
                     </div>
                     <Separator />
@@ -252,3 +290,5 @@ export default function ManagerWorkerProfilePage() {
     </div>
   );
 }
+
+    
