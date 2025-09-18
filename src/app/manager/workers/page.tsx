@@ -70,6 +70,18 @@ export default function ManagerWorkersPage() {
                         status: data.status || 'Inactive',
                     } as Worker;
                 });
+                
+                workersData.sort((a, b) => {
+                    if (a.status === 'Active' && b.status !== 'Active') {
+                        return -1;
+                    }
+                    if (a.status !== 'Active' && b.status === 'Active') {
+                        return 1;
+                    }
+                    // If statuses are the same, keep original sort order (newest first)
+                    return 0;
+                });
+
                 setWorkers(workersData);
 
             } catch (error) {
