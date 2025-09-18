@@ -163,8 +163,8 @@ export default function ManagerWorkersPage() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead><b>Sl No.</b></TableHead>
-                                            <TableHead><b>Worker Name</b></TableHead>
                                             <TableHead><b>WORKER ID</b></TableHead>
+                                            <TableHead><b>Worker Name</b></TableHead>
                                             <TableHead><b>Mobile Number</b></TableHead>
                                             <TableHead><b>Join Date</b></TableHead>
                                             <TableHead><b>Status</b></TableHead>
@@ -179,8 +179,8 @@ export default function ManagerWorkersPage() {
                                         {workersByService[service.id].map((worker, index) => (
                                         <TableRow key={worker.id} className={cn(worker.status === 'Active' && 'bg-green-100 hover:bg-green-100/80')}>
                                             <TableCell>{index + 1}</TableCell>
-                                            <TableCell className="font-medium">{worker.displayName}</TableCell>
                                             <TableCell>{worker.id}</TableCell>
+                                            <TableCell className="font-medium">{worker.displayName}</TableCell>
                                             <TableCell>{worker.mobile}</TableCell>
                                             <TableCell>{formatDate(worker.createdAt)}</TableCell>
                                             <TableCell>
