@@ -10,7 +10,7 @@ export async function updateWorker(id: string, data: {
   services: string[];
   fatherName: string;
   mobile: string;
-  idDetails: { type?: string; number?: string; url?: string };
+  idDetails?: { type?: string; number?: string; url?: string };
   idDetails2?: { type?: string; number?: string; url?: string };
   address: string;
   knowsDriving: boolean;

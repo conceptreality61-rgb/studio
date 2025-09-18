@@ -11,8 +11,8 @@ export async function createWorker(data: {
   services: string[];
   fatherName: string;
   mobile: string;
-  idDetails: { type: string; number: string; url?: string };
-  idDetails2?: { type: string; number: string; url?: string };
+  idDetails?: { type?: string; number?: string; url?: string };
+  idDetails2?: { type?: string; number?: string; url?: string };
   address: string;
   knowsDriving: boolean;
   hasVehicle: boolean;
@@ -53,9 +53,9 @@ export async function createWorker(data: {
       address: workerData.address,
       knowsDriving: workerData.knowsDriving,
       hasVehicle: workerData.hasVehicle,
-      drivingLicenseNumber: workerData.drivingLicenseNumber,
-      vehicleNumber: workerData.vehicleNumber,
-      photoURL: workerData.photoURL,
+      drivingLicenseNumber: workerData.drivingLicenseNumber || null,
+      vehicleNumber: workerData.vehicleNumber || null,
+      photoURL: workerData.photoURL || null,
       status: 'Active', // Default status for new workers
       createdAt: serverTimestamp(),
     });
