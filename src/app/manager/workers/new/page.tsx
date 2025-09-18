@@ -48,10 +48,10 @@ const idSchema = z.object({
             });
         }
     } else if (data.type === 'pan') {
-        if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(data.number)) {
+        if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(data.number.toUpperCase())) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: 'PAN number must be 10 alphanumeric characters.',
+                message: 'Invalid PAN number format.',
                 path: ['number'],
             });
         }
@@ -103,6 +103,8 @@ export default function NewWorkerPage() {
 
   const knowsDriving = form.watch('knowsDriving');
   const hasVehicle = form.watch('hasVehicle');
+  const idType1 = form.watch('idDetails.type');
+  const idType2 = form.watch('idDetails2.type');
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
@@ -227,7 +229,19 @@ export default function NewWorkerPage() {
                           render={({ field: numField }) => (
                             <FormItem className="w-2/3">
                                 <FormControl>
-                                  <Input placeholder="ID Number" {...numField} />
+                                  <Input 
+                                    placeholder="ID Number" 
+                                    {...numField}
+                                    type={idType1 === 'aadhar' ? 'number' : 'text'}
+                                    maxLength={idType1 === 'aadhar' ? 12 : idType1 === 'pan' ? 10 : undefined}
+                                    onChange={(e) => {
+                                        if (idType1 === 'pan') {
+                                            numField.onChange(e.target.value.toUpperCase());
+                                        } else {
+                                            numField.onChange(e.target.value);
+                                        }
+                                    }}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -271,7 +285,19 @@ export default function NewWorkerPage() {
                           render={({ field: numField }) => (
                             <FormItem className="w-2/3">
                                 <FormControl>
-                                  <Input placeholder="ID Number" {...numField} />
+                                  <Input 
+                                    placeholder="ID Number" 
+                                    {...numField}
+                                    type={idType2 === 'aadhar' ? 'number' : 'text'}
+                                    maxLength={idType2 === 'aadhar' ? 12 : idType2 === 'pan' ? 10 : undefined}
+                                     onChange={(e) => {
+                                        if (idType2 === 'pan') {
+                                            numField.onChange(e.target.value.toUpperCase());
+                                        } else {
+                                            numField.onChange(e.target.value);
+                                        }
+                                    }}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -429,3 +455,5 @@ export default function NewWorkerPage() {
     </Card>
   );
 }
+
+    
