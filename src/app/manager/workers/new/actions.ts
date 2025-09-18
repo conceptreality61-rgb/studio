@@ -13,6 +13,8 @@ export async function createWorker(data: {
   idDetails: { type: string, number: string };
   idDetails2?: { type: string, number: string };
   address: string;
+  knowsDriving: boolean;
+  hasVehicle: boolean;
 }) {
   try {
     const docRef = await addDoc(collection(db, 'workers'), {
@@ -24,6 +26,8 @@ export async function createWorker(data: {
       idDetails: data.idDetails,
       idDetails2: data.idDetails2,
       address: data.address,
+      knowsDriving: data.knowsDriving,
+      hasVehicle: data.hasVehicle,
       createdAt: serverTimestamp(),
     });
 

@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Car, Check, X } from "lucide-react";
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, Timestamp, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,6 +27,8 @@ type Worker = {
     email: string;
     createdAt: Timestamp;
     services: string[];
+    knowsDriving: boolean;
+    hasVehicle: boolean;
 };
 
 export default function ManagerWorkersPage() {
@@ -48,6 +50,8 @@ export default function ManagerWorkersPage() {
                         email: data.email || 'N/A',
                         createdAt: data.createdAt,
                         services: data.services || [],
+                        knowsDriving: data.knowsDriving || false,
+                        hasVehicle: data.hasVehicle || false,
                     } as Worker;
                 });
                 setWorkers(workersData);
@@ -118,6 +122,8 @@ export default function ManagerWorkersPage() {
                                             <TableHead>Worker Name</TableHead>
                                             <TableHead>Email</TableHead>
                                             <TableHead>Join Date</TableHead>
+                                            <TableHead>Driving</TableHead>
+                                            <TableHead>Vehicle</TableHead>
                                             <TableHead>
                                                 <span className="sr-only">Actions</span>
                                             </TableHead>
@@ -129,6 +135,12 @@ export default function ManagerWorkersPage() {
                                             <TableCell className="font-medium">{worker.displayName}</TableCell>
                                             <TableCell>{worker.email}</TableCell>
                                             <TableCell>{formatDate(worker.createdAt)}</TableCell>
+                                            <TableCell>
+                                                {worker.knowsDriving ? <Check className="text-green-500"/> : <X className="text-destructive"/>}
+                                            </TableCell>
+                                            <TableCell>
+                                                {worker.hasVehicle ? <Check className="text-green-500"/> : <X className="text-destructive"/>}
+                                            </TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>

@@ -25,6 +25,7 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
 const idTypes = [
     { id: 'aadhar', name: 'Aadhar Card' },
@@ -37,7 +38,7 @@ const idTypes = [
 const idSchema = z.object({
   type: z.string().min(1, { message: "Please select an ID type." }),
   number: z.string().min(5, { message: "ID number must be at least 5 characters." }),
-});
+}).optional().or(z.literal(''));
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -52,6 +53,8 @@ const formSchema = z.object({
   idDetails2: idSchema.optional(),
   address: z.string().min(10, { message: 'Address must be at least 10 characters.' }),
   services: z.array(z.string()).min(1, { message: 'You have to select at least one service.' }),
+  knowsDriving: z.boolean().default(false),
+  hasVehicle: z.boolean().default(false),
 });
 
 export default function NewWorkerPage() {
@@ -70,6 +73,8 @@ export default function NewWorkerPage() {
       idDetails2: { type: '', number: '' },
       address: '',
       services: [],
+      knowsDriving: false,
+      hasVehicle: false,
     },
   });
 
@@ -265,6 +270,50 @@ export default function NewWorkerPage() {
                 )}
               />
             </div>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+                <FormField
+                    control={form.control}
+                    name="knowsDriving"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                                <FormLabel className="text-base">Knows Driving</FormLabel>
+                                <FormDescription>
+                                    Does this worker have a driver's license and know how to drive?
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="hasVehicle"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                                <FormLabel className="text-base">Has Own Vehicle</FormLabel>
+                                <FormDescription>
+                                    Can this worker use their own vehicle to travel to job sites?
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+            </div>
+
 
             <FormField
               control={form.control}
