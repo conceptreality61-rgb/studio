@@ -68,6 +68,7 @@ export default function ManagerBookingDetailPage() {
   const [isAssigning, setIsAssigning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isReassigning, setIsReassigning] = useState(false);
   
   // A helper function to parse time strings like "09:00 AM" into a Date object
   const parseTime = (date: Date, timeStr: string) => {
@@ -107,7 +108,7 @@ export default function ManagerBookingDetailPage() {
               }
           }
 
-          if (['Pending Manager Approval', 'Worker Assigned'].includes(bookingData.status)) {
+          if (['Pending Manager Approval', 'Worker Assigned', 'In Progress'].includes(bookingData.status)) {
             const bookingDate = bookingData.date.toDate();
             const startOfBookingDay = startOfDay(bookingDate);
             const endOfBookingDay = endOfDay(bookingDate);
@@ -168,7 +169,7 @@ export default function ManagerBookingDetailPage() {
     };
 
     fetchBookingAndWorkers();
-  }, [params.id, toast]);
+  }, [params.id, toast, booking?.status]);
   
   const formatDate = (timestamp: Timestamp) => {
     if (!timestamp) return 'N/A';
@@ -194,6 +195,7 @@ export default function ManagerBookingDetailPage() {
           // Optimistically update UI
           setBooking(prev => prev ? { ...prev, status: 'Worker Assigned', workerId: worker.id, workerName: worker.displayName } : null);
           setSelectedWorkerId(undefined);
+          setIsReassigning(false);
       } else {
           toast({ variant: 'destructive', title: 'Assignment Failed', description: result.error });
       }
@@ -240,6 +242,33 @@ export default function ManagerBookingDetailPage() {
   };
 
   const isAssignmentDisabled = isAssigning || !selectedWorkerId || selectedWorkerId === booking?.workerId;
+  
+  const renderWorkerAssignment = () => {
+       if (loading) return <Skeleton className="h-10 w-full" />;
+       if (workers.length > 0) {
+        return (
+            <div className="flex items-center gap-4">
+                <Select onValueChange={setSelectedWorkerId} value={selectedWorkerId}>
+                    <SelectTrigger className="w-[280px]">
+                        <SelectValue placeholder="Select an available worker" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {workers.map(worker => (
+                            <SelectItem key={worker.id} value={worker.id}>{worker.displayName}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Button onClick={handleAssignWorker} disabled={isAssignmentDisabled}>
+                    {isAssigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isReassigning ? 'Confirm Re-assignment' : 'Assign'}
+                </Button>
+                {isReassigning && <Button variant="ghost" onClick={() => setIsReassigning(false)}>Cancel</Button>}
+            </div>
+        );
+       }
+       return <p className="text-sm text-muted-foreground">No qualified and available workers found for this service and time slot.</p>
+  }
+
 
   const renderActions = () => {
     if (!booking) return null;
@@ -249,26 +278,7 @@ export default function ManagerBookingDetailPage() {
         return (
           <>
             <h3 className="font-semibold mb-4 text-lg">Assign Worker</h3>
-            {loading ? <Skeleton className="h-10 w-full" /> : workers.length > 0 ? (
-                <div className="flex items-center gap-4">
-                    <Select onValueChange={setSelectedWorkerId} value={selectedWorkerId}>
-                        <SelectTrigger className="w-[280px]">
-                            <SelectValue placeholder="Select an available worker" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {workers.map(worker => (
-                                <SelectItem key={worker.id} value={worker.id}>{worker.displayName}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Button onClick={handleAssignWorker} disabled={isAssignmentDisabled}>
-                        {isAssigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Assign
-                    </Button>
-                </div>
-            ) : (
-                <p className="text-sm text-muted-foreground">No qualified and available workers found for this service and time slot.</p>
-            )}
+            {renderWorkerAssignment()}
             {booking?.refusedBy && booking.refusedBy.length > 0 && (
               <p className="text-xs text-destructive mt-2">Note: This job was previously refused by {booking.refusedBy.length} worker(s).</p>
             )}
@@ -276,14 +286,21 @@ export default function ManagerBookingDetailPage() {
         );
 
       case 'Worker Assigned':
+        if(isReassigning) {
+            return (
+                <>
+                    <h3 className="font-semibold mb-4 text-lg">Re-assign Worker</h3>
+                    {renderWorkerAssignment()}
+                </>
+            )
+        }
         return (
             <>
                 <h3 className="font-semibold mb-4 text-lg">Worker Actions</h3>
                 <div className="flex items-center gap-4">
-                    <p className="text-sm text-muted-foreground">Confirm with <strong>{booking.workerName}</strong> and update status:</p>
-                    <Button size="sm" variant="destructive" onClick={handleRefuse} disabled={isSubmitting}>
+                    <Button size="sm" onClick={() => setIsReassigning(true)} disabled={isSubmitting}>
                         {isSubmitting ? <Loader2 className="animate-spin" /> : <XCircle />}
-                        Refuse Job
+                        Re-assign Worker
                     </Button>
                     <Button size="sm" onClick={handleAccept} disabled={isSubmitting}>
                         {isSubmitting ? <Loader2 className="animate-spin" /> : <CheckCircle />}
@@ -294,14 +311,20 @@ export default function ManagerBookingDetailPage() {
         );
     
       case 'In Progress':
+        if(isReassigning) {
+            return (
+                <>
+                    <h3 className="font-semibold mb-4 text-lg">Re-assign Worker</h3>
+                    {renderWorkerAssignment()}
+                </>
+            )
+        }
         return (
             <>
                 <h3 className="font-semibold mb-4 text-lg">Update Progress</h3>
                 <div className="flex items-center gap-4">
-                    <p className="text-sm text-muted-foreground">Update job handled by <strong>{booking.workerName}</strong>:</p>
-                    <Button size="sm" variant="destructive" onClick={handleRefuse} disabled={isSubmitting}>
-                        {isSubmitting ? <Loader2 className="animate-spin" /> : <XCircle />}
-                        Refuse / Re-assign
+                    <Button size="sm" variant="outline" onClick={() => setIsReassigning(true)} disabled={isSubmitting}>
+                        Re-assign Worker
                     </Button>
                     <Button size="sm" onClick={handleComplete} disabled={isSubmitting}>
                         {isSubmitting ? <Loader2 className="animate-spin" /> : <CheckCircle />}
@@ -396,3 +419,5 @@ export default function ManagerBookingDetailPage() {
     </div>
   );
 }
+
+    
