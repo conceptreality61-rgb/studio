@@ -67,16 +67,21 @@ export default function ManagerBookingsPage() {
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [workerFilter, setWorkerFilter] = useState<string | null>(null);
-    const [refusedByFilter, setRefusedByFilter] = useState<string | null>(null);
-    const [reassignedFilter, setReassignedFilter] = useState<string | null>(null);
+    const [refusedByFilter, setRefusedByFilter] = useState<boolean>(false);
+    const [reassignedFilter, setReassignedFilter] = useState<boolean>(false);
 
 
     useEffect(() => {
-        setWorkerFilter(searchParams.get('worker'));
-        setStatusFilter(searchParams.get('status'));
-        setRefusedByFilter(searchParams.get('refused'));
-        setReassignedFilter(searchParams.get('reassigned'));
-        setSearchTerm(searchParams.get('worker') || '');
+        const worker = searchParams.get('worker');
+        const status = searchParams.get('status');
+        const refused = searchParams.get('refused');
+        const reassigned = searchParams.get('reassigned');
+
+        setWorkerFilter(worker);
+        setStatusFilter(status);
+        setRefusedByFilter(refused === 'true');
+        setReassignedFilter(reassigned === 'true');
+        setSearchTerm(worker || '');
 
     }, [searchParams]);
 
@@ -125,12 +130,12 @@ export default function ManagerBookingsPage() {
         const lowercasedSearch = searchTerm.toLowerCase();
 
         const filteredData = bookings.filter((booking) => {
-            const matchesSearchTerm = (
+            const matchesSearchTerm = lowercasedSearch ? (
                 booking.id.toLowerCase().includes(lowercasedSearch) ||
                 (booking.serviceName && booking.serviceName.toLowerCase().includes(lowercasedSearch)) ||
                 (booking.customerName && booking.customerName.toLowerCase().includes(lowercasedSearch)) ||
                 (booking.workerName && booking.workerName.toLowerCase().includes(lowercasedSearch))
-            );
+            ) : true;
             
             const matchesDate = selectedDate
                 ? format(booking.date.toDate(), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
@@ -138,7 +143,7 @@ export default function ManagerBookingsPage() {
             
             const matchesStatus = statusFilter ? booking.status === statusFilter : true;
             
-            const matchesWorker = workerFilter ? (booking.workerName === workerFilter) : true;
+            const matchesWorker = workerFilter ? (booking.workerName === workerFilter || (booking.refusedBy && booking.refusedBy.includes(workers.find(w => w.displayName === workerFilter)?.id || '')) || (booking.canceledWorkerIds && booking.canceledWorkerIds.includes(workers.find(w => w.displayName === workerFilter)?.id || ''))) : true;
 
             const matchesRefused = refusedByFilter ? booking.refusedBy && booking.refusedBy.length > 0 : true;
 
@@ -147,15 +152,15 @@ export default function ManagerBookingsPage() {
             return matchesSearchTerm && matchesDate && matchesStatus && matchesWorker && matchesRefused && matchesReassigned;
         });
         setFilteredBookings(filteredData);
-    }, [searchTerm, selectedDate, statusFilter, workerFilter, bookings, refusedByFilter, reassignedFilter]);
+    }, [searchTerm, selectedDate, statusFilter, workerFilter, bookings, refusedByFilter, reassignedFilter, workers]);
 
     const clearFilters = () => {
         setSearchTerm('');
         setSelectedDate(undefined);
         setStatusFilter(null);
         setWorkerFilter(null);
-        setRefusedByFilter(null);
-        setReassignedFilter(null);
+        setRefusedByFilter(false);
+        setReassignedFilter(false);
         router.push('/manager/bookings');
     };
     
