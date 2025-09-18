@@ -82,7 +82,7 @@ export default function ManagerWorkerProfilePage() {
           
           let current = 0;
           let completed = 0;
-          let canceled = 0;
+          let canceledByOthers = 0;
 
           bookingsSnapshot.forEach(doc => {
             const booking = doc.data();
@@ -91,11 +91,18 @@ export default function ManagerWorkerProfilePage() {
             } else if (booking.status === 'Completed') {
               completed++;
             } else if (booking.status === 'Canceled') {
-              canceled++;
+              canceledByOthers++;
             }
           });
 
-          setStats({ current, completed, canceled });
+          // Fetch bookings where this worker was replaced
+          const replacedBookingsQuery = query(collection(db, 'bookings'), where('canceledWorkerIds', 'array-contains', workerId));
+          const replacedBookingsSnapshot = await getDocs(replacedBookingsQuery);
+          const canceledByReplacement = replacedBookingsSnapshot.size;
+
+          const totalCanceled = canceledByOthers + canceledByReplacement;
+
+          setStats({ current, completed, canceled: totalCanceled });
 
         } else {
           console.log("No such document!");
@@ -172,7 +179,7 @@ export default function ManagerWorkerProfilePage() {
         <div className="grid gap-4 md:grid-cols-3">
              <StatCard title="Current Jobs" value={String(stats.current)} description="Assigned or In Progress" icon={Clock} />
              <StatCard title="Completed Jobs" value={String(stats.completed)} description="Successfully finished" icon={CheckCircle} />
-             <StatCard title="Canceled Jobs" value={String(stats.canceled)} description="Canceled by customer or manager" icon={XCircle} />
+             <StatCard title="Canceled Jobs" value={String(stats.canceled)} description="Canceled or Re-assigned" icon={XCircle} />
         </div>
 
         <Card>
@@ -290,5 +297,3 @@ export default function ManagerWorkerProfilePage() {
     </div>
   );
 }
-
-    

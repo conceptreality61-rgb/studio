@@ -180,7 +180,8 @@ export default function ManagerBookingDetailPage() {
           return;
       }
       
-      const result = await assignWorkerToBooking(booking.id, worker.id, worker.displayName);
+      const previousWorkerId = booking.workerId;
+      const result = await assignWorkerToBooking(booking.id, worker.id, worker.displayName, previousWorkerId);
 
       if (result.success) {
           toast({ title: 'Worker Assigned', description: `Assigned ${worker.displayName} to the booking.` });
