@@ -28,6 +28,7 @@ type Worker = {
     id: string;
     displayName: string;
     email: string;
+    mobile: string;
     createdAt: Timestamp;
     services: string[];
     knowsDriving: boolean;
@@ -61,6 +62,7 @@ export default function ManagerWorkersPage() {
                         id: doc.id,
                         displayName: data.displayName || 'N/A',
                         email: data.email || 'N/A',
+                        mobile: data.mobile || 'N/A',
                         createdAt: data.createdAt,
                         services: data.services || [],
                         knowsDriving: data.knowsDriving || false,
@@ -162,6 +164,7 @@ export default function ManagerWorkersPage() {
                                         <TableRow>
                                             <TableHead><b>Worker Name</b></TableHead>
                                             <TableHead><b>Email</b></TableHead>
+                                            <TableHead><b>Mobile Number</b></TableHead>
                                             <TableHead><b>Join Date</b></TableHead>
                                             <TableHead><b>Status</b></TableHead>
                                             <TableHead><b>Driving License</b></TableHead>
@@ -176,6 +179,7 @@ export default function ManagerWorkersPage() {
                                         <TableRow key={worker.id} className={cn(worker.status === 'Active' && 'bg-green-100 hover:bg-green-100/80')}>
                                             <TableCell className="font-medium">{worker.displayName}</TableCell>
                                             <TableCell>{worker.email}</TableCell>
+                                            <TableCell>{worker.mobile}</TableCell>
                                             <TableCell>{formatDate(worker.createdAt)}</TableCell>
                                             <TableCell>
                                                 <Badge variant={statusVariant[worker.status] || 'default'}>{worker.status}</Badge>
