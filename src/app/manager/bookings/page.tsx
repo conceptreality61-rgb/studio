@@ -38,20 +38,12 @@ type Worker = {
     displayName: string;
 }
 
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
+const statusVariant: { [key: string]: any } = {
+  'Pending Manager Approval': "destructive",
+  'Worker Assigned': "secondary",
+  'In Progress': "default",
   Completed: "default",
-  "Worker Assigned": "secondary",
-  "Pending Manager Approval": "outline",
-  "In Progress": "secondary",
-  Canceled: "destructive"
-};
-
-const rowStatusHighlight: { [key: string]: string } = {
-    'Pending Manager Approval': 'bg-red-400 hover:bg-red-400/80',
-    'Worker Assigned': 'bg-sky-400 hover:bg-sky-400/80',
-    'In Progress': 'bg-indigo-400 hover:bg-indigo-400/80',
-    'Completed': 'bg-green-400 hover:bg-green-400/80',
-    'Canceled': 'bg-gray-400 hover:bg-gray-400/80',
+  Canceled: "outline",
 };
 
 
@@ -169,7 +161,7 @@ export default function ManagerBookingsPage() {
             </TableHeader>
             <TableBody>
                 {bookings.map((booking) => (
-                <TableRow key={booking.id} className={cn(rowStatusHighlight[booking.status])}>
+                <TableRow key={booking.id}>
                     <TableCell className="font-medium">{booking.id.substring(0, 6)}</TableCell>
                     <TableCell>{booking.serviceName}</TableCell>
                     <TableCell>{booking.customerName}</TableCell>
@@ -178,7 +170,16 @@ export default function ManagerBookingsPage() {
                     </TableCell>
                     <TableCell>{formatDate(booking.date)}</TableCell>
                     <TableCell>
-                    <Badge variant={statusVariant[booking.status] || 'default'}>{booking.status}</Badge>
+                      <Badge 
+                        variant={statusVariant[booking.status] || 'default'}
+                        className={cn(
+                            {'bg-sky-500 text-white': booking.status === 'Worker Assigned'},
+                            {'bg-indigo-500 text-white': booking.status === 'In Progress'},
+                            {'bg-green-500 text-white': booking.status === 'Completed'},
+                        )}
+                      >
+                        {booking.status}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right">Rs.{booking.servicePrice}/hr</TableCell>
                     <TableCell>
