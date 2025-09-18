@@ -42,7 +42,7 @@ const idDetailsSchema = z.object({
   type: z.string().min(1, { message: "Please select an ID type." }),
   number: z.string().min(1, { message: "Please enter an ID number." }),
 }).superRefine((data, ctx) => {
-    if (data.type === 'aadhar') {
+    if (data.type === 'aadhar' && data.number) {
         if (!/^\d{12}$/.test(data.number)) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -50,7 +50,7 @@ const idDetailsSchema = z.object({
                 path: ['number'],
             });
         }
-    } else if (data.type === 'pan') {
+    } else if (data.type === 'pan' && data.number) {
         if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(data.number.toUpperCase())) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -60,6 +60,43 @@ const idDetailsSchema = z.object({
         }
     }
 });
+
+const optionalIdDetailsSchema = z.object({
+  type: z.string().optional(),
+  number: z.string().optional(),
+}).superRefine((data, ctx) => {
+    if (data.type && !data.number) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Please enter an ID number.',
+            path: ['number'],
+        });
+    }
+    if (!data.type && data.number) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Please select an ID type.',
+            path: ['type'],
+        });
+    }
+    if (data.type === 'aadhar' && data.number) {
+        if (!/^\d{12}$/.test(data.number)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Aadhar number must be 12 digits.',
+                path: ['number'],
+            });
+        }
+    } else if (data.type === 'pan' && data.number) {
+        if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(data.number.toUpperCase())) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Invalid PAN number format.',
+                path: ['number'],
+            });
+        }
+    }
+}).optional();
 
 
 const formSchema = z.object({
@@ -72,7 +109,7 @@ const formSchema = z.object({
   fatherName: z.string().min(2, { message: "Father's name must be at least 2 characters." }),
   mobile: z.string().regex(/^\d{10}$/, { message: 'Mobile number must be 10 digits.' }),
   idDetails: idDetailsSchema,
-  idDetails2: idDetailsSchema.optional().or(z.object({ type: z.string(), number: z.string() }).optional()),
+  idDetails2: optionalIdDetailsSchema,
   address: z.string().min(10, { message: 'Address must be at least 10 characters.' }),
   services: z.array(z.string()).min(1, { message: 'You have to select at least one service.' }),
   knowsDriving: z.boolean().default(false),
@@ -314,7 +351,9 @@ export default function EditWorkerPage() {
                                             numField.onChange(value.toUpperCase());
                                         } else if (idType1 === 'aadhar') {
                                             const numericValue = value.replace(/\D/g, '');
-                                            numField.onChange(numericValue);
+                                            if (numericValue.length <= 12) {
+                                                numField.onChange(numericValue);
+                                            }
                                         } else {
                                             numField.onChange(value);
                                         }
@@ -342,7 +381,7 @@ export default function EditWorkerPage() {
                           render={({ field: typeField }) => (
                             <FormItem>
                                 <FormLabel>ID Type</FormLabel>
-                              <Select onValueChange={typeField.onChange} value={typeField.value}>
+                              <Select onValueChange={typeField.onChange} value={typeField.value || ''}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="ID Type" />
@@ -368,6 +407,7 @@ export default function EditWorkerPage() {
                                   <Input 
                                     placeholder="ID Number" 
                                     {...numField}
+                                    value={numField.value || ''}
                                     type="text"
                                     maxLength={idType2 === 'pan' ? 10 : idType2 === 'aadhar' ? 12 : undefined}
                                      onChange={(e) => {
@@ -376,7 +416,9 @@ export default function EditWorkerPage() {
                                             numField.onChange(value.toUpperCase());
                                         } else if (idType2 === 'aadhar') {
                                             const numericValue = value.replace(/\D/g, '');
-                                            numField.onChange(numericValue);
+                                             if (numericValue.length <= 12) {
+                                                numField.onChange(numericValue);
+                                            }
                                         } else {
                                             numField.onChange(value);
                                         }
@@ -495,9 +537,9 @@ export default function EditWorkerPage() {
                                   checked={field.value?.includes(item.id)}
                                   onCheckedChange={(checked) => {
                                     return checked
-                                      ? field.onChange([...field.value, item.id])
+                                      ? field.onChange([...(field.value || []), item.id])
                                       : field.onChange(
-                                          field.value?.filter(
+                                          (field.value || [])?.filter(
                                             (value) => value !== item.id
                                           )
                                         );
@@ -525,5 +567,3 @@ export default function EditWorkerPage() {
     </Card>
   );
 }
-
-    

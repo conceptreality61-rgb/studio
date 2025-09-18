@@ -31,8 +31,8 @@ export async function updateWorker(id: string, data: {
       address: data.address,
       knowsDriving: data.knowsDriving,
       hasVehicle: data.hasVehicle,
-      drivingLicenseNumber: data.drivingLicenseNumber || '',
-      vehicleNumber: data.vehicleNumber || '',
+      drivingLicenseNumber: data.drivingLicenseNumber || null,
+      vehicleNumber: data.vehicleNumber || null,
       updatedAt: serverTimestamp(),
     };
 
@@ -43,7 +43,7 @@ export async function updateWorker(id: string, data: {
     if (data.idDetails2 && data.idDetails2.type && data.idDetails2.number) {
         updateData.idDetails2 = data.idDetails2;
     } else {
-        updateData.idDetails2 = {}; // Or use FieldValue.delete() if you want to remove it
+        updateData.idDetails2 = null; 
     }
     
     await updateDoc(workerRef, updateData);
