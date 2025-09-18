@@ -11,10 +11,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Car, Check, X, ShieldCheck, User as UserIcon } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Car, Check, X, ShieldCheck, User as UserIcon, Search } from "lucide-react";
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, Timestamp, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,6 +22,7 @@ import { services } from '@/lib/constants';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 type Worker = {
     id: string;
@@ -48,6 +48,7 @@ export default function ManagerWorkersPage() {
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
     const [workersByService, setWorkersByService] = useState<Record<string, Worker[]>>({});
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const fetchWorkers = async () => {
@@ -71,12 +72,6 @@ export default function ManagerWorkersPage() {
                 });
                 setWorkers(workersData);
 
-                const groupedWorkers: Record<string, Worker[]> = {};
-                services.forEach(service => {
-                    groupedWorkers[service.id] = workersData.filter(worker => worker.services.includes(service.id));
-                });
-                setWorkersByService(groupedWorkers);
-
             } catch (error) {
                 console.error("Error fetching workers:", error);
                 toast({ variant: "destructive", title: "Error", description: "Could not fetch workers."});
@@ -87,6 +82,18 @@ export default function ManagerWorkersPage() {
         fetchWorkers();
     }, [toast]);
 
+    useEffect(() => {
+        const filteredWorkers = workers.filter(worker =>
+            worker.displayName.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        const groupedWorkers: Record<string, Worker[]> = {};
+        services.forEach(service => {
+            groupedWorkers[service.id] = filteredWorkers.filter(worker => worker.services.includes(service.id));
+        });
+        setWorkersByService(groupedWorkers);
+    }, [workers, searchTerm]);
+
     const formatDate = (timestamp?: Timestamp) => {
         if (!timestamp) return 'N/A';
         return timestamp.toDate().toLocaleDateString();
@@ -94,17 +101,29 @@ export default function ManagerWorkersPage() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4">
         <div>
             <CardTitle>Workers</CardTitle>
             <CardDescription>Manage your team of service professionals, categorized by service.</CardDescription>
         </div>
-        <Button asChild>
-            <Link href="/manager/workers/new">
-                <PlusCircle className="mr-2" />
-                Add Worker
-            </Link>
-        </Button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search by worker name..."
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Button asChild>
+                <Link href="/manager/workers/new">
+                    <PlusCircle className="mr-2" />
+                    Add Worker
+                </Link>
+            </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -181,7 +200,7 @@ export default function ManagerWorkersPage() {
                                     </TableBody>
                                 </Table>
                              ) : (
-                                <p className="px-4 py-2 text-muted-foreground">No workers assigned to this service.</p>
+                                <p className="px-4 py-2 text-muted-foreground">No workers assigned to this service match your search.</p>
                              )}
                         </AccordionContent>
                     </AccordionItem>
