@@ -148,12 +148,12 @@ export default function ManagerBookingsPage() {
             <TableHeader>
                 <TableRow>
                 <TableHead><b>Booking ID</b></TableHead>
-                <TableHead>Service</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Assigned Worker</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
+                <TableHead><b>Service</b></TableHead>
+                <TableHead><b>Customer</b></TableHead>
+                <TableHead><b>Assigned Worker</b></TableHead>
+                <TableHead><b>Date</b></TableHead>
+                <TableHead><b>Status</b></TableHead>
+                <TableHead className="text-right"><b>Amount</b></TableHead>
                 <TableHead>
                     <span className="sr-only">Actions</span>
                 </TableHead>
