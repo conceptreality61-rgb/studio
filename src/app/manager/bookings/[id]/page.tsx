@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, MapPin, Calendar, Clock, DollarSign, Briefcase } from 'lucide-react';
+import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
