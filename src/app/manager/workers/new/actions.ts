@@ -11,6 +11,7 @@ export async function createWorker(data: {
   fatherName: string;
   mobile: string;
   idDetails: string;
+  idDetails2: string;
   address: string;
 }) {
   try {
@@ -21,6 +22,7 @@ export async function createWorker(data: {
       fatherName: data.fatherName,
       mobile: data.mobile,
       idDetails: data.idDetails,
+      idDetails2: data.idDetails2,
       address: data.address,
       createdAt: serverTimestamp(),
     });

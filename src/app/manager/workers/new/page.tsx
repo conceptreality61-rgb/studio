@@ -35,6 +35,7 @@ const formSchema = z.object({
   fatherName: z.string().min(2, { message: "Father's name must be at least 2 characters." }),
   mobile: z.string().regex(/^\d{10}$/, { message: 'Mobile number must be 10 digits.' }),
   idDetails: z.string().min(5, { message: 'ID details must be at least 5 characters (e.g., Aadhar, PAN).' }),
+  idDetails2: z.string().optional(),
   address: z.string().min(10, { message: 'Address must be at least 10 characters.' }),
   services: z.array(z.string()).min(1, { message: 'You have to select at least one service.' }),
 });
@@ -52,6 +53,7 @@ export default function NewWorkerPage() {
       fatherName: '',
       mobile: '',
       idDetails: '',
+      idDetails2: '',
       address: '',
       services: [],
     },
@@ -151,9 +153,22 @@ export default function NewWorkerPage() {
                 name="idDetails"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>ID Details</FormLabel>
+                    <FormLabel>ID Details 1</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Aadhar Card: 1234 5678 9012" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="idDetails2"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID Details 2 (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., PAN Card: ABCDE1234F" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
