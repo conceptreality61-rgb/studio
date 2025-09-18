@@ -2,19 +2,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import OrderTracker from "@/components/order-tracker";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
-import { doc, getDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, Timestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck } from 'lucide-react';
+import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { assignWorkerToBooking } from './actions';
+import { useToast } from '@/hooks/use-toast';
 
 type Booking = {
+  id: string;
   serviceName: string;
   date: Timestamp;
   time: string;
@@ -33,6 +37,11 @@ type CustomerProfile = {
     };
 };
 
+type Worker = {
+    id: string;
+    displayName: string;
+};
+
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
   Completed: "default",
   "Worker Assigned": "secondary",
@@ -43,21 +52,29 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 
 export default function ManagerBookingDetailPage() {
   const params = useParams();
+  const router = useRouter();
+  const { toast } = useToast();
   const [booking, setBooking] = useState<Booking | null>(null);
   const [customer, setCustomer] = useState<CustomerProfile | null>(null);
+  const [workers, setWorkers] = useState<Worker[]>([]);
+  const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
+  const [isAssigning, setIsAssigning] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchBooking = async () => {
+    const fetchBookingAndWorkers = async () => {
       if (!params.id) return;
+      setLoading(true);
       try {
+        // Fetch booking
         const docRef = doc(db, 'bookings', params.id as string);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const bookingData = docSnap.data() as Booking;
+          const bookingData = { id: docSnap.id, ...docSnap.data() } as Booking;
           setBooking(bookingData);
           
+          // Fetch customer
           if (bookingData.userId) {
               const userDocRef = doc(db, 'users', bookingData.userId);
               const userDocSnap = await getDoc(userDocRef);
@@ -65,22 +82,55 @@ export default function ManagerBookingDetailPage() {
                   setCustomer(userDocSnap.data() as CustomerProfile);
               }
           }
+
+          // Fetch workers if needed
+          if (bookingData.status === 'Pending Manager Approval') {
+            const workersQuery = query(collection(db, 'users'), where('role', '==', 'worker'));
+            const workersSnapshot = await getDocs(workersQuery);
+            const workersData = workersSnapshot.docs.map(doc => ({ id: doc.id, displayName: doc.data().displayName } as Worker));
+            setWorkers(workersData);
+          }
+
         } else {
           console.log("No such document!");
         }
       } catch (error) {
-        console.error("Error fetching booking:", error);
+        console.error("Error fetching data:", error);
+        toast({ variant: 'destructive', title: "Error", description: "Failed to fetch booking details." });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBooking();
-  }, [params.id]);
+    fetchBookingAndWorkers();
+  }, [params.id, toast]);
   
   const formatDate = (timestamp: Timestamp) => {
     if (!timestamp) return 'N/A';
     return timestamp.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+  
+  const handleAssignWorker = async () => {
+      if (!selectedWorkerId || !booking) return;
+
+      setIsAssigning(true);
+      const worker = workers.find(w => w.id === selectedWorkerId);
+      if (!worker) {
+          setIsAssigning(false);
+          toast({ variant: 'destructive', title: 'Error', description: 'Selected worker not found.' });
+          return;
+      }
+      
+      const result = await assignWorkerToBooking(booking.id, worker.id, worker.displayName);
+
+      if (result.success) {
+          toast({ title: 'Worker Assigned', description: `Assigned ${worker.displayName} to the booking.` });
+          // Optimistically update UI
+          setBooking(prev => prev ? { ...prev, status: 'Worker Assigned', workerName: worker.displayName } : null);
+      } else {
+          toast({ variant: 'destructive', title: 'Assignment Failed', description: result.error });
+      }
+      setIsAssigning(false);
   }
 
   return (
@@ -136,6 +186,30 @@ export default function ManagerBookingDetailPage() {
                     <p>Customer details not found.</p>
                  )}
             </div>
+            {booking?.status === 'Pending Manager Approval' && (
+                <div className="md:col-span-2">
+                    <Separator />
+                    <div className="pt-6">
+                        <h3 className="font-semibold mb-4 text-lg">Assign Worker</h3>
+                        <div className="flex items-center gap-4">
+                            <Select onValueChange={setSelectedWorkerId}>
+                                <SelectTrigger className="w-[280px]">
+                                    <SelectValue placeholder="Select a worker" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {workers.map(worker => (
+                                        <SelectItem key={worker.id} value={worker.id}>{worker.displayName}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Button onClick={handleAssignWorker} disabled={!selectedWorkerId || isAssigning}>
+                                {isAssigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Assign Worker
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </CardContent>
         <CardFooter>
             <Button variant="outline" asChild>
