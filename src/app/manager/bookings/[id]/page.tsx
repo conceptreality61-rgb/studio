@@ -7,7 +7,7 @@ import OrderTracker from "@/components/order-tracker";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
-import { doc, getDoc, Timestamp, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, Timestamp, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -85,7 +85,7 @@ export default function ManagerBookingDetailPage() {
 
           // Fetch workers if needed
           if (bookingData.status === 'Pending Manager Approval') {
-            const workersQuery = query(collection(db, 'users'), where('role', '==', 'worker'));
+            const workersQuery = query(collection(db, 'workers'), orderBy('displayName'));
             const workersSnapshot = await getDocs(workersQuery);
             const workersData = workersSnapshot.docs.map(doc => ({ id: doc.id, displayName: doc.data().displayName } as Worker));
             setWorkers(workersData);

@@ -60,10 +60,9 @@ export default function ManagerBookingsPage() {
                 const bookingsData = bookingsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
                 setBookings(bookingsData);
 
-                const workersSnapshot = await getDocs(collection(db, 'users'));
-                const workersData = workersSnapshot.docs
-                    .filter(doc => doc.data().role === 'worker')
-                    .map(doc => ({ id: doc.id, displayName: doc.data().displayName } as Worker));
+                const workersQuery = query(collection(db, 'workers'), orderBy('displayName'));
+                const workersSnapshot = await getDocs(workersQuery);
+                const workersData = workersSnapshot.docs.map(doc => ({ id: doc.id, displayName: doc.data().displayName } as Worker));
                 setWorkers(workersData);
 
             } catch (error) {

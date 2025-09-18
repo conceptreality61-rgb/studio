@@ -16,23 +16,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, query, Timestamp, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { services } from '@/lib/constants';
 
 type Worker = {
     id: string;
     displayName: string;
     email: string;
-    verificationStatus: 'Verified' | 'Pending';
     createdAt: Timestamp;
+    services: string[];
 };
-
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
-  Verified: "default",
-  Pending: "secondary",
-};
-
 
 export default function ManagerWorkersPage() {
     const [workers, setWorkers] = useState<Worker[]>([]);
@@ -42,7 +37,7 @@ export default function ManagerWorkersPage() {
     useEffect(() => {
         const fetchWorkers = async () => {
             try {
-                const q = query(collection(db, 'users'), where('role', '==', 'worker'));
+                const q = query(collection(db, 'workers'), orderBy('createdAt', 'desc'));
                 const querySnapshot = await getDocs(q);
                 const workersData = querySnapshot.docs.map(doc => {
                     const data = doc.data();
@@ -50,8 +45,8 @@ export default function ManagerWorkersPage() {
                         id: doc.id,
                         displayName: data.displayName || 'N/A',
                         email: data.email || 'N/A',
-                        verificationStatus: data.verificationStatus || 'Pending',
                         createdAt: data.createdAt,
+                        services: data.services || [],
                     } as Worker;
                 });
                 setWorkers(workersData);
@@ -68,6 +63,11 @@ export default function ManagerWorkersPage() {
     const formatDate = (timestamp?: Timestamp) => {
         if (!timestamp) return 'N/A';
         return timestamp.toDate().toLocaleDateString();
+    }
+
+    const getServiceNames = (serviceIds: string[]) => {
+        if (!serviceIds) return 'N/A';
+        return serviceIds.map(id => services.find(s => s.id === id)?.name).filter(Boolean).join(', ');
     }
 
   return (
@@ -97,8 +97,8 @@ export default function ManagerWorkersPage() {
                 <TableRow>
                     <TableHead>Worker Name</TableHead>
                     <TableHead>Email</TableHead>
+                    <TableHead>Assigned Services</TableHead>
                     <TableHead>Join Date</TableHead>
-                    <TableHead>Status</TableHead>
                     <TableHead>
                         <span className="sr-only">Actions</span>
                     </TableHead>
@@ -109,10 +109,8 @@ export default function ManagerWorkersPage() {
                 <TableRow key={worker.id}>
                     <TableCell className="font-medium">{worker.displayName}</TableCell>
                     <TableCell>{worker.email}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{getServiceNames(worker.services)}</TableCell>
                     <TableCell>{formatDate(worker.createdAt)}</TableCell>
-                    <TableCell>
-                        <Badge variant={statusVariant[worker.verificationStatus] || 'default'}>{worker.verificationStatus}</Badge>
-                    </TableCell>
                     <TableCell>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -123,9 +121,8 @@ export default function ManagerWorkersPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem>View Profile</DropdownMenuItem>
-                                <DropdownMenuItem>Edit Services</DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive">Disable Account</DropdownMenuItem>
+                                <DropdownMenuItem>Edit Worker</DropdownMenuItem>
+                                <DropdownMenuItem className="text-destructive">Delete Worker</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </TableCell>
