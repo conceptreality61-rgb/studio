@@ -20,6 +20,7 @@ import { collection, getDocs, doc, updateDoc, query, orderBy, Timestamp } from '
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 type Booking = {
   id: string;
@@ -43,6 +44,14 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
   "Pending Manager Approval": "outline",
   "In Progress": "secondary",
   Canceled: "destructive"
+};
+
+const rowStatusHighlight: { [key: string]: string } = {
+  'Pending Manager Approval': 'bg-yellow-100/50 hover:bg-yellow-100/80',
+  'Worker Assigned': 'bg-blue-100/50 hover:bg-blue-100/80',
+  'In Progress': 'bg-indigo-100/50 hover:bg-indigo-100/80',
+  'Completed': 'bg-green-100/50 hover:bg-green-100/80',
+  'Canceled': 'bg-red-100/50 hover:bg-red-100/80',
 };
 
 
@@ -141,7 +150,7 @@ export default function ManagerBookingsPage() {
             </TableHeader>
             <TableBody>
                 {bookings.map((booking) => (
-                <TableRow key={booking.id}>
+                <TableRow key={booking.id} className={cn(rowStatusHighlight[booking.status])}>
                     <TableCell className="font-medium">{booking.id.substring(0, 6)}</TableCell>
                     <TableCell>{booking.serviceName}</TableCell>
                     <TableCell>{booking.customerName}</TableCell>
