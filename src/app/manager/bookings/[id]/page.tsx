@@ -23,6 +23,7 @@ type Booking = {
   serviceName: string;
   date: Timestamp;
   time: string;
+  workerId?: string;
   workerName?: string;
   servicePrice: number;
   status: string;
@@ -59,7 +60,7 @@ export default function ManagerBookingDetailPage() {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [customer, setCustomer] = useState<CustomerProfile | null>(null);
   const [workers, setWorkers] = useState<Worker[]>([]);
-  const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
+  const [selectedWorkerId, setSelectedWorkerId] = useState<string | undefined>(undefined);
   const [isAssigning, setIsAssigning] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -86,7 +87,7 @@ export default function ManagerBookingDetailPage() {
           }
 
           // Fetch workers if needed
-          if (bookingData.status === 'Pending Manager Approval') {
+          if (['Pending Manager Approval', 'Worker Assigned'].includes(bookingData.status)) {
             const workersQuery = query(collection(db, 'workers'), orderBy('displayName'));
             const workersSnapshot = await getDocs(workersQuery);
             const allWorkersData = workersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Worker));
@@ -130,12 +131,15 @@ export default function ManagerBookingDetailPage() {
       if (result.success) {
           toast({ title: 'Worker Assigned', description: `Assigned ${worker.displayName} to the booking.` });
           // Optimistically update UI
-          setBooking(prev => prev ? { ...prev, status: 'Worker Assigned', workerName: worker.displayName } : null);
+          setBooking(prev => prev ? { ...prev, status: 'Worker Assigned', workerId: worker.id, workerName: worker.displayName } : null);
+          setSelectedWorkerId(undefined); // Reset select
       } else {
           toast({ variant: 'destructive', title: 'Assignment Failed', description: result.error });
       }
       setIsAssigning(false);
   }
+  
+  const isAssignmentDisabled = isAssigning || !selectedWorkerId || selectedWorkerId === booking?.workerId;
 
   return (
     <div className="grid gap-6">
@@ -190,14 +194,14 @@ export default function ManagerBookingDetailPage() {
                     <p>Customer details not found.</p>
                  )}
             </div>
-            {booking?.status === 'Pending Manager Approval' && (
+            {booking && ['Pending Manager Approval', 'Worker Assigned'].includes(booking.status) && (
                 <div className="md:col-span-2">
                     <Separator />
                     <div className="pt-6">
-                        <h3 className="font-semibold mb-4 text-lg">Assign Worker</h3>
-                        {workers.length > 0 ? (
+                        <h3 className="font-semibold mb-4 text-lg">{booking.status === 'Worker Assigned' ? 'Replace Worker' : 'Assign Worker'}</h3>
+                        {loading ? <Skeleton className="h-10 w-full" /> : workers.length > 0 ? (
                             <div className="flex items-center gap-4">
-                                <Select onValueChange={setSelectedWorkerId}>
+                                <Select onValueChange={setSelectedWorkerId} value={selectedWorkerId}>
                                     <SelectTrigger className="w-[280px]">
                                         <SelectValue placeholder="Select a qualified worker" />
                                     </SelectTrigger>
@@ -207,9 +211,9 @@ export default function ManagerBookingDetailPage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <Button onClick={handleAssignWorker} disabled={!selectedWorkerId || isAssigning}>
+                                <Button onClick={handleAssignWorker} disabled={isAssignmentDisabled}>
                                     {isAssigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Assign Worker
+                                    {booking.status === 'Worker Assigned' ? 'Replace' : 'Assign'}
                                 </Button>
                             </div>
                         ) : (
