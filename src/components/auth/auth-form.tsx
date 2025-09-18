@@ -44,7 +44,7 @@ function getRedirectPath(role: Role) {
     case 'manager':
       return '/manager';
     case 'worker':
-      return '/worker';
+      return '/worker/tasks';
     default:
       return '/customer';
   }
@@ -82,7 +82,6 @@ function SignUpFormFields({ role, onAuthSuccess }: { role: Role; onAuthSuccess: 
             displayName: name || (role === 'manager' ? 'Super Manager' : 'New User'),
             role: role,
             createdAt: serverTimestamp(),
-            ...(role === 'worker' && { verificationStatus: 'Pending' })
         });
         
         toast({ title: 'Account created successfully!' });
@@ -147,25 +146,33 @@ function LoginForm({ role, onAuthSuccess }: { role: Role, onAuthSuccess: (role: 
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      // Check 'users' collection first (managers, customers)
+      let userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists()) {
           const userRole = userDoc.data().role as Role;
           if (userRole === role) {
             toast({ title: 'Logged in successfully!' });
             onAuthSuccess(userRole);
+            return;
           } else {
-            await auth.signOut();
-            throw new Error(`You are not authorized to log in as a ${role}.`);
+             await auth.signOut();
+             throw new Error(`You are not authorized to log in as a ${role}.`);
           }
-      } else {
-          // If user exists in auth but not firestore, could be a worker created by manager
-          if (role === 'worker') {
-              onAuthSuccess('worker');
-              return;
-          }
-          await auth.signOut();
-          throw new Error(`Your user data could not be found. Please try signing up again or contact support.`);
       }
+
+      // If not in 'users', check 'workers' collection
+      if (role === 'worker') {
+        const workerDoc = await getDoc(doc(db, 'workers', user.uid));
+        if (workerDoc.exists()) {
+             toast({ title: 'Logged in successfully!' });
+             onAuthSuccess('worker');
+             return;
+        }
+      }
+      
+      await auth.signOut();
+      throw new Error(`Your user data could not be found for the selected role.`);
+
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -295,12 +302,16 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="customer" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="customer">Customer</TabsTrigger>
+              <TabsTrigger value="worker">Worker</TabsTrigger>
               <TabsTrigger value="manager">Manager</TabsTrigger>
             </TabsList>
             <TabsContent value="customer" className="mt-4">
               <LoginForm role="customer" onAuthSuccess={handleAuthSuccess} />
+            </TabsContent>
+            <TabsContent value="worker" className="mt-4">
+              <LoginForm role="worker" onAuthSuccess={handleAuthSuccess} />
             </TabsContent>
             <TabsContent value="manager" className="mt-4">
               <LoginForm role="manager" onAuthSuccess={handleAuthSuccess}/>
@@ -316,5 +327,3 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
     </Card>
   );
 }
-
-    

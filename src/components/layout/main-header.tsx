@@ -26,38 +26,18 @@ function getRedirectPath(role: string) {
     case 'manager':
       return '/manager';
     case 'worker':
-      return '/worker';
+      return '/worker/tasks';
     default:
       return '/customer';
   }
 };
 
 export default function MainHeader() {
-  const { user, loading } = useAuth();
+  const { user, userRole, loading } = useAuth();
   const router = useRouter();
-  const [userRole, setUserRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (user && !userRole) {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists()) {
-            setUserRole(userDoc.data().role);
-          }
-        } catch (error) {
-          console.error("Failed to fetch user role:", error);
-        }
-      } else if (!user) {
-        setUserRole(null);
-      }
-    };
-    fetchUserRole();
-  }, [user, userRole]);
-
+  
   const handleLogout = async () => {
     await signOut(auth);
-    setUserRole(null);
     router.push('/');
   };
 

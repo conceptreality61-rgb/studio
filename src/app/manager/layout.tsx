@@ -18,7 +18,7 @@ import {
 import { managerNavItems } from '@/lib/constants';
 import Logo from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useRequireAuth } from '@/hooks/use-auth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { DoorOpen } from 'lucide-react';
@@ -27,7 +27,7 @@ import { auth } from '@/lib/firebase';
 
 export default function ManagerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, loading } = useAuth();
+  const { user, loading } = useRequireAuth('manager');
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -40,6 +40,14 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
       return pathname === itemHref;
     }
     return pathname.startsWith(itemHref);
+  }
+
+  if (loading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Skeleton className="h-screen w-full" />
+      </div>
+    );
   }
 
   return (
@@ -99,7 +107,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
       <SidebarInset>
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <div className='flex items-center gap-4'>
-            <SidebarTrigger className="md/hidden" />
+            <SidebarTrigger className="md:hidden" />
             <h1 className="text-xl font-semibold capitalize">
               {pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}
             </h1>

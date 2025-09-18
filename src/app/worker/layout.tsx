@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/sidebar';
 import Logo from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useRequireAuth } from '@/hooks/use-auth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { DoorOpen, Briefcase, User } from 'lucide-react';
@@ -31,7 +31,7 @@ const workerNavItems = [
 
 export default function WorkerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, loading } = useAuth();
+  const { user, loading } = useRequireAuth('worker');
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -41,9 +41,17 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
 
   const isNavItemActive = (itemHref: string) => {
     if (itemHref === '/worker') {
-      return pathname === itemHref;
+      return pathname === '/worker/tasks';
     }
     return pathname.startsWith(itemHref);
+  }
+
+  if (loading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Skeleton className="h-screen w-full" />
+      </div>
+    );
   }
 
   return (
