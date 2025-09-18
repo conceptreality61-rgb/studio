@@ -30,6 +30,8 @@ type Booking = {
   status: string;
   userId: string;
   customerName: string;
+  refusedBy?: string[];
+  canceledWorkerIds?: string[];
 };
 
 type CustomerProfile = {
@@ -129,8 +131,11 @@ export default function ManagerBookingDetailPage() {
             // Sort workers by display name client-side
             allWorkersData.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
-            // 3. Filter workers by service qualification
-            const qualifiedWorkers = allWorkersData.filter(worker => worker.services?.includes(bookingData.serviceId));
+            // 3. Filter workers by service qualification and who haven't refused this job
+            const qualifiedWorkers = allWorkersData.filter(worker => 
+              worker.services?.includes(bookingData.serviceId) &&
+              !bookingData.refusedBy?.includes(worker.id)
+            );
 
             // 4. Filter out workers with scheduling conflicts
             const currentBookingTime = parseTime(bookingDate, bookingData.time);
@@ -273,6 +278,9 @@ export default function ManagerBookingDetailPage() {
                             </div>
                         ) : (
                             <p className="text-sm text-muted-foreground">No qualified and available workers found for this service and time slot.</p>
+                        )}
+                        {booking?.refusedBy && booking.refusedBy.length > 0 && (
+                            <p className="text-xs text-destructive mt-2">Note: This job was previously refused by {booking.refusedBy.length} worker(s).</p>
                         )}
                     </div>
                 </div>
