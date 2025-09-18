@@ -37,8 +37,27 @@ const idTypes = [
 
 const idSchema = z.object({
   type: z.string().min(1, { message: "Please select an ID type." }),
-  number: z.string().min(5, { message: "ID number must be at least 5 characters." }),
+  number: z.string().min(1, { message: "Please enter an ID number." }),
+}).superRefine((data, ctx) => {
+    if (data.type === 'aadhar') {
+        if (!/^\d{12}$/.test(data.number)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Aadhar number must be 12 digits.',
+                path: ['number'],
+            });
+        }
+    } else if (data.type === 'pan') {
+        if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(data.number)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'PAN number must be 10 alphanumeric characters.',
+                path: ['number'],
+            });
+        }
+    }
 }).optional().or(z.literal(''));
+
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -410,5 +429,3 @@ export default function NewWorkerPage() {
     </Card>
   );
 }
-
-    
