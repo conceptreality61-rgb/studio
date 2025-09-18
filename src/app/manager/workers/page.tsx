@@ -173,8 +173,6 @@ export default function ManagerWorkersPage() {
                                                         <DropdownMenuItem asChild>
                                                             <Link href={`/manager/workers/edit/${worker.id}`}>Edit Worker</Link>
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-destructive">Delete Worker</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
