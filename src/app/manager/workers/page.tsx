@@ -161,11 +161,11 @@ export default function ManagerWorkersPage() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead><b>Worker Name</b></TableHead>
-                                            <TableHead>Email</TableHead>
-                                            <TableHead>Join Date</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Driving License</TableHead>
-                                            <TableHead>Vehicle No.</TableHead>
+                                            <TableHead><b>Email</b></TableHead>
+                                            <TableHead><b>Join Date</b></TableHead>
+                                            <TableHead><b>Status</b></TableHead>
+                                            <TableHead><b>Driving License</b></TableHead>
+                                            <TableHead><b>Vehicle No.</b></TableHead>
                                             <TableHead>
                                                 <span className="sr-only">Actions</span>
                                             </TableHead>
