@@ -121,12 +121,14 @@ export default function ManagerBookingDetailPage() {
             // 2. Fetch all active workers
             const workersQuery = query(
                 collection(db, 'workers'), 
-                where('status', '==', 'Active'),
-                orderBy('displayName')
+                where('status', '==', 'Active')
             );
             const workersSnapshot = await getDocs(workersQuery);
             const allWorkersData = workersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Worker));
             
+            // Sort workers by display name client-side
+            allWorkersData.sort((a, b) => a.displayName.localeCompare(b.displayName));
+
             // 3. Filter workers by service qualification
             const qualifiedWorkers = allWorkersData.filter(worker => worker.services?.includes(bookingData.serviceId));
 
