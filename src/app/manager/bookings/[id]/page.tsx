@@ -298,9 +298,12 @@ export default function ManagerBookingDetailPage() {
             <>
                 <h3 className="font-semibold mb-4 text-lg">Worker Actions</h3>
                 <div className="flex items-center gap-4">
-                    <Button size="sm" onClick={() => setIsReassigning(true)} disabled={isSubmitting}>
-                        {isSubmitting ? <Loader2 className="animate-spin" /> : <XCircle />}
+                    <Button size="sm" variant="outline" onClick={() => setIsReassigning(true)} disabled={isSubmitting}>
                         Re-assign Worker
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={handleRefuse} disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : <XCircle />}
+                        Refuse Job
                     </Button>
                     <Button size="sm" onClick={handleAccept} disabled={isSubmitting}>
                         {isSubmitting ? <Loader2 className="animate-spin" /> : <CheckCircle />}
@@ -325,6 +328,10 @@ export default function ManagerBookingDetailPage() {
                 <div className="flex items-center gap-4">
                     <Button size="sm" variant="outline" onClick={() => setIsReassigning(true)} disabled={isSubmitting}>
                         Re-assign Worker
+                    </Button>
+                     <Button size="sm" variant="destructive" onClick={handleRefuse} disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : <XCircle />}
+                        Refuse Job
                     </Button>
                     <Button size="sm" onClick={handleComplete} disabled={isSubmitting}>
                         {isSubmitting ? <Loader2 className="animate-spin" /> : <CheckCircle />}
@@ -420,4 +427,3 @@ export default function ManagerBookingDetailPage() {
   );
 }
 
-    
