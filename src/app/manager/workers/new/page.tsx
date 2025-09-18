@@ -35,11 +35,25 @@ const idTypes = [
     { id: 'other', name: 'Other' },
 ]
 
-const idSchema = z.object({
-  type: z.string().min(1, { message: "Please select an ID type." }),
-  number: z.string().min(1, { message: "Please enter an ID number." }),
+const idDetailsSchema = z.object({
+  type: z.string().optional(),
+  number: z.string().optional(),
 }).superRefine((data, ctx) => {
-    if (data.type === 'aadhar') {
+    if (data.type && !data.number) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Please enter an ID number if type is selected.',
+            path: ['number'],
+        });
+    }
+    if (!data.type && data.number) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Please select an ID type if number is entered.',
+            path: ['type'],
+        });
+    }
+    if (data.type === 'aadhar' && data.number) {
         if (!/^\d{12}$/.test(data.number)) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -47,7 +61,7 @@ const idSchema = z.object({
                 path: ['number'],
             });
         }
-    } else if (data.type === 'pan') {
+    } else if (data.type === 'pan' && data.number) {
         if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(data.number.toUpperCase())) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -56,7 +70,7 @@ const idSchema = z.object({
             });
         }
     }
-}).optional().or(z.literal(''));
+}).optional();
 
 
 const formSchema = z.object({
@@ -68,8 +82,8 @@ const formSchema = z.object({
   }),
   fatherName: z.string().min(2, { message: "Father's name must be at least 2 characters." }),
   mobile: z.string().regex(/^\d{10}$/, { message: 'Mobile number must be 10 digits.' }),
-  idDetails: idSchema,
-  idDetails2: idSchema.optional(),
+  idDetails: idDetailsSchema,
+  idDetails2: idDetailsSchema,
   address: z.string().min(10, { message: 'Address must be at least 10 characters.' }),
   services: z.array(z.string()).min(1, { message: 'You have to select at least one service.' }),
   knowsDriving: z.boolean().default(false),
@@ -222,7 +236,7 @@ export default function NewWorkerPage() {
                           render={({ field: typeField }) => (
                             <FormItem>
                               <FormLabel>ID Type</FormLabel>
-                              <Select onValueChange={typeField.onChange} defaultValue={typeField.value}>
+                              <Select onValueChange={typeField.onChange} value={typeField.value || ''}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="ID Type" />
@@ -248,6 +262,7 @@ export default function NewWorkerPage() {
                                   <Input 
                                     placeholder="ID Number" 
                                     {...numField}
+                                    value={numField.value || ''}
                                     type="text"
                                     maxLength={idType1 === 'pan' ? 10 : idType1 === 'aadhar' ? 12 : undefined}
                                     onChange={(e) => {
@@ -256,7 +271,9 @@ export default function NewWorkerPage() {
                                             numField.onChange(value.toUpperCase());
                                         } else if (idType1 === 'aadhar') {
                                             const numericValue = value.replace(/\D/g, '');
-                                            numField.onChange(numericValue);
+                                            if (numericValue.length <= 12) {
+                                                numField.onChange(numericValue);
+                                            }
                                         } else {
                                             numField.onChange(value);
                                         }
@@ -284,7 +301,7 @@ export default function NewWorkerPage() {
                           render={({ field: typeField }) => (
                             <FormItem>
                                 <FormLabel>ID Type</FormLabel>
-                              <Select onValueChange={typeField.onChange} defaultValue={typeField.value}>
+                              <Select onValueChange={typeField.onChange} value={typeField.value || ''}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="ID Type" />
@@ -310,6 +327,7 @@ export default function NewWorkerPage() {
                                   <Input 
                                     placeholder="ID Number" 
                                     {...numField}
+                                    value={numField.value || ''}
                                     type="text"
                                     maxLength={idType2 === 'pan' ? 10 : idType2 === 'aadhar' ? 12 : undefined}
                                      onChange={(e) => {
@@ -318,7 +336,9 @@ export default function NewWorkerPage() {
                                             numField.onChange(value.toUpperCase());
                                         } else if (idType2 === 'aadhar') {
                                             const numericValue = value.replace(/\D/g, '');
-                                            numField.onChange(numericValue);
+                                             if (numericValue.length <= 12) {
+                                                numField.onChange(numericValue);
+                                            }
                                         } else {
                                             numField.onChange(value);
                                         }
@@ -364,7 +384,7 @@ export default function NewWorkerPage() {
                         <FormItem>
                             <FormLabel>Driving License Number</FormLabel>
                             <FormControl>
-                            <Input placeholder="e.g., DL1420110012345" {...field} />
+                            <Input placeholder="e.g., DL1420110012345" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -399,7 +419,7 @@ export default function NewWorkerPage() {
                         <FormItem>
                             <FormLabel>Vehicle Number</FormLabel>
                             <FormControl>
-                            <Input placeholder="e.g., DL-12-AB-3456" {...field} />
+                            <Input placeholder="e.g., DL-12-AB-3456" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -437,9 +457,9 @@ export default function NewWorkerPage() {
                                   checked={field.value?.includes(item.id)}
                                   onCheckedChange={(checked) => {
                                     return checked
-                                      ? field.onChange([...field.value, item.id])
+                                      ? field.onChange([...(field.value || []), item.id])
                                       : field.onChange(
-                                          field.value?.filter(
+                                          (field.value || [])?.filter(
                                             (value) => value !== item.id
                                           )
                                         );

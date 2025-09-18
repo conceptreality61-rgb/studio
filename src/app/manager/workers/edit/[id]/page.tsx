@@ -21,14 +21,16 @@ import { useToast } from '@/hooks/use-toast';
 import { services } from '@/lib/constants';
 import { updateWorker } from './actions';
 import { useRouter, useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Loader2, Camera } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 const idTypes = [
     { id: 'aadhar', name: 'Aadhar Card' },
@@ -39,43 +41,20 @@ const idTypes = [
 ]
 
 const idDetailsSchema = z.object({
-  type: z.string().min(1, { message: "Please select an ID type." }),
-  number: z.string().min(1, { message: "Please enter an ID number." }),
-}).superRefine((data, ctx) => {
-    if (data.type === 'aadhar' && data.number) {
-        if (!/^\d{12}$/.test(data.number)) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Aadhar number must be 12 digits.',
-                path: ['number'],
-            });
-        }
-    } else if (data.type === 'pan' && data.number) {
-        if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(data.number.toUpperCase())) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Invalid PAN number format.',
-                path: ['number'],
-            });
-        }
-    }
-});
-
-const optionalIdDetailsSchema = z.object({
   type: z.string().optional(),
   number: z.string().optional(),
 }).superRefine((data, ctx) => {
     if (data.type && !data.number) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'Please enter an ID number.',
+            message: 'Please enter an ID number if type is selected.',
             path: ['number'],
         });
     }
     if (!data.type && data.number) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'Please select an ID type.',
+            message: 'Please select an ID type if number is entered.',
             path: ['type'],
         });
     }
@@ -109,7 +88,7 @@ const formSchema = z.object({
   fatherName: z.string().min(2, { message: "Father's name must be at least 2 characters." }),
   mobile: z.string().regex(/^\d{10}$/, { message: 'Mobile number must be 10 digits.' }),
   idDetails: idDetailsSchema,
-  idDetails2: optionalIdDetailsSchema,
+  idDetails2: idDetailsSchema,
   address: z.string().min(10, { message: 'Address must be at least 10 characters.' }),
   services: z.array(z.string()).min(1, { message: 'You have to select at least one service.' }),
   knowsDriving: z.boolean().default(false),
@@ -125,6 +104,9 @@ export default function EditWorkerPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [initialPhotoUrl, setInitialPhotoUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -166,6 +148,9 @@ export default function EditWorkerPage() {
                     drivingLicenseNumber: workerData.drivingLicenseNumber || '',
                     vehicleNumber: workerData.vehicleNumber || '',
                 });
+                if (workerData.photoURL) {
+                    setInitialPhotoUrl(workerData.photoURL);
+                }
             } else {
                 toast({ variant: 'destructive', title: 'Error', description: 'Worker not found.' });
                 router.push('/manager/workers');
@@ -179,6 +164,18 @@ export default function EditWorkerPage() {
     fetchWorkerData();
   }, [workerId, form, router, toast]);
 
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+        // In a real app, you would upload this file to storage.
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const knowsDriving = form.watch('knowsDriving');
   const hasVehicle = form.watch('hasVehicle');
   const idType1 = form.watch('idDetails.type');
@@ -187,6 +184,8 @@ export default function EditWorkerPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
+      // Here you would also handle file uploads for avatar and ID docs to Firebase Storage
+      // and get their URLs to save in the worker document.
       const result = await updateWorker(workerId, values);
       if (result.success) {
         toast({
@@ -235,33 +234,59 @@ export default function EditWorkerPage() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            
+            <div className="flex items-center gap-6">
+                <div className="relative group">
+                    <Avatar className="h-24 w-24">
+                        <AvatarImage src={avatarPreview ?? initialPhotoUrl ?? `https://i.pravatar.cc/128?u=${workerId}`} />
+                        <AvatarFallback>{form.getValues('name')?.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                        <Camera className="h-8 w-8 text-white" />
+                    </button>
+                    <Input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                        accept="image/*"
+                    />
+                </div>
+                <div className="grid flex-1 gap-6">
+                    <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Full Name</FormLabel>
+                            <FormControl>
+                            <Input placeholder="John Doe" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="fatherName"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Father's Name</FormLabel>
+                            <FormControl>
+                            <Input placeholder="Richard Doe" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                </div>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="fatherName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Father's Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Richard Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
                <FormField
                 control={form.control}
                 name="email"
@@ -291,33 +316,33 @@ export default function EditWorkerPage() {
             </div>
             
             <div className="grid md:grid-cols-1 gap-6">
-                 <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Address</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="123 Main St, Anytown, State, 12345" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Full Address</FormLabel>
+                        <FormControl>
+                        <Textarea placeholder="123 Main St, Anytown, State, 12345" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
                 <FormField
                   control={form.control}
                   name="idDetails"
                   render={() => (
                     <FormItem>
-                      <FormLabel>ID Details 1</FormLabel>
-                      <div className="grid grid-cols-2 gap-4">
+                      <FormLabel className="text-base font-semibold">ID Document 1</FormLabel>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-md">
                         <FormField
                           control={form.control}
                           name="idDetails.type"
                           render={({ field: typeField }) => (
                             <FormItem>
                                 <FormLabel>ID Type</FormLabel>
-                              <Select onValueChange={typeField.onChange} value={typeField.value}>
+                              <Select onValueChange={typeField.onChange} value={typeField.value || ''}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="ID Type" />
@@ -343,6 +368,7 @@ export default function EditWorkerPage() {
                                   <Input 
                                     placeholder="ID Number" 
                                     {...numField}
+                                    value={numField.value || ''}
                                     type="text"
                                     maxLength={idType1 === 'pan' ? 10 : idType1 === 'aadhar' ? 12 : undefined}
                                     onChange={(e) => {
@@ -364,6 +390,13 @@ export default function EditWorkerPage() {
                             </FormItem>
                           )}
                         />
+                        <FormItem>
+                            <FormLabel>Upload Document</FormLabel>
+                             <FormControl>
+                                <Input type="file" />
+                            </FormControl>
+                            <FormDescription>Upload a scan of the ID document.</FormDescription>
+                        </FormItem>
                       </div>
                     </FormItem>
                   )}
@@ -373,8 +406,8 @@ export default function EditWorkerPage() {
                   name="idDetails2"
                   render={() => (
                     <FormItem>
-                      <FormLabel>ID Details 2 (Optional)</FormLabel>
-                       <div className="grid grid-cols-2 gap-4">
+                      <FormLabel className="text-base font-semibold">ID Document 2 (Optional)</FormLabel>
+                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-md">
                         <FormField
                           control={form.control}
                           name="idDetails2.type"
@@ -429,6 +462,13 @@ export default function EditWorkerPage() {
                             </FormItem>
                           )}
                         />
+                        <FormItem>
+                            <FormLabel>Upload Document</FormLabel>
+                             <FormControl>
+                                <Input type="file" />
+                            </FormControl>
+                            <FormDescription>Upload a scan of the ID document.</FormDescription>
+                        </FormItem>
                       </div>
                     </FormItem>
                   )}
@@ -464,7 +504,7 @@ export default function EditWorkerPage() {
                         <FormItem>
                             <FormLabel>Driving License Number</FormLabel>
                             <FormControl>
-                            <Input placeholder="e.g., DL1420110012345" {...field} />
+                            <Input placeholder="e.g., DL1420110012345" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -499,7 +539,7 @@ export default function EditWorkerPage() {
                         <FormItem>
                             <FormLabel>Vehicle Number</FormLabel>
                             <FormControl>
-                            <Input placeholder="e.g., DL-12-AB-3456" {...field} />
+                            <Input placeholder="e.g., DL-12-AB-3456" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -567,3 +607,5 @@ export default function EditWorkerPage() {
     </Card>
   );
 }
+
+    
