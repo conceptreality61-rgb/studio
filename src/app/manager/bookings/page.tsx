@@ -147,6 +147,7 @@ export default function ManagerBookingsPage() {
             <Table>
             <TableHeader>
                 <TableRow>
+                <TableHead><b>Sl No.</b></TableHead>
                 <TableHead><b>Booking ID</b></TableHead>
                 <TableHead><b>Service</b></TableHead>
                 <TableHead><b>Customer</b></TableHead>
@@ -160,8 +161,9 @@ export default function ManagerBookingsPage() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {bookings.map((booking) => (
+                {bookings.map((booking, index) => (
                 <TableRow key={booking.id}>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell className="font-medium">{booking.id.substring(0, 6)}</TableCell>
                     <TableCell>{booking.serviceName}</TableCell>
                     <TableCell>{booking.customerName}</TableCell>
