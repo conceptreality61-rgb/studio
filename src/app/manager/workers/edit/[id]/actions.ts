@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/firebase';
-import { doc, updateDoc, serverTimestamp } from 'firestore';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 export async function updateWorker(id: string, data: { 
   name: string; 
