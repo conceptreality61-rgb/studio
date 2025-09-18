@@ -152,7 +152,9 @@ export default function ManagerWorkersPage() {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem>Edit Worker</DropdownMenuItem>
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={`/manager/workers/edit/${worker.id}`}>Edit Worker</Link>
+                                                        </DropdownMenuItem>
                                                         <DropdownMenuItem className="text-destructive">Delete Worker</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -179,4 +181,3 @@ export default function ManagerWorkersPage() {
   );
 }
 
-    
