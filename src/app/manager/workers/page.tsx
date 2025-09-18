@@ -160,7 +160,7 @@ export default function ManagerWorkersPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Worker Name</TableHead>
+                                            <TableHead><b>Worker Name</b></TableHead>
                                             <TableHead>Email</TableHead>
                                             <TableHead>Join Date</TableHead>
                                             <TableHead>Status</TableHead>
