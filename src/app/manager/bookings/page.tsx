@@ -19,6 +19,7 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, updateDoc, query, orderBy, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 type Booking = {
   id: string;
@@ -174,7 +175,9 @@ export default function ManagerBookingsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href={`/manager/bookings/${booking.id}`}>View Details</Link>
+                            </DropdownMenuItem>
                             <DropdownMenuItem>Cancel Booking</DropdownMenuItem>
                         </DropdownMenuContent>
                         </DropdownMenu>
