@@ -23,6 +23,7 @@ import { createWorker } from './actions';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -31,6 +32,10 @@ const formSchema = z.object({
   email: z.string().email({
     message: 'Please enter a valid email address.',
   }),
+  fatherName: z.string().min(2, { message: "Father's name must be at least 2 characters." }),
+  mobile: z.string().regex(/^\d{10}$/, { message: 'Mobile number must be 10 digits.' }),
+  idDetails: z.string().min(5, { message: 'ID details must be at least 5 characters (e.g., Aadhar, PAN).' }),
+  address: z.string().min(10, { message: 'Address must be at least 10 characters.' }),
   services: z.array(z.string()).min(1, { message: 'You have to select at least one service.' }),
 });
 
@@ -44,6 +49,10 @@ export default function NewWorkerPage() {
     defaultValues: {
       name: '',
       email: '',
+      fatherName: '',
+      mobile: '',
+      idDetails: '',
+      address: '',
       services: [],
     },
   });
@@ -55,7 +64,7 @@ export default function NewWorkerPage() {
       if (result.success) {
         toast({
           title: 'Worker Created',
-          description: `An invitation has been sent to ${values.email}.`,
+          description: `Worker ${values.name} has been added to your team.`,
         });
         router.push('/manager/workers');
       } else {
@@ -97,12 +106,67 @@ export default function NewWorkerPage() {
               />
               <FormField
                 control={form.control}
+                name="fatherName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Father's Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Richard Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
                       <Input placeholder="worker@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="mobile"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mobile Number</FormLabel>
+                    <FormControl>
+                      <Input type="tel" placeholder="9876543210" {...field} maxLength={10}/>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="grid md:grid-cols-1 gap-6">
+                <FormField
+                control={form.control}
+                name="idDetails"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID Details</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Aadhar Card: 1234 5678 9012" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Address</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="123 Main St, Anytown, State, 12345" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
