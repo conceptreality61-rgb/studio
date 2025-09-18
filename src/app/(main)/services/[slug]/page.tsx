@@ -77,6 +77,7 @@ export default function ServiceDetailPage() {
       try {
         const result = await createBooking({
           userId: user.uid,
+          customerName: user.displayName || 'Unnamed Customer',
           serviceId: service.id,
           serviceName: service.name,
           servicePrice: service.price,

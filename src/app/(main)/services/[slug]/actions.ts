@@ -12,6 +12,7 @@ export async function createBooking(bookingData: {
   time: string;
   options: Record<string, string | string[]>;
   userId: string;
+  customerName: string;
   status: string;
 }) {
   try {
