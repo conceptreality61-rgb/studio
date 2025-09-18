@@ -47,11 +47,11 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 };
 
 const rowStatusHighlight: { [key: string]: string } = {
-  'Pending Manager Approval': 'bg-yellow-100/50 hover:bg-yellow-100/80',
-  'Worker Assigned': 'bg-blue-100/50 hover:bg-blue-100/80',
+  'Pending Manager Approval': 'bg-red-100/50 hover:bg-red-100/80',
+  'Worker Assigned': 'bg-sky-100/50 hover:bg-sky-100/80',
   'In Progress': 'bg-indigo-100/50 hover:bg-indigo-100/80',
   'Completed': 'bg-green-100/50 hover:bg-green-100/80',
-  'Canceled': 'bg-red-100/50 hover:bg-red-100/80',
+  'Canceled': 'bg-gray-100/50 hover:bg-gray-100/80',
 };
 
 
