@@ -10,8 +10,8 @@ export async function createWorker(data: {
   services: string[];
   fatherName: string;
   mobile: string;
-  idDetails: string;
-  idDetails2: string;
+  idDetails: { type: string, number: string };
+  idDetails2?: { type: string, number: string };
   address: string;
 }) {
   try {

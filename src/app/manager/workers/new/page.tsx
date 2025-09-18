@@ -24,6 +24,20 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const idTypes = [
+    { id: 'aadhar', name: 'Aadhar Card' },
+    { id: 'pan', name: 'PAN Card' },
+    { id: 'dl', name: 'Driving License' },
+    { id: 'voterid', name: 'Voter ID' },
+    { id: 'other', name: 'Other' },
+]
+
+const idSchema = z.object({
+  type: z.string().min(1, { message: "Please select an ID type." }),
+  number: z.string().min(5, { message: "ID number must be at least 5 characters." }),
+});
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -34,8 +48,8 @@ const formSchema = z.object({
   }),
   fatherName: z.string().min(2, { message: "Father's name must be at least 2 characters." }),
   mobile: z.string().regex(/^\d{10}$/, { message: 'Mobile number must be 10 digits.' }),
-  idDetails: z.string().min(5, { message: 'ID details must be at least 5 characters (e.g., Aadhar, PAN).' }),
-  idDetails2: z.string().optional(),
+  idDetails: idSchema,
+  idDetails2: idSchema.optional(),
   address: z.string().min(10, { message: 'Address must be at least 10 characters.' }),
   services: z.array(z.string()).min(1, { message: 'You have to select at least one service.' }),
 });
@@ -52,8 +66,8 @@ export default function NewWorkerPage() {
       email: '',
       fatherName: '',
       mobile: '',
-      idDetails: '',
-      idDetails2: '',
+      idDetails: { type: '', number: '' },
+      idDetails2: { type: '', number: '' },
       address: '',
       services: [],
     },
@@ -149,31 +163,94 @@ export default function NewWorkerPage() {
             
             <div className="grid md:grid-cols-1 gap-6">
                 <FormField
-                control={form.control}
-                name="idDetails"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ID Details 1</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Aadhar Card: 1234 5678 9012" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="idDetails2"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ID Details 2 (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., PAN Card: ABCDE1234F" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  control={form.control}
+                  name="idDetails"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ID Details 1</FormLabel>
+                      <div className="flex gap-2">
+                        <FormField
+                          control={form.control}
+                          name="idDetails.type"
+                          render={({ field: typeField }) => (
+                            <FormItem className="w-1/3">
+                              <Select onValueChange={typeField.onChange} defaultValue={typeField.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="ID Type" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {idTypes.map(type => (
+                                    <SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                               <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="idDetails.number"
+                          render={({ field: numField }) => (
+                            <FormItem className="w-2/3">
+                                <FormControl>
+                                  <Input placeholder="ID Number" {...numField} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="idDetails2"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ID Details 2 (Optional)</FormLabel>
+                      <div className="flex gap-2">
+                        <FormField
+                          control={form.control}
+                          name="idDetails2.type"
+                          render={({ field: typeField }) => (
+                            <FormItem className="w-1/3">
+                              <Select onValueChange={typeField.onChange} defaultValue={typeField.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="ID Type" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {idTypes.map(type => (
+                                    <SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                               <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="idDetails2.number"
+                          render={({ field: numField }) => (
+                            <FormItem className="w-2/3">
+                                <FormControl>
+                                  <Input placeholder="ID Number" {...numField} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
                <FormField
                 control={form.control}
                 name="address"
