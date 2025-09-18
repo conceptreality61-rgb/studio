@@ -162,6 +162,7 @@ export default function ManagerWorkersPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
+                                            <TableHead><b>Sl No.</b></TableHead>
                                             <TableHead><b>Worker Name</b></TableHead>
                                             <TableHead><b>Email</b></TableHead>
                                             <TableHead><b>Mobile Number</b></TableHead>
@@ -175,8 +176,9 @@ export default function ManagerWorkersPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {workersByService[service.id].map((worker) => (
+                                        {workersByService[service.id].map((worker, index) => (
                                         <TableRow key={worker.id} className={cn(worker.status === 'Active' && 'bg-green-100 hover:bg-green-100/80')}>
+                                            <TableCell>{index + 1}</TableCell>
                                             <TableCell className="font-medium">{worker.displayName}</TableCell>
                                             <TableCell>{worker.email}</TableCell>
                                             <TableCell>{worker.mobile}</TableCell>
