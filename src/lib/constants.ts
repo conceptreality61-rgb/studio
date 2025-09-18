@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
-import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck, Bath, Droplets, Sparkles, DoorOpen, Car } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck, Bath, Droplets, Sparkles, DoorOpen, Car, CarWash } from 'lucide-react';
 
 export type ServiceSubCategoryOption = {
   id: string;
@@ -183,34 +183,33 @@ export const services: Service[] = [
     ]
   },
   {
-    id: 'driving-services',
-    name: 'Driving Services',
-    description: 'Professional drivers for your personal or business needs.',
-    longDescription: 'Our professional driving services provide you with a safe and reliable driver for your personal or business needs. Whether you need a driver for a day, for an event, or on a regular basis, we have you covered.',
-    icon: Car,
-    imageId: 'driving-services',
-    price: 50,
+    id: 'vehicle-cleaning',
+    name: 'Vehicle Cleaning',
+    description: 'Professional car washing and detailing services.',
+    longDescription: 'Get your vehicle looking brand new with our comprehensive cleaning services. From a simple wash to full interior and exterior detailing, we make your car shine.',
+    icon: CarWash,
+    imageId: 'vehicle-cleaning',
+    price: 20,
     subCategories: [
       {
         id: 'vehicle-type',
         name: 'Vehicle Type',
         type: 'single',
         options: [
+          { id: 'hatchback', name: 'Hatchback' },
           { id: 'sedan', name: 'Sedan' },
           { id: 'suv', name: 'SUV' },
           { id: 'luxury', name: 'Luxury Car' },
-          { id: 'van', name: 'Van' },
         ],
       },
       {
-        id: 'duration',
-        name: 'Select Duration',
+        id: 'cleaning-package',
+        name: 'Cleaning Package',
         type: 'single',
         options: [
-          { id: '2-hours', name: '2 Hours' },
-          { id: '4-hours', name: '4 Hours' },
-          { id: '8-hours', name: '8 Hours (Full Day)' },
-          { id: 'custom', name: 'Custom' },
+          { id: 'exterior-wash', name: 'Exterior Wash' },
+          { id: 'interior-vacuum', name: 'Interior Vacuum' },
+          { id: 'full-detail', name: 'Full Detailing (Interior + Exterior)' },
         ],
       },
     ]

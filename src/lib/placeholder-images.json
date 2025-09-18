@@ -32,10 +32,10 @@
       "imageHint": "home garden"
     },
     {
-      "id": "driving-services",
-      "description": "A person driving a car.",
-      "imageUrl": "https://images.unsplash.com/photo-1555215695-3004980ad54e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxkcml2aW5nJTIwY2FyfGVufDB8fHx8MTcyMjE3NjY0NXww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "driving car"
+      "id": "vehicle-cleaning",
+      "description": "A person washing a car.",
+      "imageUrl": "https://images.unsplash.com/photo-1607280287834-9b2866c1e271?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx2ZWhpY2xlJTIwY2xlYW5pbmd8ZW58MHx8fHwxNzIyMTc3ODMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "vehicle cleaning"
     },
     {
       "id": "worker-profile",
