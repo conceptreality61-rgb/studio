@@ -20,10 +20,12 @@ type Booking = {
     status: 'Pending Manager Approval' | 'Worker Assigned' | 'Completed' | 'Canceled' | 'In Progress';
 };
 
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
-  Completed: "default",
-  "Worker Assigned": "secondary",
-  "Pending Manager Approval": "outline"
+const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "success" | "warning" } = {
+  'Pending Manager Approval': "destructive",
+  'Worker Assigned': "info",
+  'In Progress': "secondary",
+  'Completed': "success",
+  'Canceled': "warning",
 };
 
 export default function ManagerDashboardPage() {
