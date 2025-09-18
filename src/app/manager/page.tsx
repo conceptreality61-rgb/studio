@@ -27,7 +27,7 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 };
 
 export default function ManagerDashboardPage() {
-    const [stats, setStats] = useState({ totalRevenue: 0, activeBookings: 0, newCustomers: 0 });
+    const [stats, setStats] = useState({ totalRevenue: 0, activeBookings: 0, newCustomers: 0, totalWorkers: 0 });
     const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -56,7 +56,11 @@ export default function ManagerDashboardPage() {
                 monthAgo.setDate(monthAgo.getDate() - 30);
                 const newCustomers = customers.filter(c => c.createdAt.toDate() > monthAgo).length;
 
-                setStats({ totalRevenue, activeBookings, newCustomers });
+                // Fetch Workers for stats
+                const workersSnapshot = await getDocs(collection(db, 'workers'));
+                const totalWorkers = workersSnapshot.size;
+
+                setStats({ totalRevenue, activeBookings, newCustomers, totalWorkers });
 
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
@@ -69,13 +73,14 @@ export default function ManagerDashboardPage() {
 
     return (
         <div className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {loading ? <>
-                    <Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" />
+                    <Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" />
                 </> : <>
                     <StatCard title="Total Revenue" value={`Rs.${stats.totalRevenue.toFixed(2)}`} description="From completed bookings" icon={DollarSign} />
                     <StatCard title="Active Bookings" value={String(stats.activeBookings)} description="Currently in progress" icon={Briefcase} />
                     <StatCard title="New Customers" value={`+${stats.newCustomers}`} description="In the last 30 days" icon={Users} />
+                    <StatCard title="Total Workers" value={String(stats.totalWorkers)} description="Across all services" icon={UserCheck} />
                 </>}
             </div>
             <div className="grid grid-cols-1">
