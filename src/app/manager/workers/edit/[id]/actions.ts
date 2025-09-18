@@ -10,18 +10,18 @@ export async function updateWorker(id: string, data: {
   services: string[];
   fatherName: string;
   mobile: string;
-  idDetails: { type: string, number: string };
-  idDetails2?: { type: string, number: string };
+  idDetails: { type?: string; number?: string; url?: string };
+  idDetails2?: { type?: string; number?: string; url?: string };
   address: string;
   knowsDriving: boolean;
   hasVehicle: boolean;
   drivingLicenseNumber?: string;
   vehicleNumber?: string;
+  photoURL?: string;
 }) {
   try {
     const workerRef = doc(db, 'workers', id);
     
-    // Construct the data object to prevent sending undefined values for nested objects
     const updateData: any = {
       displayName: data.name,
       email: data.email,
@@ -35,13 +35,25 @@ export async function updateWorker(id: string, data: {
       vehicleNumber: data.vehicleNumber || null,
       updatedAt: serverTimestamp(),
     };
+    
+    if (data.photoURL) {
+      updateData.photoURL = data.photoURL;
+    }
 
     if (data.idDetails && data.idDetails.type && data.idDetails.number) {
-        updateData.idDetails = data.idDetails;
+        updateData.idDetails = {
+            type: data.idDetails.type,
+            number: data.idDetails.number,
+            url: data.idDetails.url || null
+        };
     }
 
     if (data.idDetails2 && data.idDetails2.type && data.idDetails2.number) {
-        updateData.idDetails2 = data.idDetails2;
+        updateData.idDetails2 = {
+            type: data.idDetails2.type,
+            number: data.idDetails2.number,
+            url: data.idDetails2.url || null
+        };
     } else {
         updateData.idDetails2 = null; 
     }

@@ -22,14 +22,17 @@ import { services } from '@/lib/constants';
 import { updateWorker } from './actions';
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import { Loader2, Camera } from 'lucide-react';
+import { Loader2, Camera, Eye } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
 
 const idTypes = [
@@ -43,6 +46,7 @@ const idTypes = [
 const idDetailsSchema = z.object({
   type: z.string().optional(),
   number: z.string().optional(),
+  url: z.string().optional(),
 }).superRefine((data, ctx) => {
     if (data.type && !data.number) {
         ctx.addIssue({
@@ -104,8 +108,16 @@ export default function EditWorkerPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [idDoc1File, setIdDoc1File] = useState<File | null>(null);
+  const [idDoc2File, setIdDoc2File] = useState<File | null>(null);
+
   const [initialPhotoUrl, setInitialPhotoUrl] = useState<string | null>(null);
+  const [initialId1Url, setInitialId1Url] = useState<string | null>(null);
+  const [initialId2Url, setInitialId2Url] = useState<string | null>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -115,8 +127,8 @@ export default function EditWorkerPage() {
       email: '',
       fatherName: '',
       mobile: '',
-      idDetails: { type: '', number: '' },
-      idDetails2: { type: '', number: '' },
+      idDetails: { type: '', number: '', url: '' },
+      idDetails2: { type: '', number: '', url: '' },
       address: '',
       services: [],
       knowsDriving: false,
@@ -139,8 +151,8 @@ export default function EditWorkerPage() {
                     email: workerData.email || '',
                     fatherName: workerData.fatherName || '',
                     mobile: workerData.mobile || '',
-                    idDetails: workerData.idDetails || { type: '', number: '' },
-                    idDetails2: workerData.idDetails2 || { type: '', number: '' },
+                    idDetails: workerData.idDetails || { type: '', number: '', url: '' },
+                    idDetails2: workerData.idDetails2 || { type: '', number: '', url: '' },
                     address: workerData.address || '',
                     services: workerData.services || [],
                     knowsDriving: workerData.knowsDriving || false,
@@ -148,9 +160,10 @@ export default function EditWorkerPage() {
                     drivingLicenseNumber: workerData.drivingLicenseNumber || '',
                     vehicleNumber: workerData.vehicleNumber || '',
                 });
-                if (workerData.photoURL) {
-                    setInitialPhotoUrl(workerData.photoURL);
-                }
+                setInitialPhotoUrl(workerData.photoURL || null);
+                setInitialId1Url(workerData.idDetails?.url || null);
+                setInitialId2Url(workerData.idDetails2?.url || null);
+
             } else {
                 toast({ variant: 'destructive', title: 'Error', description: 'Worker not found.' });
                 router.push('/manager/workers');
@@ -164,13 +177,19 @@ export default function EditWorkerPage() {
     fetchWorkerData();
   }, [workerId, form, router, toast]);
 
+  const uploadFile = async (file: File, path: string): Promise<string> => {
+    const storageRef = ref(storage, path);
+    const snapshot = await uploadBytes(storageRef, file);
+    return getDownloadURL(snapshot.ref);
+  };
+
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setAvatarFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result as string);
-        // In a real app, you would upload this file to storage.
       };
       reader.readAsDataURL(file);
     }
@@ -184,15 +203,34 @@ export default function EditWorkerPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      // Here you would also handle file uploads for avatar and ID docs to Firebase Storage
-      // and get their URLs to save in the worker document.
-      const result = await updateWorker(workerId, values);
+      let photoURL = initialPhotoUrl;
+      if (avatarFile) {
+        photoURL = await uploadFile(avatarFile, `workers/${workerId}/avatar.jpg`);
+      }
+
+      let idDetailsUrl1 = initialId1Url;
+      if (idDoc1File && values.idDetails?.type && values.idDetails?.number) {
+        idDetailsUrl1 = await uploadFile(idDoc1File, `workers/${workerId}/id_1.jpg`);
+      }
+      
+      let idDetailsUrl2 = initialId2Url;
+      if (idDoc2File && values.idDetails2?.type && values.idDetails2?.number) {
+        idDetailsUrl2 = await uploadFile(idDoc2File, `workers/${workerId}/id_2.jpg`);
+      }
+      
+      const result = await updateWorker(workerId, {
+        ...values,
+        photoURL: photoURL || undefined,
+        idDetails: { ...values.idDetails, url: idDetailsUrl1 || undefined },
+        idDetails2: { ...values.idDetails2, url: idDetailsUrl2 || undefined },
+      });
+      
       if (result.success) {
         toast({
           title: 'Worker Updated',
           description: `Worker ${values.name} has been updated.`,
         });
-        router.push('/manager/workers');
+        router.push(`/manager/workers/${workerId}`);
       } else {
         throw new Error(result.error || 'An unknown error occurred');
       }
@@ -393,9 +431,15 @@ export default function EditWorkerPage() {
                         <FormItem>
                             <FormLabel>Upload Document</FormLabel>
                              <FormControl>
-                                <Input type="file" />
+                                <Input type="file" accept="image/*" onChange={(e) => setIdDoc1File(e.target.files?.[0] || null)} />
                             </FormControl>
-                            <FormDescription>Upload a scan of the ID document.</FormDescription>
+                            {initialId1Url ? (
+                                <FormDescription>
+                                    Current doc: <Link href={initialId1Url} target="_blank" className="text-primary hover:underline">View</Link>. Upload new file to replace.
+                                </FormDescription>
+                            ) : (
+                                <FormDescription>Upload a scan of the ID document.</FormDescription>
+                            )}
                         </FormItem>
                       </div>
                     </FormItem>
@@ -465,9 +509,15 @@ export default function EditWorkerPage() {
                         <FormItem>
                             <FormLabel>Upload Document</FormLabel>
                              <FormControl>
-                                <Input type="file" />
+                                <Input type="file" accept="image/*" onChange={(e) => setIdDoc2File(e.target.files?.[0] || null)} />
                             </FormControl>
-                            <FormDescription>Upload a scan of the ID document.</FormDescription>
+                             {initialId2Url ? (
+                                <FormDescription>
+                                    Current doc: <Link href={initialId2Url} target="_blank" className="text-primary hover:underline">View</Link>. Upload new file to replace.
+                                </FormDescription>
+                            ) : (
+                                <FormDescription>Upload a scan of the ID document.</FormDescription>
+                            )}
                         </FormItem>
                       </div>
                     </FormItem>
@@ -607,5 +657,3 @@ export default function EditWorkerPage() {
     </Card>
   );
 }
-
-    

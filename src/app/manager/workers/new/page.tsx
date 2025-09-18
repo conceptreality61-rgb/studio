@@ -27,7 +27,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const idTypes = [
     { id: 'aadhar', name: 'Aadhar Card' },
@@ -40,6 +41,7 @@ const idTypes = [
 const idDetailsSchema = z.object({
   type: z.string().optional(),
   number: z.string().optional(),
+  url: z.string().optional(),
 }).superRefine((data, ctx) => {
     if (data.type && !data.number) {
         ctx.addIssue({
@@ -100,6 +102,10 @@ export default function NewWorkerPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [idDoc1File, setIdDoc1File] = useState<File | null>(null);
+  const [idDoc2File, setIdDoc2File] = useState<File | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
@@ -122,13 +128,19 @@ export default function NewWorkerPage() {
     },
   });
 
+  const uploadFile = async (file: File, path: string): Promise<string> => {
+    const storageRef = ref(storage, path);
+    const snapshot = await uploadBytes(storageRef, file);
+    return getDownloadURL(snapshot.ref);
+  };
+
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setAvatarFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result as string);
-        // In a real app, you would upload this file to storage.
       };
       reader.readAsDataURL(file);
     }
@@ -142,7 +154,28 @@ export default function NewWorkerPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      const result = await createWorker(values);
+      let photoURL: string | undefined = undefined;
+      if (avatarFile) {
+        photoURL = await uploadFile(avatarFile, `workers/${values.workerId}/avatar.jpg`);
+      }
+
+      let idDetailsUrl1: string | undefined = undefined;
+      if (idDoc1File && values.idDetails?.type && values.idDetails?.number) {
+        idDetailsUrl1 = await uploadFile(idDoc1File, `workers/${values.workerId}/id_1.jpg`);
+      }
+
+      let idDetailsUrl2: string | undefined = undefined;
+      if (idDoc2File && values.idDetails2?.type && values.idDetails2?.number) {
+        idDetailsUrl2 = await uploadFile(idDoc2File, `workers/${values.workerId}/id_2.jpg`);
+      }
+
+      const result = await createWorker({
+        ...values,
+        photoURL,
+        idDetails: { ...values.idDetails, url: idDetailsUrl1 },
+        idDetails2: { ...values.idDetails2, url: idDetailsUrl2 },
+      });
+
       if (result.success) {
         toast({
           title: 'Worker Created',
@@ -346,7 +379,7 @@ export default function NewWorkerPage() {
                         <FormItem>
                             <FormLabel>Upload Document</FormLabel>
                              <FormControl>
-                                <Input type="file" />
+                                <Input type="file" accept="image/*" onChange={(e) => setIdDoc1File(e.target.files?.[0] || null)} />
                             </FormControl>
                             <FormDescription>Upload a scan of the ID document.</FormDescription>
                         </FormItem>
@@ -418,7 +451,7 @@ export default function NewWorkerPage() {
                         <FormItem>
                             <FormLabel>Upload Document</FormLabel>
                              <FormControl>
-                                <Input type="file" />
+                                <Input type="file" accept="image/*" onChange={(e) => setIdDoc2File(e.target.files?.[0] || null)} />
                             </FormControl>
                             <FormDescription>Upload a scan of the ID document.</FormDescription>
                         </FormItem>
@@ -560,5 +593,3 @@ export default function NewWorkerPage() {
     </Card>
   );
 }
-
-    

@@ -11,13 +11,14 @@ export async function createWorker(data: {
   services: string[];
   fatherName: string;
   mobile: string;
-  idDetails: { type: string, number: string };
-  idDetails2?: { type: string, number: string };
+  idDetails: { type: string; number: string; url?: string };
+  idDetails2?: { type: string; number: string; url?: string };
   address: string;
   knowsDriving: boolean;
   hasVehicle: boolean;
   drivingLicenseNumber?: string;
   vehicleNumber?: string;
+  photoURL?: string;
 }) {
   try {
     const { workerId, ...workerData } = data;
@@ -41,6 +42,7 @@ export async function createWorker(data: {
       hasVehicle: workerData.hasVehicle,
       drivingLicenseNumber: workerData.drivingLicenseNumber,
       vehicleNumber: workerData.vehicleNumber,
+      photoURL: workerData.photoURL,
       status: 'Active', // Default status for new workers
       createdAt: serverTimestamp(),
     });
