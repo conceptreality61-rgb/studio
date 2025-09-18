@@ -74,6 +74,7 @@ const idDetailsSchema = z.object({
 
 
 const formSchema = z.object({
+  workerId: z.string().min(3, { message: 'Worker ID must be at least 3 characters.'}),
   name: z.string().min(2, {
     message: 'Name must be at least 2 characters.',
   }),
@@ -100,6 +101,7 @@ export default function NewWorkerPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      workerId: '',
       name: '',
       email: '',
       fatherName: '',
@@ -154,6 +156,20 @@ export default function NewWorkerPage() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid md:grid-cols-2 gap-6">
+                <FormField
+                    control={form.control}
+                    name="workerId"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Worker ID</FormLabel>
+                        <FormControl>
+                        <Input placeholder="e.g., WRK001" {...field} />
+                        </FormControl>
+                        <FormDescription>Assign a unique ID for this worker.</FormDescription>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
               <FormField
                 control={form.control}
                 name="name"
@@ -419,7 +435,7 @@ export default function NewWorkerPage() {
                         <FormItem>
                             <FormLabel>Vehicle Number</FormLabel>
                             <FormControl>
-                            <Input placeholder="e.g., DL-12-AB-3456" {...field} value={field.value || ''} />
+                            <Input placeholder="e.g., DL-12-AB-3456" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -487,5 +503,3 @@ export default function NewWorkerPage() {
     </Card>
   );
 }
-
-    

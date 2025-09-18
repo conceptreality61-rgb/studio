@@ -2,9 +2,10 @@
 'use server';
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export async function createWorker(data: { 
+  workerId: string;
   name: string; 
   email: string; 
   services: string[];
@@ -19,24 +20,32 @@ export async function createWorker(data: {
   vehicleNumber?: string;
 }) {
   try {
-    const docRef = await addDoc(collection(db, 'workers'), {
-      displayName: data.name,
-      email: data.email,
-      services: data.services,
-      fatherName: data.fatherName,
-      mobile: data.mobile,
-      idDetails: data.idDetails,
-      idDetails2: data.idDetails2,
-      address: data.address,
-      knowsDriving: data.knowsDriving,
-      hasVehicle: data.hasVehicle,
-      drivingLicenseNumber: data.drivingLicenseNumber,
-      vehicleNumber: data.vehicleNumber,
+    const { workerId, ...workerData } = data;
+    const workerRef = doc(db, 'workers', workerId);
+
+    const docSnap = await getDoc(workerRef);
+    if (docSnap.exists()) {
+        return { success: false, error: `A worker with ID "${workerId}" already exists.`};
+    }
+
+    await setDoc(workerRef, {
+      displayName: workerData.name,
+      email: workerData.email,
+      services: workerData.services,
+      fatherName: workerData.fatherName,
+      mobile: workerData.mobile,
+      idDetails: workerData.idDetails,
+      idDetails2: workerData.idDetails2,
+      address: workerData.address,
+      knowsDriving: workerData.knowsDriving,
+      hasVehicle: workerData.hasVehicle,
+      drivingLicenseNumber: workerData.drivingLicenseNumber,
+      vehicleNumber: workerData.vehicleNumber,
       status: 'Active', // Default status for new workers
       createdAt: serverTimestamp(),
     });
 
-    return { success: true, uid: docRef.id };
+    return { success: true, uid: workerId };
   } catch (error: any) {
     let errorMessage = 'An unexpected error occurred while creating the worker.';
     if (error.message) {
