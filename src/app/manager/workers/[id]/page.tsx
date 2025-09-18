@@ -165,7 +165,9 @@ export default function ManagerWorkerProfilePage() {
                     <div>
                         <h3 className="text-lg font-semibold mb-4">Identification</h3>
                         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <DetailItem icon={BadgeCheck} label={`ID 1 (${worker.idDetails.type})`} value={worker.idDetails.number} />
+                             {worker.idDetails && worker.idDetails.type && (
+                                <DetailItem icon={BadgeCheck} label={`ID 1 (${worker.idDetails.type})`} value={worker.idDetails.number} />
+                            )}
                             {worker.idDetails2 && worker.idDetails2.type && (
                                 <DetailItem icon={BadgeCheck} label={`ID 2 (${worker.idDetails2.type})`} value={worker.idDetails2.number} />
                             )}
