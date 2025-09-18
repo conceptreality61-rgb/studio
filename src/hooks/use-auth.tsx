@@ -27,18 +27,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(user);
       if (user) {
         try {
-          // First, try to get user from 'users' collection (customers, managers)
-          let userDoc = await getDoc(doc(db, 'users', user.uid));
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
           if (userDoc.exists()) {
             setUserRole(userDoc.data().role as Role);
           } else {
-            // If not in 'users', check 'workers' collection
-            userDoc = await getDoc(doc(db, 'workers', user.uid));
-            if (userDoc.exists()) {
-              setUserRole('worker');
-            } else {
-              setUserRole(null);
-            }
+             setUserRole(null);
           }
         } catch (e) {
           console.error("Error fetching user role", e);

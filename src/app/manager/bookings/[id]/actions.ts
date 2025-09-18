@@ -31,3 +31,28 @@ export async function assignWorkerToBooking(
     return { success: false, error: 'Failed to assign worker. Please try again.' };
   }
 }
+
+export async function acceptJob(bookingId: string) {
+  try {
+    const bookingRef = doc(db, 'bookings', bookingId);
+    await updateDoc(bookingRef, { status: 'In Progress' });
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: 'Failed to accept job.' };
+  }
+}
+
+export async function refuseJob(bookingId: string, workerId: string) {
+  try {
+    const bookingRef = doc(db, 'bookings', bookingId);
+    await updateDoc(bookingRef, { 
+        status: 'Pending Manager Approval',
+        workerId: null,
+        workerName: null,
+        refusedBy: arrayUnion(workerId)
+    });
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: 'Failed to refuse job.' };
+  }
+}

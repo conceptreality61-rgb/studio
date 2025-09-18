@@ -240,5 +240,3 @@ export const customerNavItems: NavItem[] = [
   { title: 'Profile', href: '/customer/profile', icon: User },
   { title: 'Log Out', href: '#', icon: DoorOpen, action: 'logout' },
 ];
-
-    
