@@ -21,11 +21,13 @@ import { useToast } from '@/hooks/use-toast';
 import { services } from '@/lib/constants';
 import { createWorker } from './actions';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Loader2, Camera } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 const idTypes = [
     { id: 'aadhar', name: 'Aadhar Card' },
@@ -97,6 +99,9 @@ export default function NewWorkerPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -116,6 +121,18 @@ export default function NewWorkerPage() {
       vehicleNumber: '',
     },
   });
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+        // In a real app, you would upload this file to storage.
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const knowsDriving = form.watch('knowsDriving');
   const hasVehicle = form.watch('hasVehicle');
@@ -155,34 +172,60 @@ export default function NewWorkerPage() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+
+            <div className="flex items-center gap-6">
+                <div className="relative group">
+                    <Avatar className="h-24 w-24">
+                        <AvatarImage src={avatarPreview ?? `https://i.pravatar.cc/128?u=${form.getValues('workerId') || 'new'}`} />
+                        <AvatarFallback>{form.getValues('name')?.charAt(0).toUpperCase() || 'W'}</AvatarFallback>
+                    </Avatar>
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                        <Camera className="h-8 w-8 text-white" />
+                    </button>
+                    <Input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                        accept="image/*"
+                    />
+                </div>
+                 <div className="grid flex-1 gap-6">
+                    <FormField
+                        control={form.control}
+                        name="workerId"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Worker ID</FormLabel>
+                            <FormControl>
+                            <Input placeholder="e.g., WRK001" {...field} />
+                            </FormControl>
+                            <FormDescription>Assign a unique ID for this worker.</FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Full Name</FormLabel>
+                            <FormControl>
+                            <Input placeholder="John Doe" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                </div>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-6">
-                <FormField
-                    control={form.control}
-                    name="workerId"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Worker ID</FormLabel>
-                        <FormControl>
-                        <Input placeholder="e.g., WRK001" {...field} />
-                        </FormControl>
-                        <FormDescription>Assign a unique ID for this worker.</FormDescription>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="fatherName"
@@ -244,14 +287,14 @@ export default function NewWorkerPage() {
                   name="idDetails"
                   render={() => (
                     <FormItem>
-                      <FormLabel>ID Details 1</FormLabel>
-                       <div className="grid grid-cols-2 gap-4">
+                      <FormLabel className="text-base font-semibold">ID Document 1</FormLabel>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-md">
                         <FormField
                           control={form.control}
                           name="idDetails.type"
                           render={({ field: typeField }) => (
                             <FormItem>
-                              <FormLabel>ID Type</FormLabel>
+                                <FormLabel>ID Type</FormLabel>
                               <Select onValueChange={typeField.onChange} value={typeField.value || ''}>
                                 <FormControl>
                                   <SelectTrigger>
@@ -300,6 +343,13 @@ export default function NewWorkerPage() {
                             </FormItem>
                           )}
                         />
+                        <FormItem>
+                            <FormLabel>Upload Document</FormLabel>
+                             <FormControl>
+                                <Input type="file" />
+                            </FormControl>
+                            <FormDescription>Upload a scan of the ID document.</FormDescription>
+                        </FormItem>
                       </div>
                     </FormItem>
                   )}
@@ -309,8 +359,8 @@ export default function NewWorkerPage() {
                   name="idDetails2"
                   render={() => (
                     <FormItem>
-                      <FormLabel>ID Details 2 (Optional)</FormLabel>
-                       <div className="grid grid-cols-2 gap-4">
+                      <FormLabel className="text-base font-semibold">ID Document 2 (Optional)</FormLabel>
+                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-md">
                         <FormField
                           control={form.control}
                           name="idDetails2.type"
@@ -365,6 +415,13 @@ export default function NewWorkerPage() {
                             </FormItem>
                           )}
                         />
+                        <FormItem>
+                            <FormLabel>Upload Document</FormLabel>
+                             <FormControl>
+                                <Input type="file" />
+                            </FormControl>
+                            <FormDescription>Upload a scan of the ID document.</FormDescription>
+                        </FormItem>
                       </div>
                     </FormItem>
                   )}
@@ -435,7 +492,7 @@ export default function NewWorkerPage() {
                         <FormItem>
                             <FormLabel>Vehicle Number</FormLabel>
                             <FormControl>
-                            <Input placeholder="e.g., DL-12-AB-3456" {...field} value={field.value ?? ''} />
+                            <Input placeholder="e.g., DL-12-AB-3456" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -503,3 +560,5 @@ export default function NewWorkerPage() {
     </Card>
   );
 }
+
+    
