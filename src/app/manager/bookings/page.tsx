@@ -149,7 +149,7 @@ export default function ManagerBookingsPage() {
                     {booking.status === 'Pending Manager Approval' ? (
                         <Select onValueChange={(newWorkerId) => handleWorkerChange(booking.id, newWorkerId)}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Assign Worker" />
+                                <SelectValue placeholder="no assign option here" />
                             </SelectTrigger>
                             <SelectContent>
                                 {workers.map(worker => <SelectItem key={worker.id} value={worker.id}>{worker.displayName}</SelectItem>)}
