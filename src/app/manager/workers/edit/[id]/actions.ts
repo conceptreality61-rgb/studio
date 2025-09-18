@@ -20,21 +20,33 @@ export async function updateWorker(id: string, data: {
 }) {
   try {
     const workerRef = doc(db, 'workers', id);
-    await updateDoc(workerRef, {
+    
+    // Construct the data object to prevent sending undefined values for nested objects
+    const updateData: any = {
       displayName: data.name,
       email: data.email,
       services: data.services,
       fatherName: data.fatherName,
       mobile: data.mobile,
-      idDetails: data.idDetails,
-      idDetails2: data.idDetails2,
       address: data.address,
       knowsDriving: data.knowsDriving,
       hasVehicle: data.hasVehicle,
-      drivingLicenseNumber: data.drivingLicenseNumber,
-      vehicleNumber: data.vehicleNumber,
+      drivingLicenseNumber: data.drivingLicenseNumber || '',
+      vehicleNumber: data.vehicleNumber || '',
       updatedAt: serverTimestamp(),
-    });
+    };
+
+    if (data.idDetails && data.idDetails.type && data.idDetails.number) {
+        updateData.idDetails = data.idDetails;
+    }
+
+    if (data.idDetails2 && data.idDetails2.type && data.idDetails2.number) {
+        updateData.idDetails2 = data.idDetails2;
+    } else {
+        updateData.idDetails2 = {}; // Or use FieldValue.delete() if you want to remove it
+    }
+    
+    await updateDoc(workerRef, updateData);
 
     return { success: true };
   } catch (error: any) {

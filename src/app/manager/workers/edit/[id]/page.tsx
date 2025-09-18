@@ -38,7 +38,7 @@ const idTypes = [
     { id: 'other', name: 'Other' },
 ]
 
-const idSchema = z.object({
+const idDetailsSchema = z.object({
   type: z.string().min(1, { message: "Please select an ID type." }),
   number: z.string().min(1, { message: "Please enter an ID number." }),
 }).superRefine((data, ctx) => {
@@ -59,7 +59,7 @@ const idSchema = z.object({
             });
         }
     }
-}).optional().or(z.literal(''));
+});
 
 
 const formSchema = z.object({
@@ -71,8 +71,8 @@ const formSchema = z.object({
   }),
   fatherName: z.string().min(2, { message: "Father's name must be at least 2 characters." }),
   mobile: z.string().regex(/^\d{10}$/, { message: 'Mobile number must be 10 digits.' }),
-  idDetails: idSchema,
-  idDetails2: idSchema.optional(),
+  idDetails: idDetailsSchema,
+  idDetails2: idDetailsSchema.optional().or(z.object({ type: z.string(), number: z.string() }).optional()),
   address: z.string().min(10, { message: 'Address must be at least 10 characters.' }),
   services: z.array(z.string()).min(1, { message: 'You have to select at least one service.' }),
   knowsDriving: z.boolean().default(false),
@@ -292,14 +292,14 @@ export default function EditWorkerPage() {
                                     placeholder="ID Number" 
                                     {...numField}
                                     type="text"
-                                    maxLength={idType1 === 'pan' ? 10 : undefined}
+                                    maxLength={idType1 === 'pan' ? 10 : idType1 === 'aadhar' ? 12 : undefined}
                                     onChange={(e) => {
                                         let value = e.target.value;
                                         if (idType1 === 'pan') {
                                             numField.onChange(value.toUpperCase());
                                         } else if (idType1 === 'aadhar') {
                                             const numericValue = value.replace(/\D/g, '');
-                                            numField.onChange(numericValue.slice(0, 12));
+                                            numField.onChange(numericValue);
                                         } else {
                                             numField.onChange(value);
                                         }
@@ -352,14 +352,14 @@ export default function EditWorkerPage() {
                                     placeholder="ID Number" 
                                     {...numField}
                                     type="text"
-                                    maxLength={idType2 === 'pan' ? 10 : undefined}
+                                    maxLength={idType2 === 'pan' ? 10 : idType2 === 'aadhar' ? 12 : undefined}
                                      onChange={(e) => {
                                         let value = e.target.value;
                                         if (idType2 === 'pan') {
                                             numField.onChange(value.toUpperCase());
                                         } else if (idType2 === 'aadhar') {
                                             const numericValue = value.replace(/\D/g, '');
-                                            numField.onChange(numericValue.slice(0, 12));
+                                            numField.onChange(numericValue);
                                         } else {
                                             numField.onChange(value);
                                         }
