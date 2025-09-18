@@ -47,11 +47,11 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 };
 
 const rowStatusHighlight: { [key: string]: string } = {
-  'Pending Manager Approval': 'bg-red-400 hover:bg-red-400/80',
-  'Worker Assigned': 'bg-sky-400 hover:bg-sky-400/80',
-  'In Progress': 'bg-indigo-400 hover:bg-indigo-400/80',
-  'Completed': 'bg-green-400 hover:bg-green-400/80',
-  'Canceled': 'bg-gray-400 hover:bg-gray-400/80',
+    'Pending Manager Approval': 'bg-red-400 hover:bg-red-400/80',
+    'Worker Assigned': 'bg-sky-400 hover:bg-sky-400/80',
+    'In Progress': 'bg-indigo-400 hover:bg-indigo-400/80',
+    'Completed': 'bg-green-400 hover:bg-green-400/80',
+    'Canceled': 'bg-gray-400 hover:bg-gray-400/80',
 };
 
 
@@ -158,7 +158,7 @@ export default function ManagerBookingsPage() {
                 <TableHead>Booking ID</TableHead>
                 <TableHead>Service</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Worker</TableHead>
+                <TableHead>Assigned Worker</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
