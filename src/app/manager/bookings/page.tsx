@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +55,7 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
 
 export default function ManagerBookingsPage() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
@@ -140,7 +141,6 @@ export default function ManagerBookingsPage() {
         router.push('/manager/bookings');
     };
     
-    const router = useRouter();
 
 
     const formatDate = (timestamp: Timestamp) => {
@@ -259,5 +259,3 @@ export default function ManagerBookingsPage() {
     </Card>
   );
 }
-
-    
