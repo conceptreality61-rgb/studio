@@ -32,6 +32,12 @@
       "imageHint": "home garden"
     },
     {
+      "id": "driving-services",
+      "description": "A person driving a car.",
+      "imageUrl": "https://images.unsplash.com/photo-1555215695-3004980ad54e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxkcml2aW5nJTIwY2FyfGVufDB8fHx8MTcyMjE3NjY0NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "driving car"
+    },
+    {
       "id": "worker-profile",
       "description": "Profile picture of a service worker.",
       "imageUrl": "https://picsum.photos/seed/worker1/100/100",
