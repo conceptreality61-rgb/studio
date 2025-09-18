@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 
 type Booking = {
   id: string;
+  serviceId: string;
   serviceName: string;
   date: Timestamp;
   time: string;
@@ -40,6 +41,7 @@ type CustomerProfile = {
 type Worker = {
     id: string;
     displayName: string;
+    services: string[];
 };
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
@@ -87,8 +89,10 @@ export default function ManagerBookingDetailPage() {
           if (bookingData.status === 'Pending Manager Approval') {
             const workersQuery = query(collection(db, 'workers'), orderBy('displayName'));
             const workersSnapshot = await getDocs(workersQuery);
-            const workersData = workersSnapshot.docs.map(doc => ({ id: doc.id, displayName: doc.data().displayName } as Worker));
-            setWorkers(workersData);
+            const allWorkersData = workersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Worker));
+            // Filter workers based on the booking's service type
+            const qualifiedWorkers = allWorkersData.filter(worker => worker.services?.includes(bookingData.serviceId));
+            setWorkers(qualifiedWorkers);
           }
 
         } else {
@@ -191,22 +195,26 @@ export default function ManagerBookingDetailPage() {
                     <Separator />
                     <div className="pt-6">
                         <h3 className="font-semibold mb-4 text-lg">Assign Worker</h3>
-                        <div className="flex items-center gap-4">
-                            <Select onValueChange={setSelectedWorkerId}>
-                                <SelectTrigger className="w-[280px]">
-                                    <SelectValue placeholder="Select a worker" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {workers.map(worker => (
-                                        <SelectItem key={worker.id} value={worker.id}>{worker.displayName}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Button onClick={handleAssignWorker} disabled={!selectedWorkerId || isAssigning}>
-                                {isAssigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Assign Worker
-                            </Button>
-                        </div>
+                        {workers.length > 0 ? (
+                            <div className="flex items-center gap-4">
+                                <Select onValueChange={setSelectedWorkerId}>
+                                    <SelectTrigger className="w-[280px]">
+                                        <SelectValue placeholder="Select a qualified worker" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {workers.map(worker => (
+                                            <SelectItem key={worker.id} value={worker.id}>{worker.displayName}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Button onClick={handleAssignWorker} disabled={!selectedWorkerId || isAssigning}>
+                                    {isAssigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Assign Worker
+                                </Button>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">No qualified workers found for this service. Please assign a service to a worker first.</p>
+                        )}
                     </div>
                 </div>
             )}
