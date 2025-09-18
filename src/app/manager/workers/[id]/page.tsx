@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, Mail, Phone, Home, Briefcase, Calendar, Car, ShieldCheck, BadgeCheck, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, Home, Briefcase, Calendar, Car, ShieldCheck, BadgeCheck, Loader2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -32,8 +32,8 @@ type Worker = {
     hasVehicle: boolean;
     drivingLicenseNumber?: string;
     vehicleNumber?: string;
-    idDetails: { type: string; number: string };
-    idDetails2?: { type: string; number: string };
+    idDetails: { type: string; number: string, url?: string };
+    idDetails2?: { type: string; number: string, url?: string };
     status: 'Active' | 'Inactive';
 };
 
@@ -164,12 +164,36 @@ export default function ManagerWorkerProfilePage() {
                     <Separator />
                     <div>
                         <h3 className="text-lg font-semibold mb-4">Identification</h3>
-                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="space-y-4">
                              {worker.idDetails && worker.idDetails.type && (
-                                <DetailItem icon={BadgeCheck} label={`ID 1 (${worker.idDetails.type})`} value={worker.idDetails.number} />
+                                <div className="flex items-center justify-between p-3 border rounded-md">
+                                    <DetailItem icon={BadgeCheck} label={`ID 1 (${worker.idDetails.type})`} value={worker.idDetails.number} />
+                                    {worker.idDetails.url ? (
+                                        <Button variant="outline" size="sm" asChild>
+                                            <a href={worker.idDetails.url} target="_blank" rel="noopener noreferrer">
+                                                <Eye className="mr-2 h-4 w-4" />
+                                                View Document
+                                            </a>
+                                        </Button>
+                                    ) : (
+                                        <Badge variant="secondary">No Document</Badge>
+                                    )}
+                                </div>
                             )}
                             {worker.idDetails2 && worker.idDetails2.type && (
-                                <DetailItem icon={BadgeCheck} label={`ID 2 (${worker.idDetails2.type})`} value={worker.idDetails2.number} />
+                                <div className="flex items-center justify-between p-3 border rounded-md">
+                                    <DetailItem icon={BadgeCheck} label={`ID 2 (${worker.idDetails2.type})`} value={worker.idDetails2.number} />
+                                     {worker.idDetails2.url ? (
+                                        <Button variant="outline" size="sm" asChild>
+                                            <a href={worker.idDetails2.url} target="_blank" rel="noopener noreferrer">
+                                                <Eye className="mr-2 h-4 w-4" />
+                                                View Document
+                                            </a>
+                                        </Button>
+                                    ) : (
+                                        <Badge variant="secondary">No Document</Badge>
+                                    )}
+                                </div>
                             )}
                         </div>
                     </div>
