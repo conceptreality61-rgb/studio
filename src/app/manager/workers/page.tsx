@@ -11,9 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Car, Check, X, ShieldCheck } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Car, Check, X, ShieldCheck, User as UserIcon } from "lucide-react";
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, Timestamp, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -153,8 +154,12 @@ export default function ManagerWorkersPage() {
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                         <DropdownMenuItem asChild>
+                                                            <Link href={`/manager/workers/${worker.id}`}>View Profile</Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem asChild>
                                                             <Link href={`/manager/workers/edit/${worker.id}`}>Edit Worker</Link>
                                                         </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
                                                         <DropdownMenuItem className="text-destructive">Delete Worker</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -180,4 +185,3 @@ export default function ManagerWorkersPage() {
     </Card>
   );
 }
-
