@@ -21,6 +21,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { services } from '@/lib/constants';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 type Worker = {
     id: string;
@@ -32,7 +34,14 @@ type Worker = {
     hasVehicle: boolean;
     drivingLicenseNumber?: string;
     vehicleNumber?: string;
+    status: 'Active' | 'Inactive';
 };
+
+const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
+  Active: "default",
+  Inactive: "secondary",
+};
+
 
 export default function ManagerWorkersPage() {
     const [workers, setWorkers] = useState<Worker[]>([]);
@@ -57,6 +66,7 @@ export default function ManagerWorkersPage() {
                         hasVehicle: data.hasVehicle || false,
                         drivingLicenseNumber: data.drivingLicenseNumber,
                         vehicleNumber: data.vehicleNumber,
+                        status: data.status || 'Inactive',
                     } as Worker;
                 });
                 setWorkers(workersData);
@@ -122,6 +132,7 @@ export default function ManagerWorkersPage() {
                                             <TableHead>Worker Name</TableHead>
                                             <TableHead>Email</TableHead>
                                             <TableHead>Join Date</TableHead>
+                                            <TableHead>Status</TableHead>
                                             <TableHead>Driving License</TableHead>
                                             <TableHead>Vehicle No.</TableHead>
                                             <TableHead>
@@ -131,10 +142,13 @@ export default function ManagerWorkersPage() {
                                     </TableHeader>
                                     <TableBody>
                                         {workersByService[service.id].map((worker) => (
-                                        <TableRow key={worker.id}>
+                                        <TableRow key={worker.id} className={cn(worker.status === 'Active' && 'bg-green-100 hover:bg-green-100/80')}>
                                             <TableCell className="font-medium">{worker.displayName}</TableCell>
                                             <TableCell>{worker.email}</TableCell>
                                             <TableCell>{formatDate(worker.createdAt)}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={statusVariant[worker.status] || 'default'}>{worker.status}</Badge>
+                                            </TableCell>
                                             <TableCell>
                                                 {worker.knowsDriving ? <span className='flex items-center gap-1'><ShieldCheck className="text-green-500 w-4 h-4"/> Yes</span> : <span className='flex items-center gap-1'><X className="text-destructive w-4 h-4"/> No</span>}
                                                 {worker.drivingLicenseNumber && <div className='text-xs text-muted-foreground'>({worker.drivingLicenseNumber})</div>}
