@@ -195,18 +195,33 @@ export default function NewWorkerPage() {
             </div>
             
             <div className="grid md:grid-cols-1 gap-6">
+                 <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Address</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="123 Main St, Anytown, State, 12345" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="idDetails"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
                       <FormLabel>ID Details 1</FormLabel>
-                      <div className="flex gap-2">
+                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="idDetails.type"
                           render={({ field: typeField }) => (
-                            <FormItem className="w-1/3">
+                            <FormItem>
+                              <FormLabel>ID Type</FormLabel>
                               <Select onValueChange={typeField.onChange} defaultValue={typeField.value}>
                                 <FormControl>
                                   <SelectTrigger>
@@ -227,20 +242,21 @@ export default function NewWorkerPage() {
                           control={form.control}
                           name="idDetails.number"
                           render={({ field: numField }) => (
-                            <FormItem className="w-2/3">
+                            <FormItem>
+                                <FormLabel>ID Number</FormLabel>
                                 <FormControl>
                                   <Input 
                                     placeholder="ID Number" 
                                     {...numField}
                                     type="text"
-                                    maxLength={idType1 === 'pan' ? 10 : undefined}
+                                    maxLength={idType1 === 'pan' ? 10 : idType1 === 'aadhar' ? 12 : undefined}
                                     onChange={(e) => {
                                         let value = e.target.value;
                                         if (idType1 === 'pan') {
                                             numField.onChange(value.toUpperCase());
                                         } else if (idType1 === 'aadhar') {
                                             const numericValue = value.replace(/\D/g, '');
-                                            numField.onChange(numericValue.slice(0, 12));
+                                            numField.onChange(numericValue);
                                         } else {
                                             numField.onChange(value);
                                         }
@@ -258,15 +274,16 @@ export default function NewWorkerPage() {
                  <FormField
                   control={form.control}
                   name="idDetails2"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
                       <FormLabel>ID Details 2 (Optional)</FormLabel>
-                      <div className="flex gap-2">
+                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="idDetails2.type"
                           render={({ field: typeField }) => (
-                            <FormItem className="w-1/3">
+                            <FormItem>
+                                <FormLabel>ID Type</FormLabel>
                               <Select onValueChange={typeField.onChange} defaultValue={typeField.value}>
                                 <FormControl>
                                   <SelectTrigger>
@@ -287,20 +304,21 @@ export default function NewWorkerPage() {
                           control={form.control}
                           name="idDetails2.number"
                           render={({ field: numField }) => (
-                            <FormItem className="w-2/3">
+                            <FormItem>
+                                <FormLabel>ID Number</FormLabel>
                                 <FormControl>
                                   <Input 
                                     placeholder="ID Number" 
                                     {...numField}
                                     type="text"
-                                    maxLength={idType2 === 'pan' ? 10 : undefined}
+                                    maxLength={idType2 === 'pan' ? 10 : idType2 === 'aadhar' ? 12 : undefined}
                                      onChange={(e) => {
                                         let value = e.target.value;
                                         if (idType2 === 'pan') {
                                             numField.onChange(value.toUpperCase());
                                         } else if (idType2 === 'aadhar') {
                                             const numericValue = value.replace(/\D/g, '');
-                                            numField.onChange(numericValue.slice(0, 12));
+                                            numField.onChange(numericValue);
                                         } else {
                                             numField.onChange(value);
                                         }
@@ -315,20 +333,6 @@ export default function NewWorkerPage() {
                     </FormItem>
                   )}
                 />
-
-               <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Address</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="123 Main St, Anytown, State, 12345" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
             
             <div className="space-y-4">
@@ -463,7 +467,5 @@ export default function NewWorkerPage() {
     </Card>
   );
 }
-
-    
 
     
