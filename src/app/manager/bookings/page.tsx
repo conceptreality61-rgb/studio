@@ -146,18 +146,7 @@ export default function ManagerBookingsPage() {
                     <TableCell>{booking.serviceName}</TableCell>
                     <TableCell>{booking.customerName}</TableCell>
                     <TableCell>
-                    {booking.status === 'Pending Manager Approval' ? (
-                        <Select onValueChange={(newWorkerId) => handleWorkerChange(booking.id, newWorkerId)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="no assign option here" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {workers.map(worker => <SelectItem key={worker.id} value={worker.id}>{worker.displayName}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    ) : (
-                        booking.workerName || 'N/A'
-                    )}
+                        {booking.workerName || 'N/A'}
                     </TableCell>
                     <TableCell>{formatDate(booking.date)}</TableCell>
                     <TableCell>
