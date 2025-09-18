@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, getDoc, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, Mail, Phone, Home, Briefcase, Calendar as CalendarIcon, Car, ShieldCheck, BadgeCheck, Loader2, Eye, CheckCircle, XCircle, Clock, PlayCircle, Ban } from 'lucide-react';
+import { User, Mail, Phone, Home, Briefcase, Calendar as CalendarIcon, Car, ShieldCheck, BadgeCheck, Loader2, Eye, CheckCircle, XCircle, Clock, PlayCircle, Ban, UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +44,7 @@ type WorkerStats = {
     completed: number;
     canceled: number;
     refused: number;
+    customerCanceled: number;
 };
 
 const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: React.ReactNode }) => (
@@ -61,7 +62,7 @@ export default function ManagerWorkerProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
   const [worker, setWorker] = useState<Worker | null>(null);
-  const [stats, setStats] = useState<WorkerStats>({ assigned: 0, inProgress: 0, completed: 0, canceled: 0, refused: 0 });
+  const [stats, setStats] = useState<WorkerStats>({ assigned: 0, inProgress: 0, completed: 0, canceled: 0, refused: 0, customerCanceled: 0 });
   const [loading, setLoading] = useState(true);
   const [isSavingStatus, setIsSavingStatus] = useState(false);
   const workerId = params.id as string;
@@ -85,12 +86,14 @@ export default function ManagerWorkerProfilePage() {
           let assigned = 0;
           let inProgress = 0;
           let completed = 0;
+          let customerCanceled = 0;
 
           bookingsSnapshot.forEach(doc => {
             const booking = doc.data();
             if (booking.status === 'Worker Assigned') assigned++;
             else if (booking.status === 'In Progress') inProgress++;
             else if (booking.status === 'Completed') completed++;
+            else if (booking.status === 'Canceled') customerCanceled++;
           });
           
           const canceledQuery = query(collection(db, 'bookings'), where('canceledWorkerIds', 'array-contains', workerId));
@@ -101,7 +104,7 @@ export default function ManagerWorkerProfilePage() {
           const refusedSnapshot = await getDocs(refusedQuery);
           const refused = refusedSnapshot.size;
 
-          setStats({ assigned, inProgress, completed, canceled, refused });
+          setStats({ assigned, inProgress, completed, canceled, refused, customerCanceled });
 
         } else {
           console.log("No such document!");
@@ -175,12 +178,13 @@ export default function ManagerWorkerProfilePage() {
 
   return (
     <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
              <StatCard title="Assigned Jobs" value={String(stats.assigned)} description="Waiting for acceptance" icon={Clock} />
              <StatCard title="In Progress Jobs" value={String(stats.inProgress)} description="Currently active" icon={PlayCircle} />
              <StatCard title="Completed Jobs" value={String(stats.completed)} description="Successfully finished" icon={CheckCircle} />
              <StatCard title="CANCELLED" value={String(stats.canceled)} description="Jobs cancelled by manager" icon={XCircle} />
              <StatCard title="Refused Jobs" value={String(stats.refused)} description="Jobs refused by worker" icon={Ban} />
+             <StatCard title="Canceled by Customer" value={String(stats.customerCanceled)} description="Jobs canceled by customer" icon={UserX} />
         </div>
 
         <Card>
