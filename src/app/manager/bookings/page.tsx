@@ -128,6 +128,7 @@ export default function ManagerBookingsPage() {
     
     useEffect(() => {
         const lowercasedSearch = searchTerm.toLowerCase();
+        const workerIdToFilter = workers.find(w => w.displayName === workerFilter)?.id;
 
         const filteredData = bookings.filter((booking) => {
             const matchesSearchTerm = lowercasedSearch ? (
@@ -143,11 +144,21 @@ export default function ManagerBookingsPage() {
             
             const matchesStatus = statusFilter ? booking.status === statusFilter : true;
             
-            const matchesWorker = workerFilter ? (booking.workerName === workerFilter || (booking.refusedBy && booking.refusedBy.includes(workers.find(w => w.displayName === workerFilter)?.id || '')) || (booking.canceledWorkerIds && booking.canceledWorkerIds.includes(workers.find(w => w.displayName === workerFilter)?.id || ''))) : true;
+            const matchesWorker = workerFilter ? (booking.workerId === workerIdToFilter) : true;
 
-            const matchesRefused = refusedByFilter ? booking.refusedBy && booking.refusedBy.length > 0 : true;
+            const matchesRefused = refusedByFilter 
+                ? (workerIdToFilter && booking.refusedBy?.includes(workerIdToFilter)) 
+                : true;
 
-            const matchesReassigned = reassignedFilter ? booking.canceledWorkerIds && booking.canceledWorkerIds.length > 0 : true;
+            const matchesReassigned = reassignedFilter
+                ? (workerIdToFilter && booking.canceledWorkerIds?.includes(workerIdToFilter))
+                : true;
+
+            // When a specific filter like refused or reassigned is active, the general worker match should not exclude it
+            if (workerFilter && (refusedByFilter || reassignedFilter)) {
+                 return matchesSearchTerm && matchesDate && matchesStatus && (matchesRefused || matchesReassigned);
+            }
+
 
             return matchesSearchTerm && matchesDate && matchesStatus && matchesWorker && matchesRefused && matchesReassigned;
         });
