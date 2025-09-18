@@ -57,6 +57,7 @@ export default function ManagerBookingsPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [bookings, setBookings] = useState<Booking[]>([]);
+    const [workers, setWorkers] = useState<Worker[]>([]);
     const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
@@ -66,11 +67,17 @@ export default function ManagerBookingsPage() {
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [workerFilter, setWorkerFilter] = useState<string | null>(null);
+    const [refusedByFilter, setRefusedByFilter] = useState<string | null>(null);
+    const [reassignedFilter, setReassignedFilter] = useState<string | null>(null);
+
 
     useEffect(() => {
-        setSearchTerm(searchParams.get('worker') || '');
-        setStatusFilter(searchParams.get('status'));
         setWorkerFilter(searchParams.get('worker'));
+        setStatusFilter(searchParams.get('status'));
+        setRefusedByFilter(searchParams.get('refused'));
+        setReassignedFilter(searchParams.get('reassigned'));
+        setSearchTerm(searchParams.get('worker') || '');
+
     }, [searchParams]);
 
     useEffect(() => {
@@ -80,6 +87,10 @@ export default function ManagerBookingsPage() {
                 const bookingsSnapshot = await getDocs(bookingsQuery);
                 const bookingsData = bookingsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
                 
+                const workersQuery = query(collection(db, 'workers'));
+                const workersSnapshot = await getDocs(workersQuery);
+                const workersData = workersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Worker));
+
                 const statusOrder = {
                     'Pending Manager Approval': 1,
                     'Worker Assigned': 2,
@@ -98,6 +109,7 @@ export default function ManagerBookingsPage() {
                 });
                 
                 setBookings(bookingsData);
+                setWorkers(workersData);
 
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -126,21 +138,30 @@ export default function ManagerBookingsPage() {
             
             const matchesStatus = statusFilter ? booking.status === statusFilter : true;
             
-            const matchesWorker = workerFilter ? booking.workerName === workerFilter : true;
+            const matchesWorker = workerFilter ? (booking.workerName === workerFilter) : true;
 
-            return matchesSearchTerm && matchesDate && matchesStatus && matchesWorker;
+            const matchesRefused = refusedByFilter ? booking.refusedBy && booking.refusedBy.length > 0 : true;
+
+            const matchesReassigned = reassignedFilter ? booking.canceledWorkerIds && booking.canceledWorkerIds.length > 0 : true;
+
+            return matchesSearchTerm && matchesDate && matchesStatus && matchesWorker && matchesRefused && matchesReassigned;
         });
         setFilteredBookings(filteredData);
-    }, [searchTerm, selectedDate, statusFilter, workerFilter, bookings]);
+    }, [searchTerm, selectedDate, statusFilter, workerFilter, bookings, refusedByFilter, reassignedFilter]);
 
     const clearFilters = () => {
         setSearchTerm('');
         setSelectedDate(undefined);
         setStatusFilter(null);
         setWorkerFilter(null);
+        setRefusedByFilter(null);
+        setReassignedFilter(null);
         router.push('/manager/bookings');
     };
     
+    const getWorkerNameById = (workerId: string) => {
+        return workers.find(w => w.id === workerId)?.displayName || workerId;
+    }
 
 
     const formatDate = (timestamp: Timestamp) => {
@@ -187,7 +208,7 @@ export default function ManagerBookingsPage() {
                 />
                 </PopoverContent>
             </Popover>
-            {(selectedDate || statusFilter || workerFilter) && <Button variant="ghost" onClick={clearFilters}><X className="mr-2 h-4 w-4"/>Clear Filters</Button>}
+            {(selectedDate || statusFilter || workerFilter || refusedByFilter || reassignedFilter) && <Button variant="ghost" onClick={clearFilters}><X className="mr-2 h-4 w-4"/>Clear Filters</Button>}
         </div>
       </CardHeader>
       <CardContent>
@@ -206,6 +227,8 @@ export default function ManagerBookingsPage() {
                 <TableHead><b>Service</b></TableHead>
                 <TableHead><b>Customer</b></TableHead>
                 <TableHead><b>Assigned Worker</b></TableHead>
+                 {refusedByFilter && <TableHead><b>Refused By</b></TableHead>}
+                 {reassignedFilter && <TableHead><b>Canceled Workers</b></TableHead>}
                 <TableHead><b>Date</b></TableHead>
                 <TableHead><b>Status</b></TableHead>
                 <TableHead className="text-right"><b>Amount</b></TableHead>
@@ -224,6 +247,8 @@ export default function ManagerBookingsPage() {
                     <TableCell>
                         {booking.workerName || 'N/A'}
                     </TableCell>
+                    {refusedByFilter && <TableCell>{booking.refusedBy?.map(getWorkerNameById).join(', ') || 'N/A'}</TableCell>}
+                    {reassignedFilter && <TableCell>{booking.canceledWorkerIds?.map(getWorkerNameById).join(', ') || 'N/A'}</TableCell>}
                     <TableCell>{formatDate(booking.date)}</TableCell>
                     <TableCell>
                       <Badge 
