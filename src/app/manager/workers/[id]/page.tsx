@@ -179,7 +179,7 @@ export default function ManagerWorkerProfilePage() {
              <StatCard title="Assigned Jobs" value={String(stats.assigned)} description="Waiting for acceptance" icon={Clock} />
              <StatCard title="In Progress Jobs" value={String(stats.inProgress)} description="Currently active" icon={PlayCircle} />
              <StatCard title="Completed Jobs" value={String(stats.completed)} description="Successfully finished" icon={CheckCircle} />
-             <StatCard title="Re-Assigned" value={String(stats.canceled)} description="Manager re-assigned job" icon={XCircle} />
+             <StatCard title="CANCELLED" value={String(stats.canceled)} description="Jobs cancelled by manager" icon={XCircle} />
              <StatCard title="Refused Jobs" value={String(stats.refused)} description="Jobs refused by worker" icon={Ban} />
         </div>
 
