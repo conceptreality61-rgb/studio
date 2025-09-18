@@ -8,12 +8,16 @@ import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, Mail, Phone, Home, Briefcase, Calendar, Car, ShieldCheck, BadgeCheck } from 'lucide-react';
+import { User, Mail, Phone, Home, Briefcase, Calendar, Car, ShieldCheck, BadgeCheck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { services as allServices } from '@/lib/constants';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { updateWorkerStatus } from './actions';
+import { useToast } from '@/hooks/use-toast';
+
 
 type Worker = {
     id: string;
@@ -30,7 +34,7 @@ type Worker = {
     vehicleNumber?: string;
     idDetails: { type: string; number: string };
     idDetails2?: { type: string; number: string };
-    role: string;
+    status: 'Active' | 'Inactive';
 };
 
 const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: React.ReactNode }) => (
@@ -46,10 +50,11 @@ const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, lab
 export default function ManagerWorkerProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   const [worker, setWorker] = useState<Worker | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSavingStatus, setIsSavingStatus] = useState(false);
   const workerId = params.id as string;
-  const [currentRole, setCurrentRole] = useState('worker');
 
   useEffect(() => {
     const fetchWorker = async () => {
@@ -59,8 +64,7 @@ export default function ManagerWorkerProfilePage() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setWorker({ id: docSnap.id, ...docSnap.data(), role: 'worker' } as Worker);
-          setCurrentRole(docSnap.data().role || 'worker');
+          setWorker({ id: docSnap.id, ...docSnap.data() } as Worker);
         } else {
           console.log("No such document!");
           router.push('/manager/workers');
@@ -75,6 +79,27 @@ export default function ManagerWorkerProfilePage() {
     fetchWorker();
   }, [workerId, router]);
   
+  const handleStatusChange = async (newStatus: 'Active' | 'Inactive') => {
+      if (!worker) return;
+      setIsSavingStatus(true);
+
+      const result = await updateWorkerStatus(worker.id, newStatus);
+      if (result.success) {
+          setWorker(prev => prev ? { ...prev, status: newStatus } : null);
+          toast({
+              title: "Status Updated",
+              description: `${worker.displayName}'s status is now ${newStatus}.`,
+          });
+      } else {
+          toast({
+              variant: 'destructive',
+              title: "Update Failed",
+              description: result.error,
+          });
+      }
+      setIsSavingStatus(false);
+  };
+
   const formatDate = (timestamp?: Timestamp) => {
     if (!timestamp) return 'N/A';
     return timestamp.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -171,29 +196,33 @@ export default function ManagerWorkerProfilePage() {
         
         <Card>
             <CardHeader>
-                <CardTitle>Role Management</CardTitle>
-                <CardDescription>Modify the worker's role and permissions within the system.</CardDescription>
+                <CardTitle>Status Management</CardTitle>
+                <CardDescription>Control whether this worker can be assigned to new jobs.</CardDescription>
             </CardHeader>
-            <CardContent className="flex items-center gap-4">
-                 <div className="w-64">
-                    <Select value={currentRole} onValueChange={setCurrentRole}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="worker">Worker</SelectItem>
-                            <SelectItem value="manager" disabled>Manager</SelectItem>
-                            <SelectItem value="customer" disabled>Customer</SelectItem>
-                        </SelectContent>
-                    </Select>
+            <CardContent>
+                <div className="flex items-center space-x-4 rounded-md border p-4">
+                    {isSavingStatus && <Loader2 className="h-5 w-5 animate-spin" />}
+                    <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                        Job Status
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                        {worker.status === 'Active' ? 'Worker can be assigned to new jobs.' : 'Worker cannot be assigned to new jobs.'}
+                        </p>
+                    </div>
+                    <Switch
+                        id="job-status"
+                        checked={worker.status === 'Active'}
+                        onCheckedChange={(checked) => handleStatusChange(checked ? 'Active' : 'Inactive')}
+                        disabled={isSavingStatus}
+                        aria-readonly={isSavingStatus}
+                    />
                 </div>
-                <Button disabled={currentRole === worker.role}>Save Role</Button>
             </CardContent>
             <CardFooter>
-                <p className="text-sm text-muted-foreground">Changing a role may affect the user's access and capabilities.</p>
+                <p className="text-sm text-muted-foreground">"Inactive" workers will not appear in the assignment list for new bookings.</p>
             </CardFooter>
         </Card>
     </div>
   );
 }
-

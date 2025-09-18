@@ -32,6 +32,7 @@ export async function createWorker(data: {
       hasVehicle: data.hasVehicle,
       drivingLicenseNumber: data.drivingLicenseNumber,
       vehicleNumber: data.vehicleNumber,
+      status: 'Active', // Default status for new workers
       createdAt: serverTimestamp(),
     });
 
@@ -45,5 +46,3 @@ export async function createWorker(data: {
     return { success: false, error: errorMessage };
   }
 }
-
-    

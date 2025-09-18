@@ -44,6 +44,7 @@ type Worker = {
     id: string;
     displayName: string;
     services: string[];
+    status: 'Active' | 'Inactive';
 };
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
@@ -117,8 +118,12 @@ export default function ManagerBookingDetailPage() {
             const dayBookingsSnapshot = await getDocs(bookingsQuery);
             const dayBookings = dayBookingsSnapshot.docs.map(d => d.data() as Booking);
 
-            // 2. Fetch all workers
-            const workersQuery = query(collection(db, 'workers'), orderBy('displayName'));
+            // 2. Fetch all active workers
+            const workersQuery = query(
+                collection(db, 'workers'), 
+                where('status', '==', 'Active'),
+                orderBy('displayName')
+            );
             const workersSnapshot = await getDocs(workersQuery);
             const allWorkersData = workersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Worker));
             
@@ -288,5 +293,3 @@ export default function ManagerBookingDetailPage() {
     </div>
   );
 }
-
-    
