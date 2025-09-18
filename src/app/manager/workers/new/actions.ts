@@ -15,6 +15,8 @@ export async function createWorker(data: {
   address: string;
   knowsDriving: boolean;
   hasVehicle: boolean;
+  drivingLicenseNumber?: string;
+  vehicleNumber?: string;
 }) {
   try {
     const docRef = await addDoc(collection(db, 'workers'), {
@@ -28,6 +30,8 @@ export async function createWorker(data: {
       address: data.address,
       knowsDriving: data.knowsDriving,
       hasVehicle: data.hasVehicle,
+      drivingLicenseNumber: data.drivingLicenseNumber,
+      vehicleNumber: data.vehicleNumber,
       createdAt: serverTimestamp(),
     });
 
@@ -41,3 +45,5 @@ export async function createWorker(data: {
     return { success: false, error: errorMessage };
   }
 }
+
+    

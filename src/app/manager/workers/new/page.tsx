@@ -55,6 +55,8 @@ const formSchema = z.object({
   services: z.array(z.string()).min(1, { message: 'You have to select at least one service.' }),
   knowsDriving: z.boolean().default(false),
   hasVehicle: z.boolean().default(false),
+  drivingLicenseNumber: z.string().optional(),
+  vehicleNumber: z.string().optional(),
 });
 
 export default function NewWorkerPage() {
@@ -75,8 +77,13 @@ export default function NewWorkerPage() {
       services: [],
       knowsDriving: false,
       hasVehicle: false,
+      drivingLicenseNumber: '',
+      vehicleNumber: '',
     },
   });
+
+  const knowsDriving = form.watch('knowsDriving');
+  const hasVehicle = form.watch('hasVehicle');
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
@@ -271,7 +278,7 @@ export default function NewWorkerPage() {
               />
             </div>
             
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-4">
                 <FormField
                     control={form.control}
                     name="knowsDriving"
@@ -280,7 +287,7 @@ export default function NewWorkerPage() {
                             <div className="space-y-0.5">
                                 <FormLabel className="text-base">Knows Driving</FormLabel>
                                 <FormDescription>
-                                    Does this worker have a driver's license and know how to drive?
+                                    Does this worker have a driver's license?
                                 </FormDescription>
                             </div>
                             <FormControl>
@@ -292,6 +299,21 @@ export default function NewWorkerPage() {
                         </FormItem>
                     )}
                 />
+                 {knowsDriving && (
+                    <FormField
+                        control={form.control}
+                        name="drivingLicenseNumber"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Driving License Number</FormLabel>
+                            <FormControl>
+                            <Input placeholder="e.g., DL1420110012345" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                 )}
                  <FormField
                     control={form.control}
                     name="hasVehicle"
@@ -300,7 +322,7 @@ export default function NewWorkerPage() {
                             <div className="space-y-0.5">
                                 <FormLabel className="text-base">Has Own Vehicle</FormLabel>
                                 <FormDescription>
-                                    Can this worker use their own vehicle to travel to job sites?
+                                    Can this worker use their own vehicle for jobs?
                                 </FormDescription>
                             </div>
                             <FormControl>
@@ -312,6 +334,21 @@ export default function NewWorkerPage() {
                         </FormItem>
                     )}
                 />
+                {hasVehicle && (
+                    <FormField
+                        control={form.control}
+                        name="vehicleNumber"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Vehicle Number</FormLabel>
+                            <FormControl>
+                            <Input placeholder="e.g., DL-12-AB-3456" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                )}
             </div>
 
 
@@ -373,3 +410,5 @@ export default function NewWorkerPage() {
     </Card>
   );
 }
+
+    

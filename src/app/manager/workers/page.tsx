@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Car, Check, X } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Car, Check, X, ShieldCheck } from "lucide-react";
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, Timestamp, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -29,6 +29,8 @@ type Worker = {
     services: string[];
     knowsDriving: boolean;
     hasVehicle: boolean;
+    drivingLicenseNumber?: string;
+    vehicleNumber?: string;
 };
 
 export default function ManagerWorkersPage() {
@@ -52,6 +54,8 @@ export default function ManagerWorkersPage() {
                         services: data.services || [],
                         knowsDriving: data.knowsDriving || false,
                         hasVehicle: data.hasVehicle || false,
+                        drivingLicenseNumber: data.drivingLicenseNumber,
+                        vehicleNumber: data.vehicleNumber,
                     } as Worker;
                 });
                 setWorkers(workersData);
@@ -75,11 +79,6 @@ export default function ManagerWorkersPage() {
     const formatDate = (timestamp?: Timestamp) => {
         if (!timestamp) return 'N/A';
         return timestamp.toDate().toLocaleDateString();
-    }
-
-    const getServiceNames = (serviceIds: string[]) => {
-        if (!serviceIds) return 'N/A';
-        return serviceIds.map(id => services.find(s => s.id === id)?.name).filter(Boolean).join(', ');
     }
 
   return (
@@ -122,8 +121,8 @@ export default function ManagerWorkersPage() {
                                             <TableHead>Worker Name</TableHead>
                                             <TableHead>Email</TableHead>
                                             <TableHead>Join Date</TableHead>
-                                            <TableHead>Driving</TableHead>
-                                            <TableHead>Vehicle</TableHead>
+                                            <TableHead>Driving License</TableHead>
+                                            <TableHead>Vehicle No.</TableHead>
                                             <TableHead>
                                                 <span className="sr-only">Actions</span>
                                             </TableHead>
@@ -136,10 +135,12 @@ export default function ManagerWorkersPage() {
                                             <TableCell>{worker.email}</TableCell>
                                             <TableCell>{formatDate(worker.createdAt)}</TableCell>
                                             <TableCell>
-                                                {worker.knowsDriving ? <Check className="text-green-500"/> : <X className="text-destructive"/>}
+                                                {worker.knowsDriving ? <span className='flex items-center gap-1'><ShieldCheck className="text-green-500 w-4 h-4"/> Yes</span> : <span className='flex items-center gap-1'><X className="text-destructive w-4 h-4"/> No</span>}
+                                                {worker.drivingLicenseNumber && <div className='text-xs text-muted-foreground'>({worker.drivingLicenseNumber})</div>}
                                             </TableCell>
                                             <TableCell>
-                                                {worker.hasVehicle ? <Check className="text-green-500"/> : <X className="text-destructive"/>}
+                                                {worker.hasVehicle ? <span className='flex items-center gap-1'><Car className="text-green-500 w-4 h-4"/> Yes</span> : <span className='flex items-center gap-1'><X className="text-destructive w-4 h-4"/> No</span>}
+                                                {worker.vehicleNumber && <div className='text-xs text-muted-foreground'>({worker.vehicleNumber})</div>}
                                             </TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
@@ -177,3 +178,5 @@ export default function ManagerWorkersPage() {
     </Card>
   );
 }
+
+    
