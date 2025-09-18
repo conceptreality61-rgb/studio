@@ -232,13 +232,17 @@ export default function NewWorkerPage() {
                                   <Input 
                                     placeholder="ID Number" 
                                     {...numField}
-                                    type={idType1 === 'aadhar' ? 'number' : 'text'}
-                                    maxLength={idType1 === 'aadhar' ? 12 : idType1 === 'pan' ? 10 : undefined}
+                                    type="text"
+                                    maxLength={idType1 === 'pan' ? 10 : undefined}
                                     onChange={(e) => {
+                                        let value = e.target.value;
                                         if (idType1 === 'pan') {
-                                            numField.onChange(e.target.value.toUpperCase());
+                                            numField.onChange(value.toUpperCase());
+                                        } else if (idType1 === 'aadhar') {
+                                            const numericValue = value.replace(/\D/g, '');
+                                            numField.onChange(numericValue.slice(0, 12));
                                         } else {
-                                            numField.onChange(e.target.value);
+                                            numField.onChange(value);
                                         }
                                     }}
                                   />
@@ -288,13 +292,17 @@ export default function NewWorkerPage() {
                                   <Input 
                                     placeholder="ID Number" 
                                     {...numField}
-                                    type={idType2 === 'aadhar' ? 'number' : 'text'}
-                                    maxLength={idType2 === 'aadhar' ? 12 : idType2 === 'pan' ? 10 : undefined}
+                                    type="text"
+                                    maxLength={idType2 === 'pan' ? 10 : undefined}
                                      onChange={(e) => {
+                                        let value = e.target.value;
                                         if (idType2 === 'pan') {
-                                            numField.onChange(e.target.value.toUpperCase());
+                                            numField.onChange(value.toUpperCase());
+                                        } else if (idType2 === 'aadhar') {
+                                            const numericValue = value.replace(/\D/g, '');
+                                            numField.onChange(numericValue.slice(0, 12));
                                         } else {
-                                            numField.onChange(e.target.value);
+                                            numField.onChange(value);
                                         }
                                     }}
                                   />
@@ -455,5 +463,7 @@ export default function NewWorkerPage() {
     </Card>
   );
 }
+
+    
 
     
