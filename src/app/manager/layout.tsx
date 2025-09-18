@@ -35,6 +35,13 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
     router.push('/login');
   };
 
+  const isNavItemActive = (itemHref: string) => {
+    if (itemHref === '/manager') {
+      return pathname === itemHref;
+    }
+    return pathname.startsWith(itemHref);
+  }
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -47,11 +54,11 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href}>
                   <SidebarMenuButton
-                    isActive={pathname.startsWith(item.href)}
+                    isActive={isNavItemActive(item.href)}
                     tooltip={item.title}
                   >
                     <item.icon />
-                    <span className={item.title === 'Dashboard' ? 'font-bold text-base' : ''}>{item.title}</span>
+                    <span className="font-bold text-base">{item.title}</span>
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
@@ -92,7 +99,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
       <SidebarInset>
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <div className='flex items-center gap-4'>
-            <SidebarTrigger className="md:hidden" />
+            <SidebarTrigger className="md/hidden" />
             <h1 className="text-xl font-semibold capitalize">
               {pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}
             </h1>
