@@ -46,7 +46,7 @@ const statusVariant: { [key: string]: any } = {
   'Worker Assigned': "info",
   'In Progress': "secondary",
   'Completed': "success",
-  'Canceled': "danger",
+  'Canceled': "warning",
 };
 
 
