@@ -28,6 +28,19 @@ export async function createWorker(data: {
     if (docSnap.exists()) {
         return { success: false, error: `A worker with ID "${workerId}" already exists.`};
     }
+    
+    const idDetails = (workerData.idDetails?.type && workerData.idDetails?.number) ? {
+        type: workerData.idDetails.type,
+        number: workerData.idDetails.number,
+        url: workerData.idDetails.url || null
+    } : null;
+
+    const idDetails2 = (workerData.idDetails2?.type && workerData.idDetails2?.number) ? {
+        type: workerData.idDetails2.type,
+        number: workerData.idDetails2.number,
+        url: workerData.idDetails2.url || null
+    } : null;
+
 
     await setDoc(workerRef, {
       displayName: workerData.name,
@@ -35,8 +48,8 @@ export async function createWorker(data: {
       services: workerData.services,
       fatherName: workerData.fatherName,
       mobile: workerData.mobile,
-      idDetails: workerData.idDetails,
-      idDetails2: workerData.idDetails2,
+      idDetails: idDetails,
+      idDetails2: idDetails2,
       address: workerData.address,
       knowsDriving: workerData.knowsDriving,
       hasVehicle: workerData.hasVehicle,

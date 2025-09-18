@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/firebase';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp } from 'firestore';
 
 export async function updateWorker(id: string, data: { 
   name: string; 
@@ -46,6 +46,8 @@ export async function updateWorker(id: string, data: {
             number: data.idDetails.number,
             url: data.idDetails.url || null
         };
+    } else {
+        updateData.idDetails = null;
     }
 
     if (data.idDetails2 && data.idDetails2.type && data.idDetails2.number) {
