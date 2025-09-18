@@ -115,8 +115,8 @@ export default function ManagerBookingsPage() {
         const filteredData = bookings.filter((booking) => {
             const matchesSearchTerm = (
                 booking.id.toLowerCase().includes(lowercasedSearch) ||
-                booking.serviceName.toLowerCase().includes(lowercasedSearch) ||
-                booking.customerName.toLowerCase().includes(lowercasedSearch) ||
+                (booking.serviceName && booking.serviceName.toLowerCase().includes(lowercasedSearch)) ||
+                (booking.customerName && booking.customerName.toLowerCase().includes(lowercasedSearch)) ||
                 (booking.workerName && booking.workerName.toLowerCase().includes(lowercasedSearch))
             );
             
