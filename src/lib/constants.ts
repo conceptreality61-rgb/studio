@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
-import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck, Bath, Droplets, Sparkles, DoorOpen, Car, CarWash } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck, Bath, Droplets, Sparkles, DoorOpen, Car } from 'lucide-react';
 
 export type ServiceSubCategoryOption = {
   id: string;
@@ -187,7 +187,7 @@ export const services: Service[] = [
     name: 'Vehicle Cleaning',
     description: 'Professional car washing and detailing services.',
     longDescription: 'Get your vehicle looking brand new with our comprehensive cleaning services. From a simple wash to full interior and exterior detailing, we make your car shine.',
-    icon: CarWash,
+    icon: Car,
     imageId: 'vehicle-cleaning',
     price: 20,
     subCategories: [
