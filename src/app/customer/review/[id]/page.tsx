@@ -62,6 +62,7 @@ export default function ReviewPage() {
   const [statusUpdateRating, setStatusUpdateRating] = useState(0);
   const [workerBehavior, setWorkerBehavior] = useState(0);
   const [serviceQuality, setServiceQuality] = useState(0);
+  const [serviceCost, setServiceCost] = useState(0);
   const [comment, setComment] = useState('');
   const [paidAmount, setPaidAmount] = useState<number | string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -93,7 +94,7 @@ export default function ReviewPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (serviceQuality === 0 || workerBehavior === 0 || appExperience === 0 || statusUpdateRating === 0) {
+    if (serviceQuality === 0 || workerBehavior === 0 || appExperience === 0 || statusUpdateRating === 0 || serviceCost === 0) {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -109,7 +110,7 @@ export default function ReviewPage() {
     
     setIsSubmitting(true);
     try {
-        const overallRating = (appExperience + statusUpdateRating + workerBehavior + serviceQuality) / 4;
+        const overallRating = (appExperience + statusUpdateRating + workerBehavior + serviceQuality + serviceCost) / 5;
         const finalPaidAmount = typeof paidAmount === 'string' ? parseFloat(paidAmount) : paidAmount;
 
         await setDoc(doc(db, 'reviews', `${bookingId}_${user.uid}`), {
@@ -120,6 +121,7 @@ export default function ReviewPage() {
             statusUpdateRating: statusUpdateRating,
             workerBehavior: workerBehavior,
             serviceQuality: serviceQuality,
+            serviceCost: serviceCost,
             comment,
             createdAt: serverTimestamp(),
             serviceName: bookingInfo?.serviceName || 'Service',
@@ -198,6 +200,10 @@ export default function ReviewPage() {
                     <Label>Quality of the service provided</Label>
                     <StarRating rating={serviceQuality} setRating={setServiceQuality} />
                   </div>
+                  <div className='flex justify-between items-center'>
+                    <Label>Value for money (Service Cost)</Label>
+                    <StarRating rating={serviceCost} setRating={setServiceCost} />
+                  </div>
                     <div className='flex justify-between items-center'>
                        <Label htmlFor="paid-amount">Final amount paid</Label>
                        <div className="flex items-center gap-2">
@@ -237,5 +243,3 @@ export default function ReviewPage() {
     </Card>
   );
 }
-
-    

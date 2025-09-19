@@ -20,6 +20,7 @@ type Review = {
     workerBehavior: number;
     appExperience: number;
     statusUpdateRating?: number;
+    serviceCost?: number;
     comment: string;
     paidAmount?: number;
 };
@@ -121,6 +122,12 @@ export default function ReviewsPage() {
                                     <p className="text-muted-foreground">Service Quality</p>
                                     {renderStars(review.serviceQuality)}
                                 </div>
+                                {review.serviceCost && (
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-muted-foreground">Service Cost</p>
+                                        {renderStars(review.serviceCost)}
+                                    </div>
+                                )}
                             </div>
                         </div>
                         {index < reviews.length - 1 && <Separator />}
