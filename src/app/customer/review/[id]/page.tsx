@@ -131,10 +131,10 @@ export default function ReviewPage() {
 
         toast({
             title: 'Review Submitted!',
-            description: 'Thank you for your feedback.',
+            description: 'Thank you for your valuable feedback!',
         });
 
-        router.push('/customer/reviews');
+        router.push('/customer/review/thank-you');
 
     } catch (error) {
         console.error('Error submitting review', error);
