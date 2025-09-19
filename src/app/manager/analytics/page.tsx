@@ -8,7 +8,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowUp, ArrowDown, Minus, Star, MessageSquare } from 'lucide-react';
+import { ArrowUp, ArrowDown, Minus, Star, MessageSquare, PlusCircle } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -27,6 +27,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import { featureReview } from './actions';
 
 type StatusHistoryItem = {
   status: string;
@@ -46,6 +47,7 @@ type Booking = {
 type Review = {
     id: string;
     bookingId: string;
+    userId: string;
     rating: number;
     comment: string;
     serviceName: string;
@@ -106,6 +108,25 @@ export default function ManagerAnalyticsPage() {
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
     const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+    const [isFeaturing, setIsFeaturing] = useState<string | null>(null);
+
+    const handleFeatureReview = async (review: Review) => {
+        setIsFeaturing(review.id);
+        const result = await featureReview({
+            rating: review.rating,
+            comment: review.comment,
+            userName: review.userName,
+            userId: review.userId,
+            bookingId: review.bookingId,
+        });
+
+        if (result.success) {
+            toast({ title: "Review Featured!", description: "This review will now appear on the homepage." });
+        } else {
+            toast({ variant: 'destructive', title: "Failed to Feature", description: result.error });
+        }
+        setIsFeaturing(null);
+    };
 
     useEffect(() => {
         const fetchAnalyticsData = async () => {
@@ -327,6 +348,7 @@ export default function ManagerAnalyticsPage() {
                                         <TableHead>Date</TableHead>
                                         <TableHead className="text-right">Rating</TableHead>
                                         <TableHead>Comment</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -346,6 +368,17 @@ export default function ManagerAnalyticsPage() {
                                             </TableCell>
                                             <TableCell className="max-w-sm">
                                                 <p className='truncate italic text-muted-foreground'>"{review.comment}"</p>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => handleFeatureReview(review)}
+                                                    disabled={isFeaturing === review.id}
+                                                >
+                                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                                    {isFeaturing === review.id ? 'Featuring...' : 'Feature'}
+                                                </Button>
                                             </TableCell>
                                         </TableRow>
                                     ))}

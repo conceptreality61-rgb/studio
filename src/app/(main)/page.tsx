@@ -1,4 +1,6 @@
 
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -9,40 +11,42 @@ import { CheckCircle, Users, Calendar, Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useEffect, useState } from 'react';
+import { collection, getDocs, orderBy, query, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
+
+type Testimonial = {
+  id: string;
+  name: string;
+  location: string;
+  rating: number;
+  comment: string;
+  avatar: string;
+  createdAt: Timestamp;
+};
+
 
 export default function HomePage() {
   const heroImage = PlaceHolderImages.find((p) => p.id === 'hero');
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loadingTestimonials, setLoadingTestimonials] = useState(true);
 
-  const testimonials = [
-    {
-      name: 'Sarah L.',
-      location: 'Mumbai',
-      rating: 5,
-      comment: "The cleaning service was impeccable! My home has never looked this good. The team was professional, punctual, and paid attention to every little detail. Highly recommended!",
-      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-    },
-    {
-      name: 'Rajesh K.',
-      location: 'Delhi',
-      rating: 5,
-      comment: "I've tried several gardening services before, but CleanSweep is by far the best. My garden is thriving, and the team is so knowledgeable and friendly.",
-      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026705d',
-    },
-    {
-      name: 'Priya M.',
-      location: 'Bangalore',
-      rating: 4,
-      comment: "The booking process was so simple and convenient. The bathroom cleaning was thorough, though they were a little late. Overall, a great experience.",
-      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026706d',
-    },
-     {
-      name: 'Amit S.',
-      location: 'Pune',
-      rating: 5,
-      comment: "Finally, a reliable service for water tank cleaning. They were professional, efficient, and now I have peace of mind about my water quality. Excellent job!",
-      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026707d',
-    },
-  ];
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const q = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        const fetchedTestimonials = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial));
+        setTestimonials(fetchedTestimonials);
+      } catch (error) {
+        console.error("Error fetching testimonials: ", error);
+      } finally {
+        setLoadingTestimonials(false);
+      }
+    };
+    fetchTestimonials();
+  }, []);
 
   return (
     <div className="flex flex-col">
@@ -135,6 +139,11 @@ export default function HomePage() {
               Read real stories from satisfied customers.
             </p>
           </div>
+           {loadingTestimonials ? (
+                <div className="flex justify-center mt-12">
+                    <Skeleton className="h-64 w-full max-w-4xl" />
+                </div>
+            ) : testimonials.length > 0 ? (
           <Carousel
             opts={{
               align: "start",
@@ -143,8 +152,8 @@ export default function HomePage() {
             className="w-full max-w-4xl mx-auto mt-12"
           >
             <CarouselContent>
-              {testimonials.map((testimonial, index) => (
-                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+              {testimonials.map((testimonial) => (
+                <CarouselItem key={testimonial.id} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-1">
                     <Card className="h-full">
                       <CardContent className="pt-6 flex flex-col items-center text-center h-full">
@@ -171,6 +180,11 @@ export default function HomePage() {
             <CarouselPrevious />
             <CarouselNext />
           </Carousel>
+           ) : (
+                <div className="text-center text-muted-foreground py-12">
+                    <p>No testimonials yet. Check back soon!</p>
+                </div>
+           )}
         </div>
       </section>
     </div>
