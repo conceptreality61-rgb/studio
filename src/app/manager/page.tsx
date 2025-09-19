@@ -17,11 +17,12 @@ type Booking = {
     id: string;
     serviceName: string;
     customerName: string;
-    status: 'Pending Manager Approval' | 'Worker Assigned' | 'Completed' | 'Canceled' | 'In Progress';
+    status: 'Pending Manager Approval' | 'Pending Worker Assignment' | 'Worker Assigned' | 'Completed' | 'Canceled' | 'In Progress';
 };
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "success" | "warning" } = {
   'Pending Manager Approval': "destructive",
+  'Pending Worker Assignment': "info",
   'Worker Assigned': "info",
   'In Progress': "secondary",
   'Completed': "success",

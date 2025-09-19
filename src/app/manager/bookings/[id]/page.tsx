@@ -58,6 +58,7 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
   Completed: "default",
   "Worker Assigned": "info",
   "Pending Manager Approval": "outline",
+  "Pending Worker Assignment": "info",
   "Pending Customer Approval": "warning",
   "In Progress": "secondary",
   Canceled: "destructive"
@@ -170,7 +171,7 @@ export default function ManagerBookingDetailPage() {
               }
           }
 
-          if (['Pending Manager Approval', 'Worker Assigned', 'In Progress'].includes(bookingData.status)) {
+          if (['Pending Manager Approval', 'Pending Worker Assignment', 'Worker Assigned', 'In Progress'].includes(bookingData.status)) {
             const bookingDate = bookingData.date.toDate();
             const startOfBookingDay = startOfDay(bookingDate);
             const endOfBookingDay = endOfDay(bookingDate);
@@ -297,7 +298,7 @@ export default function ManagerBookingDetailPage() {
     const result = await refuseJob(booking.id, booking.workerId);
     if (result.success) {
       toast({ title: 'Job Refused', description: 'The job has been returned for re-assignment.' });
-      setBooking(prev => prev ? { ...prev, status: 'Pending Manager Approval', workerId: undefined, workerName: undefined, refusedBy: [...(prev.refusedBy || []), prev.workerId!] } : null);
+      setBooking(prev => prev ? { ...prev, status: 'Pending Worker Assignment', workerId: undefined, workerName: undefined, refusedBy: [...(prev.refusedBy || []), prev.workerId!] } : null);
     } else {
       toast({ variant: 'destructive', title: 'Error', description: result.error });
     }
@@ -352,65 +353,53 @@ export default function ManagerBookingDetailPage() {
     switch (booking.status) {
       case 'Pending Manager Approval':
         return (
-          <>
-            {!booking.estimatedCharge ? (
-              <Card className="bg-secondary/50">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg"><Calculator /> Create Estimate & Send for Approval</CardTitle>
-                </CardHeader>
-                <CardContent className='flex flex-col gap-4'>
-                    <div className='flex flex-col md:flex-row gap-6'>
-                        <div className="flex-1 space-y-3 rounded-md border bg-background/50 p-4">
-                            <h4 className='font-semibold flex items-center gap-2'><ListTree className='w-4 h-4'/>Customer's Selections</h4>
-                            {customerSelections.length > 0 ? customerSelections.map(selection => {
-                                const itemKey = `${selection.subCatId}-${selection.optionId}`;
-                                return (
-                                    <div key={itemKey} className='flex items-center justify-between gap-4'>
-                                        <Label htmlFor={itemKey} className='flex-1'>{selection.optionNames.join(', ')}</Label>
-                                        <div className='flex items-center gap-2'>
-                                            <span className="text-sm text-muted-foreground">Rs.</span>
-                                            <Input 
-                                                id={itemKey}
-                                                type="number" 
-                                                className="w-24"
-                                                placeholder="0.00"
-                                                value={itemCosts[itemKey] || ''}
-                                                onChange={(e) => handleItemCostChange(itemKey, e.target.value)}
-                                            />
-                                        </div>
+          <Card className="bg-secondary/50">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg"><Calculator /> Create Estimate & Send for Approval</CardTitle>
+            </CardHeader>
+            <CardContent className='flex flex-col gap-4'>
+                <div className='flex flex-col md:flex-row gap-6'>
+                    <div className="flex-1 space-y-3 rounded-md border bg-background/50 p-4">
+                        <h4 className='font-semibold flex items-center gap-2'><ListTree className='w-4 h-4'/>Customer's Selections</h4>
+                        {customerSelections.length > 0 ? customerSelections.map(selection => {
+                            const itemKey = `${selection.subCatId}-${selection.optionId}`;
+                            return (
+                                <div key={itemKey} className='flex items-center justify-between gap-4'>
+                                    <Label htmlFor={itemKey} className='flex-1'>{selection.optionNames.join(', ')}</Label>
+                                    <div className='flex items-center gap-2'>
+                                        <span className="text-sm text-muted-foreground">Rs.</span>
+                                        <Input 
+                                            id={itemKey}
+                                            type="number" 
+                                            className="w-24"
+                                            placeholder="0.00"
+                                            value={itemCosts[itemKey] || ''}
+                                            onChange={(e) => handleItemCostChange(itemKey, e.target.value)}
+                                        />
                                     </div>
-                                )
-                            }) : <p className="text-sm text-muted-foreground">No specific options selected.</p>}
-                        </div>
-                        <div className="flex-1 space-y-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Calculated Total:</p>
-                                <p className="text-3xl font-bold">Rs. {calculatedEstimate.toFixed(2)}</p>
-                            </div>
+                                </div>
+                            )
+                        }) : <p className="text-sm text-muted-foreground">No specific options selected.</p>}
+                    </div>
+                    <div className="flex-1 space-y-4">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Calculated Total:</p>
+                            <p className="text-3xl font-bold">Rs. {calculatedEstimate.toFixed(2)}</p>
                         </div>
                     </div>
-                    <div className="flex flex-col md:flex-row md:items-end gap-4 border-t pt-4">
-                        <div className="flex-1 space-y-2">
-                           <Label htmlFor="estimated-charge">Final Estimated Charge (Rs.)</Label>
-                           <Input id="estimated-charge" type="number" value={estimatedCharge} onChange={(e) => setEstimatedCharge(e.target.value)} placeholder="e.g., 500" className="max-w-[200px] text-lg font-bold" />
-                           <p className="text-xs text-muted-foreground mt-1">You can adjust the final price before sending.</p>
-                        </div>
-                        <Button onClick={handleSubmitEstimate} disabled={isSubmitting || !estimatedCharge}>
-                            {isSubmitting && <Loader2 className="animate-spin" />} Send to Customer
-                        </Button>
+                </div>
+                <div className="flex flex-col md:flex-row md:items-end gap-4 border-t pt-4">
+                    <div className="flex-1 space-y-2">
+                       <Label htmlFor="estimated-charge">Final Estimated Charge (Rs.)</Label>
+                       <Input id="estimated-charge" type="number" value={estimatedCharge} onChange={(e) => setEstimatedCharge(e.target.value)} placeholder="e.g., 500" className="max-w-[200px] text-lg font-bold" />
+                       <p className="text-xs text-muted-foreground mt-1">You can adjust the final price before sending.</p>
                     </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <>
-                <h3 className="font-semibold mb-4 text-lg">Assign Worker</h3>
-                {renderWorkerAssignment()}
-                {booking?.refusedBy && booking.refusedBy.length > 0 && (
-                  <p className="text-xs text-destructive mt-2">Note: This job was previously refused by {booking.refusedBy.length} worker(s).</p>
-                )}
-              </>
-            )}
-          </>
+                    <Button onClick={handleSubmitEstimate} disabled={isSubmitting || !estimatedCharge}>
+                        {isSubmitting && <Loader2 className="animate-spin" />} Send to Customer
+                    </Button>
+                </div>
+            </CardContent>
+          </Card>
         );
 
       case 'Pending Customer Approval':
@@ -422,6 +411,17 @@ export default function ManagerBookingDetailPage() {
               <p className="text-sm text-muted-foreground">The estimated charge of Rs. {booking.estimatedCharge} has been sent. Awaiting customer acceptance or rejection.</p>
             </div>
           </div>
+        );
+
+      case 'Pending Worker Assignment':
+        return (
+            <>
+              <h3 className="font-semibold mb-4 text-lg">Assign Worker</h3>
+              {renderWorkerAssignment()}
+              {booking?.refusedBy && booking.refusedBy.length > 0 && (
+                <p className="text-xs text-destructive mt-2">Note: This job was previously refused by {booking.refusedBy.length} worker(s).</p>
+              )}
+            </>
         );
 
       case 'Worker Assigned':

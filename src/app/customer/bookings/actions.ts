@@ -7,7 +7,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 export async function acceptEstimate(bookingId: string) {
   try {
     const bookingRef = doc(db, 'bookings', bookingId);
-    await updateDoc(bookingRef, { status: 'Pending Manager Approval' });
+    await updateDoc(bookingRef, { status: 'Pending Worker Assignment' });
     return { success: true };
   } catch (error: any) {
     return { success: false, error: 'Failed to accept the estimate.' };

@@ -38,6 +38,7 @@ const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | 
   Completed: "default",
   "Worker Assigned": "secondary",
   "Pending Manager Approval": "outline",
+  "Pending Worker Assignment": "info",
   "Pending Customer Approval": "warning",
   "In Progress": "secondary",
   Canceled: "destructive"
@@ -102,7 +103,7 @@ export default function BookingsPage() {
         result = await acceptEstimate(selectedBookingForEstimate.id);
         if (result.success) {
           toast({ title: "Estimate Accepted", description: "The manager has been notified to proceed." });
-          setBookings(current => current.map(b => b.id === selectedBookingForEstimate.id ? { ...b, status: 'Pending Manager Approval' } : b));
+          setBookings(current => current.map(b => b.id === selectedBookingForEstimate.id ? { ...b, status: 'Pending Worker Assignment' } : b));
         } else {
           throw new Error(result.error);
         }

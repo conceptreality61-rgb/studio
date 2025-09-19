@@ -33,7 +33,7 @@ type Booking = {
   workerId?: string;
   workerName?: string;
   date: Timestamp;
-  status: 'Pending Manager Approval' | 'Pending Customer Approval' | 'Worker Assigned' | 'Completed' | 'Canceled' | 'In Progress';
+  status: 'Pending Manager Approval' | 'Pending Worker Assignment' | 'Pending Customer Approval' | 'Worker Assigned' | 'Completed' | 'Canceled' | 'In Progress';
   refusedBy?: string[];
   canceledWorkerIds?: string[];
   estimatedCharge?: number;
@@ -46,6 +46,7 @@ type Worker = {
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "success" | "warning" } = {
   'Pending Manager Approval': "destructive",
+  'Pending Worker Assignment': "info",
   'Pending Customer Approval': 'warning',
   'Worker Assigned': "info",
   'In Progress': "secondary",
@@ -99,11 +100,12 @@ export default function ManagerBookingsPage() {
 
                 const statusOrder = {
                     'Pending Manager Approval': 1,
-                    'Pending Customer Approval': 2,
-                    'Worker Assigned': 3,
-                    'In Progress': 4,
-                    'Completed': 5,
-                    'Canceled': 6,
+                    'Pending Worker Assignment': 2,
+                    'Pending Customer Approval': 3,
+                    'Worker Assigned': 4,
+                    'In Progress': 5,
+                    'Completed': 6,
+                    'Canceled': 7,
                 };
                 
                 bookingsData.sort((a, b) => {

@@ -20,7 +20,7 @@ export default function OrderTracker({ status }: OrderTrackerProps) {
   const steps: Step[] = useMemo(() => [
     { name: 'Pending Approval', status: 'upcoming', icon: <FileCheck /> },
     { name: 'Pending Customer Approval', status: 'upcoming', icon: <CircleHelp />},
-    { name: 'Worker Assigned', status: 'upcoming', icon: <UserCheck /> },
+    { name: 'Pending Worker Assignment', status: 'upcoming', icon: <UserCheck />},
     { name: 'In Progress', status: 'upcoming', icon: <Loader className="animate-spin" /> },
     { name: 'Service Completed', status: 'upcoming', icon: <Check /> },
   ], []);
@@ -29,6 +29,7 @@ export default function OrderTracker({ status }: OrderTrackerProps) {
     switch (status) {
         case 'Pending Manager Approval': return 0;
         case 'Pending Customer Approval': return 1;
+        case 'Pending Worker Assignment': return 2;
         case 'Worker Assigned': return 2;
         case 'In Progress': return 3;
         case 'Completed': return 4;
