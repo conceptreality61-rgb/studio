@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import OrderTracker from "@/components/order-tracker";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
 import { doc, getDoc, Timestamp, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck, Loader2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck, Loader2, CheckCircle, XCircle, AlertTriangle, Calculator } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addHours, differenceInHours, startOfDay, endOfDay } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { services } from '@/lib/constants';
 
 type Booking = {
   id: string;
@@ -35,6 +36,7 @@ type Booking = {
   refusedBy?: string[];
   canceledWorkerIds?: string[];
   estimatedCharge?: number;
+  options: Record<string, string | string[]>;
 };
 
 type CustomerProfile = {
@@ -90,6 +92,55 @@ export default function ManagerBookingDetailPage() {
     newDate.setHours(hours, minutes, 0, 0);
     return newDate;
   };
+
+  const calculatedEstimate = useMemo(() => {
+    if (!booking) return 0;
+    const service = services.find(s => s.id === booking.serviceId);
+    if (!service) return 0;
+
+    let total = service.price; // Start with base price
+    let duration = 1;
+    let bathroomMultiplier = 1;
+    let tankMultiplier = 1;
+
+    // Get duration
+    const durationOption = booking.options.duration as string;
+    if (durationOption) {
+        duration = parseInt(durationOption.split('-')[0]) || 1;
+    }
+
+    // Get bathroom count
+    const bathroomOption = booking.options['num-bathrooms'] as string;
+    if (bathroomOption) {
+        bathroomMultiplier = parseInt(bathroomOption.split('-')[0]) || 1;
+    }
+
+    // Get tank count
+    const tankOption = booking.options['num-tanks'] as string;
+    if (tankOption) {
+        tankMultiplier = parseInt(tankOption.split('-')[0]) || 1;
+    }
+    
+    // Apply logic based on service type
+    if (service.id === 'house-cleaning' || service.id === 'gardening' || service.id === 'bathroom-cleaning') {
+      // Priced per hour
+      total = service.price * duration;
+      if (service.id === 'bathroom-cleaning') {
+        total *= bathroomMultiplier; // price * duration * number of bathrooms
+      }
+    } else if (service.id === 'tank-cleaning') {
+      // Flat rate, modified by tank count
+      total = service.price * tankMultiplier;
+    }
+    
+    return total;
+  }, [booking]);
+
+  useEffect(() => {
+    if (calculatedEstimate > 0) {
+      setEstimatedCharge(calculatedEstimate);
+    }
+  }, [calculatedEstimate]);
 
 
   useEffect(() => {
@@ -297,18 +348,26 @@ export default function ManagerBookingDetailPage() {
         return (
           <>
             {!booking.estimatedCharge ? (
-              <>
-                <h3 className="font-semibold mb-4 text-lg">Submit Estimated Charge</h3>
-                <div className='flex items-end gap-4'>
+              <Card className="bg-secondary/50">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg"><Calculator /> Calculate Estimate & Send for Approval</CardTitle>
+                </CardHeader>
+                <CardContent className='flex flex-col md:flex-row md:items-end gap-4'>
+                  <div className='flex-1'>
+                    <h4 className='font-semibold'>Calculation based on selection:</h4>
+                    <p className='text-sm text-muted-foreground'>
+                      Service Base: Rs. {booking.servicePrice}, based on customer's selected options.
+                    </p>
+                  </div>
                   <div className="space-y-2">
-                    <Label htmlFor="estimated-charge">Estimated Charge (Rs.)</Label>
-                    <Input id="estimated-charge" type="number" value={estimatedCharge} onChange={(e) => setEstimatedCharge(e.target.value)} placeholder="e.g., 500" />
+                    <Label htmlFor="estimated-charge">Final Estimated Charge (Rs.)</Label>
+                    <Input id="estimated-charge" type="number" value={estimatedCharge} onChange={(e) => setEstimatedCharge(e.target.value)} placeholder="e.g., 500" className="max-w-[200px] text-lg font-bold" />
                   </div>
                   <Button onClick={handleSubmitEstimate} disabled={isSubmitting || !estimatedCharge}>
                     {isSubmitting && <Loader2 className="animate-spin" />} Send to Customer
                   </Button>
-                </div>
-              </>
+                </CardContent>
+              </Card>
             ) : (
               <>
                 <h3 className="font-semibold mb-4 text-lg">Assign Worker</h3>
@@ -473,3 +532,5 @@ export default function ManagerBookingDetailPage() {
     </div>
   );
 }
+
+    
