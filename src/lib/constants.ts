@@ -39,7 +39,6 @@ export const services: Service[] = [
         name: 'Select Tasks',
         type: 'multiple',
         options: [
-          { id: 'dish-cleaning', name: 'Dish Cleaning' },
           { id: 'mopping', name: 'Mopping' },
           { id: 'kitchen-cleaning', name: 'Kitchen Cleaning' },
           { id: 'full-cooking', name: 'Full Cooking' },
