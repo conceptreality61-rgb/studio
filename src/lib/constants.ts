@@ -210,6 +210,16 @@ export const services: Service[] = [
     imageId: 'vehicle-cleaning',
     subCategories: [
       {
+        id: 'num-vehicles',
+        name: 'Number of Vehicles',
+        type: 'single',
+        options: [
+          { id: '1-vehicle', name: '1' },
+          { id: '2-vehicles', name: '2' },
+          { id: '3-plus-vehicles', name: '3+' },
+        ],
+      },
+      {
         id: 'vehicle-type',
         name: 'Vehicle Type',
         type: 'single',
