@@ -27,12 +27,11 @@ export async function refuseJob(bookingId: string, workerId: string) {
     }
     const existingData = docSnap.data();
 
+    const newRefusedBy = [...(existingData.refusedBy || []), workerId];
     const newStatusHistory = [
       ...(existingData.statusHistory || []),
       { status: 'Pending Manager Approval', timestamp: serverTimestamp(), reason: `Refused by ${workerId}` }
     ];
-    
-    const newRefusedBy = [...(existingData.refusedBy || []), workerId];
 
     await updateDoc(bookingRef, {
       status: 'Pending Manager Approval',
