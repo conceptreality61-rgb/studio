@@ -117,25 +117,25 @@ export default function ReviewPage() {
         </CardHeader>
         <CardContent className="space-y-8">
           <div className="space-y-6">
-             <div className='p-4 border rounded-md'>
-              <h3 className='font-semibold mb-3'>Service Feedback</h3>
+            <div className='p-4 border rounded-md'>
+              <h3 className='font-semibold mb-3'>App & Booking Experience</h3>
               <div className='flex justify-between items-center'>
-                <Label>Quality of the service provided</Label>
-                <StarRating rating={serviceQuality} setRating={setServiceQuality} />
+                <Label>Ease of using the app and booking process</Label>
+                <StarRating rating={appExperience} setRating={setAppExperience} />
               </div>
             </div>
-             <div className='p-4 border rounded-md'>
+            <div className='p-4 border rounded-md'>
               <h3 className='font-semibold mb-3'>Worker Feedback</h3>
               <div className='flex justify-between items-center'>
                 <Label>Worker's professionalism and behavior</Label>
                 <StarRating rating={workerBehavior} setRating={setWorkerBehavior} />
               </div>
             </div>
-             <div className='p-4 border rounded-md'>
-              <h3 className='font-semibold mb-3'>App & Booking Experience</h3>
+            <div className='p-4 border rounded-md'>
+              <h3 className='font-semibold mb-3'>Service Feedback</h3>
               <div className='flex justify-between items-center'>
-                <Label>Ease of using the app and booking process</Label>
-                <StarRating rating={appExperience} setRating={setAppExperience} />
+                <Label>Quality of the service provided</Label>
+                <StarRating rating={serviceQuality} setRating={setServiceQuality} />
               </div>
             </div>
           </div>
