@@ -36,6 +36,16 @@ type Review = {
   serviceName: string;
 }
 
+// Extend the Window interface to include the BeforeInstallPromptEvent
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: Array<string>;
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed',
+    platform: string
+  }>;
+  prompt(): Promise<void>;
+}
+
 
 export default function HomePage() {
   const heroImage = PlaceHolderImages.find((p) => p.id === 'hero');
@@ -44,6 +54,34 @@ export default function HomePage() {
   const [loadingTestimonials, setLoadingTestimonials] = useState(true);
   const [latestReviews, setLatestReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+  
+  const handleInstallClick = async () => {
+    if (installPrompt) {
+      await installPrompt.prompt();
+      const { outcome } = await installPrompt.userChoice;
+      if (outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+      setInstallPrompt(null);
+    }
+  };
+
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -178,37 +216,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="pwa-install" className="py-16 md:py-24 bg-background">
-        <div className="container">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="text-center md:text-left">
-              <h2 className="text-3xl md:text-4xl font-headline font-bold">Get Our App</h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Experience CleanSweep on the go! Install our Progressive Web App (PWA) on your phone or desktop for a faster, app-like experience. No app store required!
-              </p>
-              <p className="mt-2 text-muted-foreground">
-                Get quick access to booking, tracking, and managing your services with a single tap.
-              </p>
-              <Button size="lg" className="mt-8">
-                <Download className="mr-2 h-5 w-5" />
-                Install App
-              </Button>
-            </div>
-            <div className="flex justify-center">
-                {pwaImage && (
-                    <Image
-                        src={pwaImage.imageUrl}
-                        alt={pwaImage.description}
-                        width={600}
-                        height={500}
-                        className="rounded-lg shadow-xl"
-                        data-ai-hint={pwaImage.imageHint}
-                    />
-                )}
+      {installPrompt && (
+        <section id="pwa-install" className="py-16 md:py-24 bg-background">
+          <div className="container">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="text-center md:text-left">
+                <h2 className="text-3xl md:text-4xl font-headline font-bold">Get Our App</h2>
+                <p className="mt-4 text-lg text-muted-foreground">
+                  Experience CleanSweep on the go! Install our Progressive Web App (PWA) on your phone or desktop for a faster, app-like experience. No app store required!
+                </p>
+                <p className="mt-2 text-muted-foreground">
+                  Get quick access to booking, tracking, and managing your services with a single tap.
+                </p>
+                <Button size="lg" className="mt-8" onClick={handleInstallClick}>
+                  <Download className="mr-2 h-5 w-5" />
+                  Install App
+                </Button>
+              </div>
+              <div className="flex justify-center">
+                  {pwaImage && (
+                      <Image
+                          src={pwaImage.imageUrl}
+                          alt={pwaImage.description}
+                          width={600}
+                          height={500}
+                          className="rounded-lg shadow-xl"
+                          data-ai-hint={pwaImage.imageHint}
+                      />
+                  )}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
 
       <section id="testimonials" className="py-16 md:py-24 bg-secondary">
         <div className="container">
@@ -322,3 +363,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    

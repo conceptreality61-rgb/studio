@@ -1,3 +1,4 @@
+
 {
   "name": "CleanSweep",
   "short_name": "CleanSweep",
@@ -5,7 +6,8 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#209cee",
+  "theme_color": "#facc15",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -19,3 +21,5 @@
     }
   ]
 }
+
+    
