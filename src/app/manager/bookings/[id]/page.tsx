@@ -24,7 +24,7 @@ import { services, ServiceSubCategory, ServiceSubCategoryOption } from '@/lib/co
 type Booking = {
   id: string;
   serviceId: string;
-  serviceName: string;
+  serviceName:string;
   date: Timestamp;
   time: string;
   workerId?: string;
@@ -71,10 +71,12 @@ export default function ManagerBookingDetailPage() {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [selectedWorkerId, setSelectedWorkerId] = useState<string | undefined>(undefined);
   const [estimatedCharge, setEstimatedCharge] = useState<number | string>('');
-  const [isAssigning, setIsAssigning] = useState(false);
+    const [isAssigning, setIsAssigning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isReassigning, setIsReassigning] = useState(false);
+
+  const [fare, setFare] = useState<number | string>('');
   
   // A helper function to parse time strings like "09:00 AM" into a Date object
   const parseTime = (date: Date, timeStr: string) => {
@@ -100,7 +102,7 @@ export default function ManagerBookingDetailPage() {
   const customerSelections = useMemo(() => {
     if (!booking || !serviceDetails) return [];
     
-    const selections: { subCategoryName: string; optionNames: string[] }[] = [];
+    const selections: { subCategoryName: string; optionNames: string[], subCatId: string, selection: string | string[] }[] = [];
 
     serviceDetails.subCategories?.forEach(subCat => {
         const selection = booking.options[subCat.id];
@@ -117,6 +119,8 @@ export default function ManagerBookingDetailPage() {
                  selections.push({
                     subCategoryName: subCat.name,
                     optionNames: optionNames,
+                    subCatId: subCat.id,
+                    selection: selection
                 });
             }
         }
@@ -125,6 +129,46 @@ export default function ManagerBookingDetailPage() {
     return selections;
 
   }, [booking, serviceDetails]);
+
+  const calculatedEstimate = useMemo(() => {
+    if (!booking || !serviceDetails || !fare) return 0;
+    const numericFare = typeof fare === 'string' ? parseFloat(fare) : fare;
+    if (isNaN(numericFare)) return 0;
+
+    let total = 0;
+
+    const durationOption = booking.options['duration'];
+    if (durationOption && typeof durationOption === 'string') {
+        const durationHours = parseInt(durationOption.split('-')[0]);
+        total += durationHours * numericFare;
+    }
+
+    const numBathroomsOption = booking.options['num-bathrooms'];
+    if (numBathroomsOption && typeof numBathroomsOption === 'string') {
+        const numBathrooms = parseInt(numBathroomsOption.split('-')[0]);
+        total += numBathrooms * numericFare;
+    }
+    
+    const numTanksOption = booking.options['num-tanks'];
+     if (numTanksOption && typeof numTanksOption === 'string') {
+        const numTanks = parseInt(numTanksOption.split('-')[0]);
+        total += numTanks * numericFare;
+    }
+
+    // For services without clear multipliers, you might just use the fare as a base.
+    if (total === 0) {
+        return numericFare;
+    }
+    
+    return total;
+  }, [booking, serviceDetails, fare]);
+
+  useEffect(() => {
+    if (calculatedEstimate > 0) {
+        setEstimatedCharge(calculatedEstimate);
+    }
+  }, [calculatedEstimate]);
+
 
   useEffect(() => {
     const fetchBookingAndWorkers = async () => {
@@ -339,19 +383,30 @@ export default function ManagerBookingDetailPage() {
                     <div className='flex flex-col md:flex-row gap-6'>
                         <div className="flex-1 space-y-3 rounded-md border bg-background/50 p-4">
                             <h4 className='font-semibold flex items-center gap-2'><ListTree className='w-4 h-4'/>Customer's Selections</h4>
-                            {customerSelections.map(selection => (
+                            {customerSelections.length > 0 ? customerSelections.map(selection => (
                                 <div key={selection.subCategoryName} className='text-sm'>
                                     <p className='text-muted-foreground'>{selection.subCategoryName}:</p>
                                     <p className='font-medium'>{selection.optionNames.join(', ')}</p>
                                 </div>
-                            ))}
+                            )) : <p className="text-sm text-muted-foreground">No specific options selected.</p>}
+                        </div>
+                        <div className="flex-1 space-y-4">
+                            <div>
+                                <Label htmlFor="fare">Fare (per hour/unit)</Label>
+                                <Input id="fare" type="number" value={fare} onChange={(e) => setFare(e.target.value)} placeholder="e.g., 150" />
+                                <p className="text-xs text-muted-foreground mt-1">Enter rate per hour or per unit (e.g., per bathroom).</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Calculated Subtotal:</p>
+                                <p className="text-xl font-bold">Rs. {calculatedEstimate.toFixed(2)}</p>
+                            </div>
                         </div>
                     </div>
                     <div className="flex flex-col md:flex-row md:items-end gap-4 border-t pt-4">
                         <div className="flex-1 space-y-2">
                            <Label htmlFor="estimated-charge">Final Estimated Charge (Rs.)</Label>
                            <Input id="estimated-charge" type="number" value={estimatedCharge} onChange={(e) => setEstimatedCharge(e.target.value)} placeholder="e.g., 500" className="max-w-[200px] text-lg font-bold" />
-                           <p className="text-xs text-muted-foreground">Enter the final price to send to the customer.</p>
+                           <p className="text-xs text-muted-foreground">You can adjust the final price before sending.</p>
                         </div>
                         <Button onClick={handleSubmitEstimate} disabled={isSubmitting || !estimatedCharge}>
                             {isSubmitting && <Loader2 className="animate-spin" />} Send to Customer
@@ -523,3 +578,5 @@ export default function ManagerBookingDetailPage() {
     </div>
   );
 }
+
+    
