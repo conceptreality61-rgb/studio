@@ -116,6 +116,14 @@ export default function OrderDetailPage() {
                     <div className="flex justify-between"><span>Worker:</span> <span className="font-medium">{booking.workerName || 'Not assigned yet'}</span></div>
                     <Separator className="my-2" />
                     <div className="flex justify-between text-base"><strong>Total Estimated Value:</strong> <strong className="text-primary">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending Estimate`}</strong></div>
+                    <div className="mt-4 text-xs text-muted-foreground space-y-1 border-t pt-2">
+                        <p><b>Terms & Conditions:</b></p>
+                        <ul className="list-disc list-inside">
+                            <li>Estimated value may change as per actual condition.</li>
+                            <li>All cleaning material will be provided by the service provider.</li>
+                            <li>No extra tips to be paid to the worker.</li>
+                        </ul>
+                    </div>
                 </div>
             ) : (
                 <p>Booking details not found.</p>

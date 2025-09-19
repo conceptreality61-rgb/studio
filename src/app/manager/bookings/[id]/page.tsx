@@ -56,7 +56,7 @@ type Worker = {
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "warning" } = {
   Completed: "default",
-  "Worker Assigned": "info",
+  "Worker Assigned": "secondary",
   "Pending Manager Approval": "outline",
   "Pending Worker Assignment": "info",
   "Pending Customer Approval": "warning",
@@ -515,9 +515,11 @@ export default function ManagerBookingDetailPage() {
                           <Briefcase className="w-4 h-4 text-muted-foreground mt-1" /> 
                           <div>
                             <span className="font-medium">{booking.serviceName}</span>
-                            <div className="text-xs text-muted-foreground">
-                              {customerSelections.map(s => s.optionNames.join(', ')).join(' • ')}
-                            </div>
+                            {customerSelections.length > 0 && (
+                                <div className="text-xs text-muted-foreground">
+                                    {customerSelections.map(s => s.optionNames.join(', ')).join(' • ')}
+                                </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-3"><Calendar className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{formatDate(booking.date)}</span></div>
@@ -525,6 +527,14 @@ export default function ManagerBookingDetailPage() {
                         <div className="flex items-center gap-3"><UserCheck className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{booking.workerName || 'Not assigned yet'}</span></div>
                         <Separator className="my-4" />
                         <div className="flex items-center gap-3 text-base"><DollarSign className="w-4 h-4 text-muted-foreground" /> <strong>Total Estimated Value:</strong> <strong className="text-primary">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending Estimate`}</strong></div>
+                        <div className="mt-4 text-xs text-muted-foreground space-y-1 border-t pt-2">
+                            <p><b>Terms & Conditions:</b></p>
+                            <ul className="list-disc list-inside">
+                                <li>Estimated value may change as per actual condition.</li>
+                                <li>All cleaning material will be provided by the service provider.</li>
+                                <li>No extra tips to be paid to the worker.</li>
+                            </ul>
+                        </div>
                     </div>
                 ) : (
                     <p>Booking details not found.</p>
