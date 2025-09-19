@@ -34,8 +34,8 @@
     {
       "id": "vehicle-cleaning",
       "description": "A person washing a car.",
-      "imageUrl": "https://images.unsplash.com/photo-1607280287834-9b2866c1e271?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx2ZWhpY2xlJTIwY2xlYW5pbmd8ZW58MHx8fHwxNzIyMTc3ODMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "vehicle cleaning"
+      "imageUrl": "https://images.unsplash.com/photo-1607860108855-64acf2078ed9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjYXIlMjB3YXNoaW5nfGVufDB8fHx8MTc1ODMxNDc5MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "car washing"
     },
     {
       "id": "app-install",
