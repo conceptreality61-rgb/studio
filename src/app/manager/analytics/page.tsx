@@ -38,6 +38,7 @@ type Review = {
     rating: number;
     comment: string;
     serviceName: string;
+    userName: string;
     createdAt: Timestamp;
     appExperience: number;
     statusUpdateRating?: number;
@@ -308,6 +309,7 @@ export default function ManagerAnalyticsPage() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Service</TableHead>
+                                        <TableHead>Customer</TableHead>
                                         <TableHead>Date</TableHead>
                                         <TableHead className="text-right">Rating</TableHead>
                                         <TableHead>Comment</TableHead>
@@ -317,6 +319,7 @@ export default function ManagerAnalyticsPage() {
                                     {reviews.slice(0, 5).map((review) => (
                                         <TableRow key={review.id}>
                                             <TableCell>{review.serviceName}</TableCell>
+                                            <TableCell>{review.userName}</TableCell>
                                             <TableCell>{formatDate(review.createdAt)}</TableCell>
                                             <TableCell className="text-right">{renderStars(review.rating)}</TableCell>
                                             <TableCell className="max-w-sm">
