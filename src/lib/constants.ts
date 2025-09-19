@@ -36,7 +36,7 @@ export const services: Service[] = [
     subCategories: [
       {
         id: 'tasks',
-        name: 'Select Tasks',
+        name: 'any other specific task',
         type: 'multiple',
         options: [
           { id: 'wash-basin-cleaning', name: 'Wash Basin Cleaning' },
@@ -73,7 +73,7 @@ export const services: Service[] = [
     subCategories: [
       {
         id: 'tasks',
-        name: 'Select Tasks',
+        name: 'any other specific task',
         type: 'multiple',
         options: [
           { id: 'tile-grout-cleaning', name: 'Tile and Grout Cleaning' },
@@ -154,7 +154,7 @@ export const services: Service[] = [
     subCategories: [
        {
         id: 'tasks',
-        name: 'Select Tasks',
+        name: 'any other specific task',
         type: 'multiple',
         options: [
           { id: 'lawn-mowing', name: 'Lawn Mowing' },
