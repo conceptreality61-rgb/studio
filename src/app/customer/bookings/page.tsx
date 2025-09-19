@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, Star, XCircle, PlusCircle, Loader2, Check, AlertTriangle, CircleHelp } from "lucide-react";
+import { ArrowRight, Star, XCircle, PlusCircle, Loader2, Check, AlertTriangle, CircleHelp, MessageSquare } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -201,12 +201,13 @@ export default function BookingsPage() {
                     </TableCell>
                     <TableCell className="text-right">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending`}</TableCell>
                     <TableCell className="text-right">
-                      {booking.status === 'Pending Customer Approval' ? (
-                          isEstimateActionLoading === booking.id ? <Loader2 className="animate-spin" /> :
-                          <div className="flex gap-2 justify-end">
-                            <Button size="sm" onClick={() => handleEstimateActionClick(booking, 'accept')}><Check className="mr-2 h-4 w-4" />Accept</Button>
-                            <Button size="sm" variant="destructive" onClick={() => handleEstimateActionClick(booking, 'reject')}><XCircle className="mr-2 h-4 w-4" />Reject</Button>
-                          </div>
+                       {booking.status === 'Pending Customer Approval' ? (
+                          <Button variant="outline" size="sm" asChild>
+                              <Link href={`/customer/orders/${booking.id}`}>
+                                <MessageSquare className="mr-2 h-4 w-4" />
+                                View & Respond
+                              </Link>
+                          </Button>
                       ) : booking.status === 'Completed' ? (
                         <Button variant="outline" size="sm" asChild>
                           <Link href={`/customer/review/${booking.id}`}>

@@ -2,16 +2,21 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import OrderTracker from "@/components/order-tracker";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { services } from '@/lib/constants';
+import { Button } from '@/components/ui/button';
+import { Loader2, Check, XCircle } from 'lucide-react';
+import { acceptEstimate, rejectEstimate } from '@/app/customer/bookings/actions';
+import { useToast } from '@/hooks/use-toast';
 
 type Booking = {
+  id: string;
   serviceId: string;
   serviceName: string;
   date: Timestamp;
@@ -24,18 +29,23 @@ type Booking = {
 
 export default function OrderDetailPage() {
   const params = useParams();
+  const router = useRouter();
+  const { toast } = useToast();
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+
+  const bookingId = params.id as string;
 
   useEffect(() => {
     const fetchBooking = async () => {
-      if (!params.id) return;
+      if (!bookingId) return;
       try {
-        const docRef = doc(db, 'bookings', params.id as string);
+        const docRef = doc(db, 'bookings', bookingId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setBooking(docSnap.data() as Booking);
+          setBooking({ id: docSnap.id, ...docSnap.data() } as Booking);
         } else {
           console.log("No such document!");
         }
@@ -47,7 +57,7 @@ export default function OrderDetailPage() {
     };
 
     fetchBooking();
-  }, [params.id]);
+  }, [bookingId]);
 
   const serviceDetails = useMemo(() => {
     if (!booking) return null;
@@ -80,11 +90,41 @@ export default function OrderDetailPage() {
     return timestamp.toDate().toLocaleDateString();
   }
 
+  const handleEstimateAction = async (action: 'accept' | 'reject') => {
+    if (!booking) return;
+
+    setIsActionLoading(true);
+    try {
+        let result;
+        if (action === 'accept') {
+            result = await acceptEstimate(booking.id);
+            if (result.success) {
+                toast({ title: "Estimate Accepted", description: "The manager has been notified to proceed." });
+                setBooking(prev => prev ? { ...prev, status: 'Pending Worker Assignment' } : null);
+            } else {
+                throw new Error(result.error);
+            }
+        } else { // reject
+            result = await rejectEstimate(booking.id);
+            if (result.success) {
+                toast({ title: "Estimate Rejected", description: "This booking has been canceled." });
+                setBooking(prev => prev ? { ...prev, status: 'Canceled' } : null);
+            } else {
+                throw new Error(result.error);
+            }
+        }
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Action Failed', description: error.message });
+    } finally {
+        setIsActionLoading(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Order Details</CardTitle>
-        <CardDescription>Tracking information for booking #{params.id}.</CardDescription>
+        <CardDescription>Tracking information for booking #{bookingId.substring(0,6)}.</CardDescription>
       </CardHeader>
       <CardContent className="grid md:grid-cols-2 gap-8">
         <div>
@@ -137,6 +177,18 @@ export default function OrderDetailPage() {
           <OrderTracker status={booking?.status} />
         </div>
       </CardContent>
+      {booking?.status === 'Pending Customer Approval' && (
+        <CardFooter className="border-t pt-4 flex justify-end gap-2">
+            <Button variant="destructive" onClick={() => handleEstimateAction('reject')} disabled={isActionLoading}>
+                {isActionLoading ? <Loader2 className="animate-spin" /> : <XCircle />}
+                Reject Estimate
+            </Button>
+            <Button onClick={() => handleEstimateAction('accept')} disabled={isActionLoading}>
+                {isActionLoading ? <Loader2 className="animate-spin" /> : <Check />}
+                Accept Estimate
+            </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }
