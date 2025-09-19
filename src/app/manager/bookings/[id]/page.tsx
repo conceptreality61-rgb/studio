@@ -7,7 +7,7 @@ import OrderTracker from "@/components/order-tracker";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
-import { doc, getDoc, Timestamp, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { doc, getDoc, Timestamp, collection, query, where, getDocs, orderBy } from 'firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck, Loader2, CheckCircle, XCircle, AlertTriangle, Calculator, ListTree } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -75,9 +75,9 @@ export default function ManagerBookingDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isReassigning, setIsReassigning] = useState(false);
-
-  const [fare, setFare] = useState<number | string>('');
   
+  const [itemCosts, setItemCosts] = useState<Record<string, number | string>>({});
+
   // A helper function to parse time strings like "09:00 AM" into a Date object
   const parseTime = (date: Date, timeStr: string) => {
     const [time, modifier] = timeStr.split(' ');
@@ -102,27 +102,24 @@ export default function ManagerBookingDetailPage() {
   const customerSelections = useMemo(() => {
     if (!booking || !serviceDetails) return [];
     
-    const selections: { subCategoryName: string; optionNames: string[], subCatId: string, selection: string | string[] }[] = [];
+    const selections: { subCategoryName: string; optionNames: string[], subCatId: string; optionId: string; }[] = [];
 
     serviceDetails.subCategories?.forEach(subCat => {
         const selection = booking.options[subCat.id];
         if (selection) {
-            const optionNames: string[] = [];
             const selectedIds = Array.isArray(selection) ? selection : [selection];
 
             selectedIds.forEach(id => {
                 const option = subCat.options.find(opt => opt.id === id);
-                if(option) optionNames.push(option.name);
+                if(option) {
+                    selections.push({
+                        subCategoryName: subCat.name,
+                        optionNames: [option.name], // Keep it simple for display
+                        subCatId: subCat.id,
+                        optionId: option.id,
+                    });
+                }
             });
-
-            if (optionNames.length > 0) {
-                 selections.push({
-                    subCategoryName: subCat.name,
-                    optionNames: optionNames,
-                    subCatId: subCat.id,
-                    selection: selection
-                });
-            }
         }
     });
 
@@ -131,43 +128,24 @@ export default function ManagerBookingDetailPage() {
   }, [booking, serviceDetails]);
 
   const calculatedEstimate = useMemo(() => {
-    if (!booking || !serviceDetails || !fare) return 0;
-    const numericFare = typeof fare === 'string' ? parseFloat(fare) : fare;
-    if (isNaN(numericFare)) return 0;
-
-    let total = 0;
-
-    const durationOption = booking.options['duration'];
-    if (durationOption && typeof durationOption === 'string') {
-        const durationHours = parseInt(durationOption.split('-')[0]);
-        total += durationHours * numericFare;
-    }
-
-    const numBathroomsOption = booking.options['num-bathrooms'];
-    if (numBathroomsOption && typeof numBathroomsOption === 'string') {
-        const numBathrooms = parseInt(numBathroomsOption.split('-')[0]);
-        total += numBathrooms * numericFare;
-    }
-    
-    const numTanksOption = booking.options['num-tanks'];
-     if (numTanksOption && typeof numTanksOption === 'string') {
-        const numTanks = parseInt(numTanksOption.split('-')[0]);
-        total += numTanks * numericFare;
-    }
-
-    // For services without clear multipliers, you might just use the fare as a base.
-    if (total === 0) {
-        return numericFare;
-    }
-    
-    return total;
-  }, [booking, serviceDetails, fare]);
+    return Object.values(itemCosts).reduce((total, cost) => {
+        const numericCost = typeof cost === 'string' ? parseFloat(cost) : cost;
+        return total + (isNaN(numericCost) ? 0 : numericCost);
+    }, 0);
+  }, [itemCosts]);
 
   useEffect(() => {
     if (calculatedEstimate > 0) {
         setEstimatedCharge(calculatedEstimate);
     }
   }, [calculatedEstimate]);
+  
+  const handleItemCostChange = (key: string, value: string) => {
+      setItemCosts(prev => ({
+          ...prev,
+          [key]: value === '' ? '' : parseFloat(value)
+      }));
+  }
 
 
   useEffect(() => {
@@ -383,22 +361,30 @@ export default function ManagerBookingDetailPage() {
                     <div className='flex flex-col md:flex-row gap-6'>
                         <div className="flex-1 space-y-3 rounded-md border bg-background/50 p-4">
                             <h4 className='font-semibold flex items-center gap-2'><ListTree className='w-4 h-4'/>Customer's Selections</h4>
-                            {customerSelections.length > 0 ? customerSelections.map(selection => (
-                                <div key={selection.subCategoryName} className='text-sm'>
-                                    <p className='text-muted-foreground'>{selection.subCategoryName}:</p>
-                                    <p className='font-medium'>{selection.optionNames.join(', ')}</p>
-                                </div>
-                            )) : <p className="text-sm text-muted-foreground">No specific options selected.</p>}
+                            {customerSelections.length > 0 ? customerSelections.map(selection => {
+                                const itemKey = `${selection.subCatId}-${selection.optionId}`;
+                                return (
+                                    <div key={itemKey} className='flex items-center justify-between gap-4'>
+                                        <Label htmlFor={itemKey} className='flex-1'>{selection.optionNames.join(', ')}</Label>
+                                        <div className='flex items-center gap-2'>
+                                            <span className="text-sm text-muted-foreground">Rs.</span>
+                                            <Input 
+                                                id={itemKey}
+                                                type="number" 
+                                                className="w-24"
+                                                placeholder="0.00"
+                                                value={itemCosts[itemKey] || ''}
+                                                onChange={(e) => handleItemCostChange(itemKey, e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                )
+                            }) : <p className="text-sm text-muted-foreground">No specific options selected.</p>}
                         </div>
                         <div className="flex-1 space-y-4">
                             <div>
-                                <Label htmlFor="fare">Fare (per hour/unit)</Label>
-                                <Input id="fare" type="number" value={fare} onChange={(e) => setFare(e.target.value)} placeholder="e.g., 150" />
-                                <p className="text-xs text-muted-foreground mt-1">Enter rate per hour or per unit (e.g., per bathroom).</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Calculated Subtotal:</p>
-                                <p className="text-xl font-bold">Rs. {calculatedEstimate.toFixed(2)}</p>
+                                <p className="text-sm text-muted-foreground">Calculated Total:</p>
+                                <p className="text-3xl font-bold">Rs. {calculatedEstimate.toFixed(2)}</p>
                             </div>
                         </div>
                     </div>
@@ -406,7 +392,7 @@ export default function ManagerBookingDetailPage() {
                         <div className="flex-1 space-y-2">
                            <Label htmlFor="estimated-charge">Final Estimated Charge (Rs.)</Label>
                            <Input id="estimated-charge" type="number" value={estimatedCharge} onChange={(e) => setEstimatedCharge(e.target.value)} placeholder="e.g., 500" className="max-w-[200px] text-lg font-bold" />
-                           <p className="text-xs text-muted-foreground">You can adjust the final price before sending.</p>
+                           <p className="text-xs text-muted-foreground mt-1">You can adjust the final price before sending.</p>
                         </div>
                         <Button onClick={handleSubmitEstimate} disabled={isSubmitting || !estimatedCharge}>
                             {isSubmitting && <Loader2 className="animate-spin" />} Send to Customer
