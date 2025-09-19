@@ -46,7 +46,7 @@ type Worker = {
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "success" | "warning" } = {
   'Pending Manager Approval': "destructive",
-  'Pending Worker Assignment': "info",
+  'Pending Worker Assignment': "success",
   'Pending Customer Approval': 'warning',
   'Worker Assigned': "info",
   'In Progress': "secondary",

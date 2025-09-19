@@ -34,11 +34,11 @@ type Booking = {
   estimatedCharge?: number;
 };
 
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "warning" } = {
+const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "warning" | "success" } = {
   Completed: "default",
   "Worker Assigned": "secondary",
   "Pending Manager Approval": "outline",
-  "Pending Worker Assignment": "info",
+  "Pending Worker Assignment": "success",
   "Pending Customer Approval": "warning",
   "In Progress": "secondary",
   Canceled: "destructive"
