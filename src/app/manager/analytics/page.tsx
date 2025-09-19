@@ -29,6 +29,7 @@ type BookingSummary = {
     serviceName: string;
     startDate: string | null;
     completionDate: string | null;
+    initialEstimate: number;
     finalCost: number;
     costDifference: number;
 }
@@ -53,7 +54,7 @@ export default function ManagerAnalyticsPage() {
                 completedBookings.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
 
 
-                const summariesData = completedBookings.map(data => {
+                const summariesData: BookingSummary[] = completedBookings.map(data => {
                     const findTimestamp = (status: string) => {
                         const entry = data.statusHistory?.find(h => h.status === status);
                         return entry ? entry.timestamp.toDate().toLocaleString() : null;
@@ -63,7 +64,7 @@ export default function ManagerAnalyticsPage() {
                     const completionDate = findTimestamp('Completed');
 
                     const initialEstimateEntry = data.statusHistory?.find(h => h.status === 'Pending Customer Approval');
-                    const initialEstimate = initialEstimateEntry && 'estimate' in initialEstimateEntry ? (initialEstimateEntry as any).estimate : data.initialEstimate || data.estimatedCharge || 0;
+                    const initialEstimate = initialEstimateEntry && 'estimate' in initialEstimateEntry ? (initialEstimateEntry as any).estimate : data.initialEstimate || 0;
                     
                     const finalCost = data.estimatedCharge || 0;
                     const costDifference = finalCost - initialEstimate;
@@ -73,6 +74,7 @@ export default function ManagerAnalyticsPage() {
                         serviceName: data.serviceName,
                         startDate,
                         completionDate,
+                        initialEstimate,
                         finalCost,
                         costDifference,
                     };
@@ -111,6 +113,7 @@ export default function ManagerAnalyticsPage() {
                         <TableHead>Service</TableHead>
                         <TableHead>Job Start Date</TableHead>
                         <TableHead>Job Completion Date</TableHead>
+                        <TableHead className="text-right">Estimated Cost</TableHead>
                         <TableHead className="text-right">Final Paid Amount</TableHead>
                         <TableHead className="text-right">Cost Difference</TableHead>
                     </TableRow>
@@ -122,6 +125,7 @@ export default function ManagerAnalyticsPage() {
                         <TableCell>{summary.serviceName}</TableCell>
                         <TableCell>{summary.startDate || 'N/A'}</TableCell>
                         <TableCell>{summary.completionDate || 'N/A'}</TableCell>
+                        <TableCell className="text-right">Rs. {summary.initialEstimate.toFixed(2)}</TableCell>
                         <TableCell className="text-right">Rs. {summary.finalCost.toFixed(2)}</TableCell>
                         <TableCell className="text-right">
                            <div className={`flex items-center justify-end gap-1 ${
