@@ -20,7 +20,6 @@ import Logo from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth, useRequireAuth } from '@/hooks/use-auth';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
 import { DoorOpen } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -66,15 +65,25 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
           <SidebarMenu>
             {managerNavItems.map((item) => (
               <SidebarMenuItem key={item.href}>
-                <Link href={item.href}>
+                {item.action === 'logout' ? (
                   <SidebarMenuButton
-                    isActive={isNavItemActive(item.href)}
+                    onClick={handleLogout}
                     tooltip={item.title}
                   >
                     <item.icon />
                     <span className="font-bold text-base">{item.title}</span>
                   </SidebarMenuButton>
-                </Link>
+                ) : (
+                  <Link href={item.href}>
+                    <SidebarMenuButton
+                      isActive={isNavItemActive(item.href)}
+                      tooltip={item.title}
+                    >
+                      <item.icon />
+                      <span className="font-bold text-base">{item.title}</span>
+                    </SidebarMenuButton>
+                  </Link>
+                )}
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
@@ -103,10 +112,6 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
              ) : (
                 <p>Not logged in</p>
              )}
-            <Button variant="ghost" className="w-full justify-start mt-2" onClick={handleLogout}>
-                <DoorOpen className="mr-2" />
-                <span>Log Out</span>
-            </Button>
            </div>
         </SidebarFooter>
       </Sidebar>

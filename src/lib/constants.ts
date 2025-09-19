@@ -231,6 +231,7 @@ export const managerNavItems: NavItem[] = [
   { title: 'Workers', href: '/manager/workers', icon: UserCheck },
   { title: 'Analytics', href: '/manager/analytics', icon: BarChart },
   { title: 'Settings', href: '/manager/settings', icon: Settings },
+  { title: 'Log Out', href: '#', icon: DoorOpen, action: 'logout' },
 ];
 
 export const customerNavItems: NavItem[] = [
