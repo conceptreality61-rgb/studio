@@ -38,12 +38,6 @@
       "imageHint": "vehicle cleaning"
     },
     {
-      "id": "pest-control",
-      "description": "A professional in protective gear spraying for pests in a kitchen.",
-      "imageUrl": "https://images.unsplash.com/photo-1603056023663-360e7b92a404?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwZXN0JTIwY29udHJvbHxlbnwwfHx8fDE3MjI0OTU0MzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "pest control"
-    },
-    {
       "id": "worker-profile",
       "description": "Profile picture of a service worker.",
       "imageUrl": "https://picsum.photos/seed/worker1/100/100",
@@ -66,12 +60,6 @@
       "description": "A custom background image for the hero section, uploaded by the user.",
       "imageUrl": "/my-hero-background.jpg",
       "imageHint": "home services collage"
-    },
-    {
-      "id": "pwa-install",
-      "description": "An illustration of a smartphone screen showing an app icon being installed.",
-      "imageUrl": "https://picsum.photos/seed/pwa/600/500",
-      "imageHint": "app install"
     }
   ]
 }

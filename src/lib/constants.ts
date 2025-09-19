@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
-import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck, Bath, Droplets, Sparkles, DoorOpen, Car, Bug } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, BarChart, Settings, Wallet, Star, Route, User, Home, Wrench, Calendar, MessageSquare, UserCheck, Bath, Droplets, Sparkles, DoorOpen, Car } from 'lucide-react';
 
 export type ServiceSubCategoryOption = {
   id: string;
@@ -207,41 +207,6 @@ export const services: Service[] = [
         ],
       },
     ]
-  },
-  {
-    id: 'pest-control',
-    name: 'Pest Control',
-    description: 'Effective and safe solutions to manage and eliminate pests.',
-    longDescription: 'Our certified pest control services help you reclaim your home from unwanted guests. We offer safe and effective treatments for a variety of common household pests, ensuring your environment is healthy and pest-free.',
-    icon: Bug,
-    imageId: 'pest-control',
-    subCategories: [
-      {
-        id: 'pest-type',
-        name: 'Pest Type (select all that apply)',
-        type: 'multiple',
-        options: [
-          { id: 'cockroaches', name: 'Cockroaches' },
-          { id: 'termites', name: 'Termites' },
-          { id: 'rodents', name: 'Rodents (Mice/Rats)' },
-          { id: 'ants', name: 'Ants' },
-          { id: 'bed-bugs', name: 'Bed Bugs' },
-          { id: 'mosquitoes', name: 'Mosquitoes' },
-        ],
-      },
-      {
-        id: 'property-size',
-        name: 'Property Size',
-        type: 'single',
-        options: [
-          { id: '1bhk', name: '1 BHK' },
-          { id: '2bhk', name: '2 BHK' },
-          { id: '3bhk', name: '3 BHK' },
-          { id: '4bhk-plus', name: '4 BHK or Larger' },
-          { id: 'office', name: 'Office / Commercial Space' },
-        ],
-      },
-    ],
   },
 ];
 
