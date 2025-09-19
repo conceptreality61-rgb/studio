@@ -35,13 +35,13 @@ type Booking = {
 };
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "warning" | "success" | "magenta" } = {
-  Completed: "default",
-  "Worker Assigned": "secondary",
-  "Pending Manager Approval": "outline",
-  "Pending Worker Assignment": "magenta",
+  "Pending Manager Approval": "destructive",
   "Pending Customer Approval": "warning",
+  "Pending Worker Assignment": "magenta",
+  "Worker Assigned": "info",
   "In Progress": "secondary",
-  Canceled: "destructive"
+  Completed: "success",
+  Canceled: "destructive",
 };
 
 

@@ -53,14 +53,14 @@ type Worker = {
     status: 'Active' | 'Inactive';
 };
 
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "warning" | "magenta" } = {
-  Completed: "default",
-  "Worker Assigned": "secondary",
-  "Pending Manager Approval": "outline",
-  "Pending Worker Assignment": "magenta",
+const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "warning" | "success" | "magenta" } = {
+  "Pending Manager Approval": "destructive",
   "Pending Customer Approval": "warning",
+  "Pending Worker Assignment": "magenta",
+  "Worker Assigned": "info",
   "In Progress": "secondary",
-  Canceled: "destructive"
+  Completed: "success",
+  Canceled: "destructive",
 };
 
 export default function ManagerBookingDetailPage() {
