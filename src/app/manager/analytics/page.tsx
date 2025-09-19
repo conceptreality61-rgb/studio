@@ -21,6 +21,7 @@ type Booking = {
   estimatedCharge?: number;
   statusHistory?: StatusHistoryItem[];
   initialEstimate?: number; 
+  createdAt: Timestamp;
 };
 
 type BookingSummary = {
@@ -42,14 +43,17 @@ export default function ManagerAnalyticsPage() {
             try {
                 const q = query(
                     collection(db, 'bookings'), 
-                    where('status', '==', 'Completed'),
-                    orderBy('createdAt', 'desc')
+                    where('status', '==', 'Completed')
                 );
                 const querySnapshot = await getDocs(q);
 
-                const summariesData = querySnapshot.docs.map(doc => {
-                    const data = doc.data() as Booking;
+                const completedBookings = querySnapshot.docs.map(doc => doc.data() as Booking);
+                
+                // Sort client-side
+                completedBookings.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
 
+
+                const summariesData = completedBookings.map(data => {
                     const findTimestamp = (status: string) => {
                         const entry = data.statusHistory?.find(h => h.status === status);
                         return entry ? entry.timestamp.toDate().toLocaleString() : null;
@@ -65,7 +69,7 @@ export default function ManagerAnalyticsPage() {
                     const costDifference = finalCost - initialEstimate;
 
                     return {
-                        id: doc.id,
+                        id: data.id,
                         serviceName: data.serviceName,
                         startDate,
                         completionDate,
