@@ -97,21 +97,6 @@ export const services: Service[] = [
           { id: '3-plus-balconies', name: '3+' },
         ],
       },
-      {
-        id: 'duration',
-        name: 'Select Duration',
-        type: 'single',
-        options: [
-          { id: '1-hour', name: '1 Hour' },
-          { id: '2-hours', name: '2 Hours' },
-          { id: '3-hours', name: '3 Hours' },
-          { id: '4-hours', name: '4 Hours' },
-          { id: '5-hours', name: '5 Hours' },
-          { id: '6-hours', name: '6 Hours' },
-          { id: '7-hours', name: '7 Hours' },
-          { id: '8-hours', name: '8 Hours (Full Day)' },
-        ],
-      },
     ],
   },
   {
@@ -152,16 +137,6 @@ export const services: Service[] = [
           { id: 'showers-tubs', name: 'Showers and Tubs' },
           { id: 'tile-grout', name: 'Tile and Grout' },
           { id: 'mirrors-fixtures', name: 'Mirrors and Fixtures' },
-        ],
-      },
-      {
-        id: 'duration',
-        name: 'Select Duration',
-        type: 'single',
-        options: [
-          { id: '1-hour', name: '1 Hour' },
-          { id: '2-hours', name: '2 Hours' },
-          { id: '3-hours', name: '3 Hours' },
         ],
       },
     ],
@@ -222,17 +197,6 @@ export const services: Service[] = [
           { id: 'pruning', name: 'Pruning' },
           { id: 'weeding', name: 'Weeding' },
           { id: 'planting', name: 'Planting Flowers' },
-        ],
-      },
-       {
-        id: 'duration',
-        name: 'Select Duration',
-        type: 'single',
-        options: [
-          { id: '1-hour', name: '1 Hour' },
-          { id: '2-hours', name: '2 Hours' },
-          { id: '3-hours', name: '3 Hours' },
-          { id: '4-hours', name: '4 Hours' },
         ],
       },
     ]
