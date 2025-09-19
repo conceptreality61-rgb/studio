@@ -119,7 +119,8 @@ export default function ReviewPage() {
             comment,
             createdAt: serverTimestamp(),
             serviceName: bookingInfo?.serviceName || 'Service',
-            userName: user.displayName
+            userName: user.displayName,
+            paidAmount: bookingInfo?.estimatedCharge || 0
         });
 
         toast({
@@ -162,9 +163,6 @@ export default function ReviewPage() {
           <CardTitle>Leave a Review</CardTitle>
           <CardDescription>
             Share your experience for booking #{bookingId.substring(0,6)}.
-            {bookingInfo?.estimatedCharge && (
-                <span> Final amount paid: <b>Rs. {bookingInfo.estimatedCharge}</b></span>
-            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
@@ -191,9 +189,17 @@ export default function ReviewPage() {
             </div>
             <div className='p-4 border rounded-md'>
               <h3 className='font-semibold mb-3'>Service Feedback</h3>
-              <div className='flex justify-between items-center'>
-                <Label>Quality of the service provided</Label>
-                <StarRating rating={serviceQuality} setRating={setServiceQuality} />
+              <div className='space-y-4'>
+                  <div className='flex justify-between items-center'>
+                    <Label>Quality of the service provided</Label>
+                    <StarRating rating={serviceQuality} setRating={setServiceQuality} />
+                  </div>
+                  {bookingInfo?.estimatedCharge && (
+                    <div className='flex justify-between items-center text-sm'>
+                       <Label>Final amount paid</Label>
+                       <span className="font-bold">Rs. {bookingInfo.estimatedCharge}</span>
+                   </div>
+                  )}
               </div>
             </div>
           </div>
@@ -219,4 +225,5 @@ export default function ReviewPage() {
     </Card>
   );
 }
+
 

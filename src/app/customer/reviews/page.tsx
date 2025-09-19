@@ -21,6 +21,7 @@ type Review = {
     appExperience: number;
     statusUpdateRating?: number;
     comment: string;
+    paidAmount?: number;
 };
 
 const renderStars = (rating: number) => {
@@ -93,6 +94,7 @@ export default function ReviewsPage() {
                                 <div>
                                     <h3 className="font-semibold">{review.serviceName}</h3>
                                     <p className="text-sm text-muted-foreground">{formatDate(review.createdAt)}</p>
+                                    {review.paidAmount && <p className="text-xs text-muted-foreground">Paid: Rs. {review.paidAmount}</p>}
                                 </div>
                                 <div className="text-right">
                                     <p className="font-semibold text-sm mb-1">Overall</p>
