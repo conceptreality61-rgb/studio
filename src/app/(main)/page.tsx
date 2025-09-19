@@ -48,6 +48,18 @@ export default function HomePage() {
     fetchTestimonials();
   }, []);
 
+  const formatTimestamp = (timestamp?: Timestamp) => {
+    if (!timestamp) return null;
+    return timestamp.toDate().toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+    });
+};
+
   return (
     <div className="flex flex-col">
       <section className="relative w-full h-[60vh] md:h-[70vh]">
@@ -169,7 +181,7 @@ export default function HomePage() {
                         <p className="text-muted-foreground italic flex-grow">"{testimonial.comment}"</p>
                         <div className="mt-4">
                           <p className="font-semibold">{testimonial.name}</p>
-                          <p className="text-sm text-muted-foreground">{testimonial.location}</p>
+                          <p className="text-sm text-muted-foreground">{formatTimestamp(testimonial.createdAt)}</p>
                         </div>
                       </CardContent>
                     </Card>
