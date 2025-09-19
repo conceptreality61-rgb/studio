@@ -214,7 +214,6 @@ export default function ManagerAnalyticsPage() {
                                     <TableHead className="text-right">Estimated Cost</TableHead>
                                     <TableHead className="text-right">Final Bill Amount</TableHead>
                                     <TableHead className="text-right">Customer Paid Amount</TableHead>
-                                    <TableHead className="text-right">Rating</TableHead>
                                     <TableHead className="text-center">Comment</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -229,9 +228,6 @@ export default function ManagerAnalyticsPage() {
                                     <TableCell className="text-right">Rs. {summary.finalCost.toFixed(2)}</TableCell>
                                     <TableCell className="text-right">
                                         {summary.customerPaidAmount !== undefined ? `Rs. ${summary.customerPaidAmount.toFixed(2)}` : <span className="text-muted-foreground text-xs">N/A</span>}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {renderStars(summary.rating)}
                                     </TableCell>
                                     <TableCell className="text-center">
                                         {summary.comment ? (
