@@ -49,16 +49,17 @@ export default function ReviewPage() {
   const params = useParams();
   const { toast } = useToast();
   
-  const [serviceQuality, setServiceQuality] = useState(0);
-  const [workerBehavior, setWorkerBehavior] = useState(0);
   const [appExperience, setAppExperience] = useState(0);
+  const [statusUpdateRating, setStatusUpdateRating] = useState(0);
+  const [workerBehavior, setWorkerBehavior] = useState(0);
+  const [serviceQuality, setServiceQuality] = useState(0);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const bookingId = params.id as string;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (serviceQuality === 0 || workerBehavior === 0 || appExperience === 0) {
+    if (serviceQuality === 0 || workerBehavior === 0 || appExperience === 0 || statusUpdateRating === 0) {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -74,15 +75,16 @@ export default function ReviewPage() {
     
     setIsSubmitting(true);
     try {
-        const overallRating = (serviceQuality + workerBehavior + appExperience) / 3;
+        const overallRating = (appExperience + statusUpdateRating + workerBehavior + serviceQuality) / 4;
 
         await setDoc(doc(db, 'reviews', `${bookingId}_${user.uid}`), {
             bookingId,
             userId: user.uid,
             rating: parseFloat(overallRating.toFixed(2)),
-            serviceQuality: serviceQuality,
-            workerBehavior: workerBehavior,
             appExperience: appExperience,
+            statusUpdateRating: statusUpdateRating,
+            workerBehavior: workerBehavior,
+            serviceQuality: serviceQuality,
             comment,
             createdAt: serverTimestamp(),
             serviceName: 'Service', // In a real app, you'd fetch this from the booking
@@ -119,9 +121,15 @@ export default function ReviewPage() {
           <div className="space-y-6">
             <div className='p-4 border rounded-md'>
               <h3 className='font-semibold mb-3'>App & Booking Experience</h3>
-              <div className='flex justify-between items-center'>
-                <Label>Ease of using the app and booking process</Label>
-                <StarRating rating={appExperience} setRating={setAppExperience} />
+              <div className='space-y-4'>
+                <div className='flex justify-between items-center'>
+                    <Label>Ease of using the app and booking process</Label>
+                    <StarRating rating={appExperience} setRating={setAppExperience} />
+                </div>
+                <div className='flex justify-between items-center'>
+                    <Label>Timeliness of service status update messages</Label>
+                    <StarRating rating={statusUpdateRating} setRating={setStatusUpdateRating} />
+                </div>
               </div>
             </div>
             <div className='p-4 border rounded-md'>

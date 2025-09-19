@@ -19,6 +19,7 @@ type Review = {
     serviceQuality: number;
     workerBehavior: number;
     appExperience: number;
+    statusUpdateRating?: number;
     comment: string;
 };
 
@@ -101,16 +102,22 @@ export default function ReviewsPage() {
                             {review.comment && <p className="text-muted-foreground italic pt-1">"{review.comment}"</p>}
                              <div className="text-sm space-y-2 pt-2">
                                 <div className="flex items-center justify-between">
-                                    <p className="text-muted-foreground">Service Quality</p>
-                                    {renderStars(review.serviceQuality)}
+                                    <p className="text-muted-foreground">App Experience</p>
+                                    {renderStars(review.appExperience)}
                                 </div>
+                                {review.statusUpdateRating && (
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-muted-foreground">Status Update Timeliness</p>
+                                        {renderStars(review.statusUpdateRating)}
+                                    </div>
+                                )}
                                 <div className="flex items-center justify-between">
                                     <p className="text-muted-foreground">Worker Behavior</p>
                                     {renderStars(review.workerBehavior)}
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <p className="text-muted-foreground">App Experience</p>
-                                    {renderStars(review.appExperience)}
+                                    <p className="text-muted-foreground">Service Quality</p>
+                                    {renderStars(review.serviceQuality)}
                                 </div>
                             </div>
                         </div>
