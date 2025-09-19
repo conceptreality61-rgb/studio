@@ -21,12 +21,14 @@ type Booking = {
   estimatedCharge?: number;
 };
 
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | 'magenta' } = {
-  Completed: "default",
-  "In Progress": "secondary",
-  "Pending Manager Approval": "outline",
+const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "success" | "warning" | "magenta" } = {
+  "Pending Manager Approval": "destructive",
+  "Pending Customer Approval": "warning",
   "Pending Worker Assignment": "magenta",
-  Canceled: "destructive"
+  "Worker Assigned": "info",
+  "In Progress": "secondary",
+  Completed: "success",
+  Canceled: "destructive",
 };
 
 export default function CustomerDashboardPage() {
