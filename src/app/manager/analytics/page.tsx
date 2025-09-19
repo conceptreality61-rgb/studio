@@ -17,6 +17,14 @@ import {
 } from "@/components/ui/tooltip"
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type StatusHistoryItem = {
   status: string;
@@ -58,7 +66,6 @@ type BookingSummary = {
     initialEstimate: number;
     finalCost: number;
     customerPaidAmount?: number;
-    rating?: number;
     comment?: string;
 }
 
@@ -96,6 +103,7 @@ export default function ManagerAnalyticsPage() {
     const [averageRatings, setAverageRatings] = useState<AverageRatings | null>(null);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+    const [selectedReview, setSelectedReview] = useState<Review | null>(null);
 
     useEffect(() => {
         const fetchAnalyticsData = async () => {
@@ -147,7 +155,6 @@ export default function ManagerAnalyticsPage() {
                         initialEstimate,
                         finalCost,
                         customerPaidAmount: review?.paidAmount,
-                        rating: review?.rating,
                         comment: review?.comment,
                     };
                 });
@@ -326,7 +333,15 @@ export default function ManagerAnalyticsPage() {
                                             <TableCell>{review.serviceName}</TableCell>
                                             <TableCell>{review.userName}</TableCell>
                                             <TableCell>{formatDate(review.createdAt)}</TableCell>
-                                            <TableCell className="text-right">{renderStars(review.rating)}</TableCell>
+                                            <TableCell className="text-right">
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="ghost" onClick={() => setSelectedReview(review)}>
+                                                            {renderStars(review.rating)}
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                </AlertDialog>
+                                            </TableCell>
                                             <TableCell className="max-w-sm">
                                                 <p className='truncate italic text-muted-foreground'>"{review.comment}"</p>
                                             </TableCell>
@@ -343,6 +358,56 @@ export default function ManagerAnalyticsPage() {
                 )}
             </CardContent>
         </Card>
+        
+        {selectedReview && (
+            <AlertDialog open={!!selectedReview} onOpenChange={(isOpen) => !isOpen && setSelectedReview(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Review for {selectedReview.serviceName}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            From {selectedReview.userName} on {formatDate(selectedReview.createdAt)}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="flex items-center justify-between">
+                            <p className="font-semibold">Overall Rating</p>
+                            {renderStars(selectedReview.rating)}
+                        </div>
+                        <Separator />
+                        <p className="italic text-muted-foreground">"{selectedReview.comment || 'No comment provided.'}"</p>
+                        <Separator />
+                        <div className="text-sm space-y-2 pt-2">
+                            <h4 className="font-semibold mb-2">Rating Breakdown</h4>
+                             <div className="flex items-center justify-between">
+                                <p className="text-muted-foreground">App Experience</p>
+                                {renderStars(selectedReview.appExperience)}
+                            </div>
+                            {selectedReview.statusUpdateRating && (
+                                <div className="flex items-center justify-between">
+                                    <p className="text-muted-foreground">Status Update Timeliness</p>
+                                    {renderStars(selectedReview.statusUpdateRating)}
+                                </div>
+                            )}
+                            <div className="flex items-center justify-between">
+                                <p className="text-muted-foreground">Worker Behavior</p>
+                                {renderStars(selectedReview.workerBehavior)}
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <p className="text-muted-foreground">Service Quality</p>
+                                {renderStars(selectedReview.serviceQuality)}
+                            </div>
+                            {selectedReview.serviceCost && (
+                                <div className="flex items-center justify-between">
+                                    <p className="text-muted-foreground">Service Cost</p>
+                                    {renderStars(selectedReview.serviceCost)}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </AlertDialogContent>
+            </AlertDialog>
+        )}
     </div>
   );
-}
+
+    
