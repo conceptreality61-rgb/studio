@@ -168,7 +168,7 @@ export default function ReviewPage() {
         <CardHeader>
           <CardTitle>Leave a Review</CardTitle>
           <CardDescription>
-            Share your experience for booking #{bookingId.substring(0,6)}.
+            Share your experience for booking #{bookingId.substring(0,6)}. Feel free to share your valuable feedback for service improvement.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
