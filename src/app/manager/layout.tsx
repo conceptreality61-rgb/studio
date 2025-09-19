@@ -47,7 +47,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
     return pathname.startsWith(itemHref);
   }
 
-  if (!isClient || loading || !user) {
+  if (!isClient || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Skeleton className="h-screen w-full" />
