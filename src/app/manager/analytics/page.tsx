@@ -8,7 +8,13 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowUp, ArrowDown, Minus, Star } from 'lucide-react';
+import { ArrowUp, ArrowDown, Minus, Star, MessageSquare } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 type StatusHistoryItem = {
   status: string;
@@ -27,6 +33,7 @@ type Booking = {
 type Review = {
     bookingId: string;
     rating: number;
+    comment: string;
 };
 
 type BookingSummary = {
@@ -38,6 +45,7 @@ type BookingSummary = {
     finalCost: number;
     costDifference: number;
     rating?: number;
+    comment?: string;
 }
 
 const renderStars = (rating?: number) => {
@@ -72,9 +80,9 @@ export default function ManagerAnalyticsPage() {
                 const reviewsQuery = query(collection(db, 'reviews'));
                 const reviewsSnapshot = await getDocs(reviewsQuery);
                 const reviewsData = reviewsSnapshot.docs.map(doc => doc.data() as Review);
-                const reviewsMap = new Map<string, number>();
+                const reviewsMap = new Map<string, Review>();
                 reviewsData.forEach(review => {
-                    reviewsMap.set(review.bookingId, review.rating);
+                    reviewsMap.set(review.bookingId, review);
                 });
 
 
@@ -96,7 +104,7 @@ export default function ManagerAnalyticsPage() {
                     
                     const finalCost = data.estimatedCharge || 0;
                     const costDifference = finalCost - initialEstimate;
-                    const rating = reviewsMap.get(data.id);
+                    const review = reviewsMap.get(data.id);
 
                     return {
                         id: data.id,
@@ -106,7 +114,8 @@ export default function ManagerAnalyticsPage() {
                         initialEstimate,
                         finalCost,
                         costDifference,
-                        rating,
+                        rating: review?.rating,
+                        comment: review?.comment,
                     };
                 });
                 
@@ -129,57 +138,76 @@ export default function ManagerAnalyticsPage() {
         <CardDescription>An overview of completed jobs, their timelines, and cost analysis.</CardDescription>
       </CardHeader>
       <CardContent>
-        {loading ? (
-            <div className="space-y-2">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-            </div>
-        ) : summaries.length > 0 ? (
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Booking ID</TableHead>
-                        <TableHead>Service</TableHead>
-                        <TableHead>Job Start Date</TableHead>
-                        <TableHead>Job Completion Date</TableHead>
-                        <TableHead className="text-right">Estimated Cost</TableHead>
-                        <TableHead className="text-right">Final Paid Amount</TableHead>
-                        <TableHead className="text-right">Cost Difference</TableHead>
-                        <TableHead className="text-right">Rating</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {summaries.map((summary) => (
-                    <TableRow key={summary.id}>
-                        <TableCell className="font-medium">{summary.id.substring(0,6)}</TableCell>
-                        <TableCell>{summary.serviceName}</TableCell>
-                        <TableCell>{summary.startDate || 'N/A'}</TableCell>
-                        <TableCell>{summary.completionDate || 'N/A'}</TableCell>
-                        <TableCell className="text-right">Rs. {summary.initialEstimate.toFixed(2)}</TableCell>
-                        <TableCell className="text-right">Rs. {summary.finalCost.toFixed(2)}</TableCell>
-                        <TableCell className="text-right">
-                           <div className={`flex items-center justify-end gap-1 ${
-                               summary.costDifference > 0 ? 'text-destructive' : 
-                               summary.costDifference < 0 ? 'text-green-600' : 'text-muted-foreground'
-                           }`}>
-                               {summary.costDifference > 0 ? <ArrowUp size={14}/> : 
-                                summary.costDifference < 0 ? <ArrowDown size={14}/> : <Minus size={14}/>}
-                               Rs. {Math.abs(summary.costDifference).toFixed(2)}
-                           </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                            {renderStars(summary.rating)}
-                        </TableCell>
-                    </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        ) : (
-             <div className="text-center text-muted-foreground py-12">
-                <p>No completed bookings found to generate a summary.</p>
-            </div>
-        )}
+        <TooltipProvider>
+            {loading ? (
+                <div className="space-y-2">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                </div>
+            ) : summaries.length > 0 ? (
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Booking ID</TableHead>
+                            <TableHead>Service</TableHead>
+                            <TableHead>Job Start Date</TableHead>
+                            <TableHead>Job Completion Date</TableHead>
+                            <TableHead className="text-right">Estimated Cost</TableHead>
+                            <TableHead className="text-right">Final Paid Amount</TableHead>
+                            <TableHead className="text-right">Cost Difference</TableHead>
+                            <TableHead className="text-right">Rating</TableHead>
+                            <TableHead className="text-center">Comment</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {summaries.map((summary) => (
+                        <TableRow key={summary.id}>
+                            <TableCell className="font-medium">{summary.id.substring(0,6)}</TableCell>
+                            <TableCell>{summary.serviceName}</TableCell>
+                            <TableCell>{summary.startDate || 'N/A'}</TableCell>
+                            <TableCell>{summary.completionDate || 'N/A'}</TableCell>
+                            <TableCell className="text-right">Rs. {summary.initialEstimate.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">Rs. {summary.finalCost.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">
+                            <div className={`flex items-center justify-end gap-1 ${
+                                summary.costDifference > 0 ? 'text-destructive' : 
+                                summary.costDifference < 0 ? 'text-green-600' : 'text-muted-foreground'
+                            }`}>
+                                {summary.costDifference > 0 ? <ArrowUp size={14}/> : 
+                                    summary.costDifference < 0 ? <ArrowDown size={14}/> : <Minus size={14}/>}
+                                Rs. {Math.abs(summary.costDifference).toFixed(2)}
+                            </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                                {renderStars(summary.rating)}
+                            </TableCell>
+                            <TableCell className="text-center">
+                                {summary.comment ? (
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                                <MessageSquare className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="max-w-xs">{summary.comment}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                ) : (
+                                    <span className="text-muted-foreground text-xs">N/A</span>
+                                )}
+                            </TableCell>
+                        </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            ) : (
+                <div className="text-center text-muted-foreground py-12">
+                    <p>No completed bookings found to generate a summary.</p>
+                </div>
+            )}
+        </TooltipProvider>
       </CardContent>
     </Card>
   );
