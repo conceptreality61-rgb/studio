@@ -21,7 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, updateDoc, Timestamp, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, Timestamp, orderBy, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { acceptEstimate, rejectEstimate } from './actions';
 
@@ -136,7 +136,10 @@ export default function BookingsPage() {
     if (bookingToCancel) {
         try {
             const bookingRef = doc(db, 'bookings', bookingToCancel);
-            await updateDoc(bookingRef, { status: 'Canceled' });
+            await updateDoc(bookingRef, {
+                status: 'Canceled',
+                statusHistory: arrayUnion({ status: 'Canceled', timestamp: serverTimestamp() }),
+            });
 
             setBookings(currentBookings =>
                 currentBookings.map(b =>

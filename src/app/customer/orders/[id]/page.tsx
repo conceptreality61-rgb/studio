@@ -15,6 +15,11 @@ import { Loader2, Check, XCircle, Phone, User } from 'lucide-react';
 import { acceptEstimate, rejectEstimate } from '@/app/customer/bookings/actions';
 import { useToast } from '@/hooks/use-toast';
 
+type StatusHistoryItem = {
+  status: string;
+  timestamp: Timestamp;
+};
+
 type Booking = {
   id: string;
   serviceId: string;
@@ -26,6 +31,7 @@ type Booking = {
   status: string;
   estimatedCharge?: number;
   options: Record<string, string | string[]>;
+  statusHistory?: StatusHistoryItem[];
 };
 
 type Worker = {
@@ -209,7 +215,7 @@ export default function OrderDetailPage() {
         </div>
         <div>
           <h3 className="font-semibold mb-4">Live Status</h3>
-          <OrderTracker status={booking?.status} />
+          <OrderTracker status={booking?.status} statusHistory={booking?.statusHistory} />
         </div>
       </CardContent>
       {booking?.status === 'Pending Customer Approval' && (

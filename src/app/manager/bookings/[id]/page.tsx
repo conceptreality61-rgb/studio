@@ -21,6 +21,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { services, ServiceSubCategory, ServiceSubCategoryOption } from '@/lib/constants';
 
+type StatusHistoryItem = {
+  status: string;
+  timestamp: Timestamp;
+};
+
 type Booking = {
   id: string;
   serviceId: string;
@@ -36,6 +41,7 @@ type Booking = {
   canceledWorkerIds?: string[];
   estimatedCharge?: number;
   options: Record<string, string | string[]>;
+  statusHistory?: StatusHistoryItem[];
 };
 
 type CustomerProfile = {
@@ -579,7 +585,7 @@ export default function ManagerBookingDetailPage() {
                 <CardDescription>Follow the progress of the service booking.</CardDescription>
             </CardHeader>
             <CardContent>
-                <OrderTracker status={booking?.status} />
+                <OrderTracker status={booking?.status} statusHistory={booking?.statusHistory} />
             </CardContent>
         </Card>
     </div>
