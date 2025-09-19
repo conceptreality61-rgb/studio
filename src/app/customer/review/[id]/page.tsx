@@ -14,24 +14,55 @@ import { db } from '@/lib/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '@/hooks/use-auth';
 
+const StarRating = ({
+  rating,
+  setRating,
+}: {
+  rating: number;
+  setRating: (rating: number) => void;
+}) => {
+  const [hoverRating, setHoverRating] = useState(0);
+
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          className={cn(
+            'h-8 w-8 cursor-pointer transition-colors',
+            (hoverRating || rating) >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+          )}
+          onMouseEnter={() => setHoverRating(star)}
+          onMouseLeave={() => setHoverRating(0)}
+          onClick={() => setRating(star)}
+        />
+      ))}
+    </div>
+  );
+};
+
+
 export default function ReviewPage() {
   const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
+  
+  const [overallRating, setOverallRating] = useState(0);
+  const [punctualityRating, setPunctualityRating] = useState(0);
+  const [professionalismRating, setProfessionalismRating] = useState(0);
+  const [qualityRating, setQualityRating] = useState(0);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const bookingId = params.id as string;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (rating === 0) {
+    if (overallRating === 0 || punctualityRating === 0 || professionalismRating === 0 || qualityRating === 0) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Please select a star rating.',
+        description: 'Please provide a rating for all categories.',
       });
       return;
     }
@@ -46,7 +77,10 @@ export default function ReviewPage() {
         await setDoc(doc(db, 'reviews', `${bookingId}_${user.uid}`), {
             bookingId,
             userId: user.uid,
-            rating,
+            rating: overallRating,
+            punctuality: punctualityRating,
+            professionalism: professionalismRating,
+            quality: qualityRating,
             comment,
             createdAt: serverTimestamp(),
             serviceName: 'Service', // In a real app, you'd fetch this from the booking
@@ -77,28 +111,29 @@ export default function ReviewPage() {
       <form onSubmit={handleSubmit}>
         <CardHeader>
           <CardTitle>Leave a Review</CardTitle>
-          <CardDescription>Share your experience for booking #{bookingId}. How did we do?</CardDescription>
+          <CardDescription>Share your experience for booking #{bookingId.substring(0,6)}. How did we do?</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label>Your Rating</Label>
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={cn(
-                    'h-8 w-8 cursor-pointer transition-colors',
-                    (hoverRating || rating) >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
-                  )}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  onClick={() => setRating(star)}
-                />
-              ))}
+        <CardContent className="space-y-8">
+          <div className="space-y-4">
+            <div className='flex justify-between items-center'>
+              <Label>Worker's Punctuality</Label>
+              <StarRating rating={punctualityRating} setRating={setPunctualityRating} />
+            </div>
+             <div className='flex justify-between items-center'>
+              <Label>Worker's Professionalism</Label>
+              <StarRating rating={professionalismRating} setRating={setProfessionalismRating} />
+            </div>
+             <div className='flex justify-between items-center'>
+              <Label>Quality of Service</Label>
+              <StarRating rating={qualityRating} setRating={setQualityRating} />
+            </div>
+            <div className='flex justify-between items-center'>
+              <Label className='font-bold'>Overall Experience</Label>
+              <StarRating rating={overallRating} setRating={setOverallRating} />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="comment">Your Comments</Label>
+            <Label htmlFor="comment">Your Comments (Optional)</Label>
             <Textarea
               id="comment"
               placeholder="Tell us more about your experience..."

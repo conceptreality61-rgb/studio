@@ -16,6 +16,9 @@ type Review = {
     serviceName: string;
     createdAt: Timestamp;
     rating: number;
+    punctuality: number;
+    professionalism: number;
+    quality: number;
     comment: string;
 };
 
@@ -47,7 +50,8 @@ export default function ReviewsPage() {
       try {
         const q = query(
           collection(db, 'reviews'),
-          where('userId', '==', user.uid)
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc')
         );
         const querySnapshot = await getDocs(q);
         const userReviews = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
@@ -76,22 +80,39 @@ export default function ReviewsPage() {
       <CardContent>
         {loading ? (
             <div className="space-y-6">
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
             </div>
         ) : reviews.length > 0 ? (
             <div className="space-y-6">
                 {reviews.map((review, index) => (
                     <React.Fragment key={review.id}>
-                        <div className="space-y-2">
+                        <div className="space-y-4">
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="font-semibold">{review.serviceName}</h3>
                                     <p className="text-sm text-muted-foreground">{formatDate(review.createdAt)}</p>
                                 </div>
-                                {renderStars(review.rating)}
+                                <div className="text-right">
+                                    <p className="font-semibold text-sm mb-1">Overall</p>
+                                    {renderStars(review.rating)}
+                                </div>
                             </div>
-                            <p className="text-muted-foreground pt-1">{review.comment}</p>
+                            {review.comment && <p className="text-muted-foreground italic pt-1">"{review.comment}"</p>}
+                             <div className="text-sm space-y-2 pt-2">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-muted-foreground">Punctuality</p>
+                                    {renderStars(review.punctuality)}
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-muted-foreground">Professionalism</p>
+                                    {renderStars(review.professionalism)}
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-muted-foreground">Service Quality</p>
+                                    {renderStars(review.quality)}
+                                </div>
+                            </div>
                         </div>
                         {index < reviews.length - 1 && <Separator />}
                     </React.Fragment>
