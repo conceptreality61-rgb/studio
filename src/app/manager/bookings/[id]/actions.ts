@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/firebase';
-import { doc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, serverTimestamp, getDoc } from 'firebase/firestore';
 
 export async function submitEstimate(bookingId: string, estimatedCharge: number) {
   try {
@@ -27,16 +27,29 @@ export async function assignWorkerToBooking(
   try {
     const bookingRef = doc(db, 'bookings', bookingId);
     
+    const docSnap = await getDoc(bookingRef);
+    if (!docSnap.exists()) {
+      throw new Error("Booking not found");
+    }
+    const existingData = docSnap.data();
+
+    const newStatusHistory = [
+      ...(existingData.statusHistory || []), 
+      { status: 'Worker Assigned', timestamp: serverTimestamp() }
+    ];
+
+    const newCanceledWorkerIds = [...(existingData.canceledWorkerIds || [])];
+    if (previousWorkerId) {
+      newCanceledWorkerIds.push(previousWorkerId);
+    }
+    
     const updateData: { [key: string]: any } = {
       workerId: workerId,
       workerName: workerName,
       status: 'Worker Assigned',
-      statusHistory: arrayUnion({ status: 'Worker Assigned', timestamp: serverTimestamp() })
+      statusHistory: newStatusHistory,
+      canceledWorkerIds: newCanceledWorkerIds,
     };
-
-    if (previousWorkerId) {
-      updateData.canceledWorkerIds = arrayUnion(previousWorkerId);
-    }
 
     await updateDoc(bookingRef, updateData);
 
@@ -63,15 +76,31 @@ export async function acceptJob(bookingId: string) {
 export async function refuseJob(bookingId: string, workerId: string) {
   try {
     const bookingRef = doc(db, 'bookings', bookingId);
-    await updateDoc(bookingRef, { 
-        status: 'Pending Manager Approval',
-        workerId: null,
-        workerName: null,
-        refusedBy: arrayUnion(workerId),
-        statusHistory: arrayUnion({ status: 'Pending Manager Approval', timestamp: serverTimestamp(), reason: `Refused by ${workerId}` }),
+
+    const docSnap = await getDoc(bookingRef);
+    if (!docSnap.exists()) {
+      throw new Error("Booking not found");
+    }
+    const existingData = docSnap.data();
+
+    const newStatusHistory = [
+      ...(existingData.statusHistory || []),
+      { status: 'Pending Manager Approval', timestamp: serverTimestamp(), reason: `Refused by ${workerId}` }
+    ];
+    
+    const newRefusedBy = [...(existingData.refusedBy || []), workerId];
+
+    await updateDoc(bookingRef, {
+      status: 'Pending Manager Approval',
+      workerId: null,
+      workerName: null,
+      refusedBy: newRefusedBy,
+      statusHistory: newStatusHistory,
     });
+
     return { success: true };
   } catch (error: any) {
+    console.error('Error refusing job:', error);
     return { success: false, error: 'Failed to refuse job.' };
   }
 }
@@ -90,5 +119,4 @@ export async function completeJob(bookingId: string, finalCharge: number) {
     return { success: false, error: error.message };
   }
 }
-
     
