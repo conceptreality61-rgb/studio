@@ -47,7 +47,7 @@ export default function ManagerAnalyticsPage() {
                 );
                 const querySnapshot = await getDocs(q);
 
-                const completedBookings = querySnapshot.docs.map(doc => doc.data() as Booking);
+                const completedBookings = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
                 
                 // Sort client-side
                 completedBookings.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
