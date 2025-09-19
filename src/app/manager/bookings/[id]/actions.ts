@@ -81,12 +81,12 @@ export async function completeJob(bookingId: string, finalCharge: number) {
     const bookingRef = doc(db, 'bookings', bookingId);
     await updateDoc(bookingRef, {
       status: 'Completed',
-      estimatedCharge: finalCharge,
+      estimatedCharge: finalCharge, // This field stores the final charge
       statusHistory: arrayUnion({ status: 'Completed', timestamp: serverTimestamp() }),
     });
     return { success: true };
   } catch (error: any) {
     console.error('Error completing job:', error);
-    return { success: false, error: error.message || 'Failed to complete job.' };
+    return { success: false, error: 'Failed to complete job. Please check the logs.' };
   }
 }
