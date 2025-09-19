@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -510,7 +511,15 @@ export default function ManagerBookingDetailPage() {
                     </div>
                 ) : booking ? (
                     <div className="space-y-3 text-sm">
-                        <div className="flex items-center gap-3"><Briefcase className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{booking.serviceName}</span></div>
+                        <div className="flex items-start gap-3">
+                          <Briefcase className="w-4 h-4 text-muted-foreground mt-1" /> 
+                          <div>
+                            <span className="font-medium">{booking.serviceName}</span>
+                            <div className="text-xs text-muted-foreground">
+                              {customerSelections.map(s => s.optionNames.join(', ')).join(' • ')}
+                            </div>
+                          </div>
+                        </div>
                         <div className="flex items-center gap-3"><Calendar className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{formatDate(booking.date)}</span></div>
                         <div className="flex items-center gap-3"><Clock className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{booking.time}</span></div>
                         <div className="flex items-center gap-3"><UserCheck className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{booking.workerName || 'Not assigned yet'}</span></div>
