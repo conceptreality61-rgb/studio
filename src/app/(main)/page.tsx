@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useEffect, useState } from 'react';
-import { collection, getDocs, orderBy, query, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, Timestamp, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -26,11 +26,23 @@ type Testimonial = {
   createdAt: Timestamp;
 };
 
+type Review = {
+  id: string;
+  userName: string;
+  userId: string;
+  rating: number;
+  comment: string;
+  createdAt: Timestamp;
+  serviceName: string;
+}
+
 
 export default function HomePage() {
   const heroImage = PlaceHolderImages.find((p) => p.id === 'hero');
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loadingTestimonials, setLoadingTestimonials] = useState(true);
+  const [latestReviews, setLatestReviews] = useState<Review[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -45,7 +57,22 @@ export default function HomePage() {
         setLoadingTestimonials(false);
       }
     };
+    
+    const fetchLatestReviews = async () => {
+        try {
+            const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(3));
+            const querySnapshot = await getDocs(q);
+            const fetchedReviews = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
+            setLatestReviews(fetchedReviews);
+        } catch (error) {
+            console.error("Error fetching latest reviews:", error);
+        } finally {
+            setLoadingReviews(false);
+        }
+    };
+
     fetchTestimonials();
+    fetchLatestReviews();
   }, []);
 
   const formatTimestamp = (timestamp?: Timestamp) => {
@@ -59,6 +86,13 @@ export default function HomePage() {
         hour12: true,
     });
 };
+
+  const renderStars = (rating: number) => {
+    return [...Array(5)].map((_, i) => (
+        <Star key={i} className={`h-5 w-5 ${i < Math.floor(rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+    ));
+  };
+
 
   return (
     <div className="flex flex-col">
@@ -143,7 +177,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="testimonials" className="py-16 md:py-24 bg-secondary">
+      <section id="testimonials" className="py-16 md:py-24 bg-background">
         <div className="container">
           <div className="text-center">
             <h2 className="text-3xl md:text-4xl font-headline font-bold">What Our Customers Say</h2>
@@ -197,6 +231,59 @@ export default function HomePage() {
                     <p>No testimonials yet. Check back soon!</p>
                 </div>
            )}
+        </div>
+      </section>
+
+       <section id="reviews" className="py-16 md:py-24 bg-secondary">
+        <div className="container">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-headline font-bold">Latest Reviews</h2>
+            <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
+              See what people are saying about our services right now.
+            </p>
+          </div>
+          <div className="mt-12">
+            {loadingReviews ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="h-48 w-full" />
+                </div>
+            ) : latestReviews.length > 0 ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {latestReviews.map((review) => (
+                       <Card key={review.id}>
+                           <CardContent className="pt-6">
+                               <div className="flex items-start gap-4">
+                                   <Avatar>
+                                       <AvatarImage src={`https://i.pravatar.cc/128?u=${review.userId}`} />
+                                       <AvatarFallback>{review.userName?.charAt(0).toUpperCase()}</AvatarFallback>
+                                   </Avatar>
+                                   <div>
+                                       <div className="flex items-center justify-between w-full">
+                                            <p className="font-semibold">{review.userName}</p>
+                                            <div className="flex items-center">{renderStars(review.rating)}</div>
+                                       </div>
+                                       <p className="text-sm text-muted-foreground">{review.serviceName}</p>
+                                   </div>
+                               </div>
+                               <p className="mt-4 text-muted-foreground italic">"{review.comment}"</p>
+                               <p className="text-right text-xs text-muted-foreground mt-4">{formatTimestamp(review.createdAt)}</p>
+                           </CardContent>
+                       </Card>
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center text-muted-foreground py-12">
+                    <p>No reviews have been submitted yet.</p>
+                </div>
+            )}
+            </div>
+             <div className="text-center mt-12">
+                <Button asChild variant="outline">
+                    <Link href="/reviews">View All Reviews</Link>
+                </Button>
+            </div>
         </div>
       </section>
     </div>
