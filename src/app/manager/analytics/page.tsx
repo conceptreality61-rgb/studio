@@ -15,6 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { Button } from '@/components/ui/button';
 
 type StatusHistoryItem = {
   status: string;
