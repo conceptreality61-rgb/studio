@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
 import { doc, getDoc, Timestamp, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck, Loader2, CheckCircle, XCircle, AlertTriangle, Calculator } from 'lucide-react';
+import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck, Loader2, CheckCircle, XCircle, AlertTriangle, Calculator, ListTree } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addHours, differenceInHours, startOfDay, endOfDay } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { services } from '@/lib/constants';
+import { services, ServiceSubCategory, ServiceSubCategoryOption } from '@/lib/constants';
 
 type Booking = {
   id: string;
@@ -93,48 +93,94 @@ export default function ManagerBookingDetailPage() {
     return newDate;
   };
 
-  const calculatedEstimate = useMemo(() => {
-    if (!booking) return 0;
-    const service = services.find(s => s.id === booking.serviceId);
-    if (!service) return 0;
+  const serviceDetails = useMemo(() => {
+    if (!booking) return null;
+    return services.find(s => s.id === booking.serviceId);
+  }, [booking]);
 
-    let total = service.price; // Start with base price
+  const customerSelections = useMemo(() => {
+    if (!booking || !serviceDetails) return [];
+    
+    const selections: { subCategoryName: string; optionNames: string[] }[] = [];
+
+    serviceDetails.subCategories?.forEach(subCat => {
+        const selection = booking.options[subCat.id];
+        if (selection) {
+            const optionNames: string[] = [];
+            const selectedIds = Array.isArray(selection) ? selection : [selection];
+
+            selectedIds.forEach(id => {
+                const option = subCat.options.find(opt => opt.id === id);
+                if(option) optionNames.push(option.name);
+            });
+
+            if (optionNames.length > 0) {
+                 selections.push({
+                    subCategoryName: subCat.name,
+                    optionNames: optionNames,
+                });
+            }
+        }
+    });
+
+    return selections;
+
+  }, [booking, serviceDetails]);
+
+  const calculatedEstimate = useMemo(() => {
+    if (!booking || !serviceDetails) return 0;
+
+    let total = 0;
     let duration = 1;
     let bathroomMultiplier = 1;
     let tankMultiplier = 1;
 
-    // Get duration
-    const durationOption = booking.options.duration as string;
-    if (durationOption) {
-        duration = parseInt(durationOption.split('-')[0]) || 1;
+    // Get duration if it exists
+    const durationOptionId = booking.options.duration as string;
+    if (durationOptionId) {
+        const durationOption = serviceDetails.subCategories?.find(sc => sc.id === 'duration')?.options.find(opt => opt.id === durationOptionId);
+        if (durationOption) {
+            duration = parseInt(durationOption.name.split(' ')[0]) || 1;
+        }
     }
 
-    // Get bathroom count
-    const bathroomOption = booking.options['num-bathrooms'] as string;
-    if (bathroomOption) {
-        bathroomMultiplier = parseInt(bathroomOption.split('-')[0]) || 1;
-    }
-
-    // Get tank count
-    const tankOption = booking.options['num-tanks'] as string;
-    if (tankOption) {
-        tankMultiplier = parseInt(tankOption.split('-')[0]) || 1;
+    // Get bathroom count if it exists
+    const bathroomOptionId = booking.options['num-bathrooms'] as string;
+    if (bathroomOptionId) {
+        const bathroomOption = serviceDetails.subCategories?.find(sc => sc.id === 'num-bathrooms')?.options.find(opt => opt.id === bathroomOptionId);
+        if (bathroomOption) {
+            bathroomMultiplier = parseInt(bathroomOption.name.split(' ')[0]) || 1;
+        }
     }
     
+    // Get tank count if it exists
+    const tankOptionId = booking.options['num-tanks'] as string;
+     if (tankOptionId) {
+        const tankOption = serviceDetails.subCategories?.find(sc => sc.id === 'num-tanks')?.options.find(opt => opt.id === tankOptionId);
+        if (tankOption) {
+            tankMultiplier = parseInt(tankOption.name.split(' ')[0]) || 1;
+        }
+    }
+
     // Apply logic based on service type
-    if (service.id === 'house-cleaning' || service.id === 'gardening' || service.id === 'bathroom-cleaning') {
-      // Priced per hour
-      total = service.price * duration;
-      if (service.id === 'bathroom-cleaning') {
-        total *= bathroomMultiplier; // price * duration * number of bathrooms
-      }
-    } else if (service.id === 'tank-cleaning') {
-      // Flat rate, modified by tank count
-      total = service.price * tankMultiplier;
+    switch (serviceDetails.id) {
+        case 'house-cleaning':
+        case 'gardening':
+            total = serviceDetails.price * duration;
+            break;
+        case 'bathroom-cleaning':
+            total = serviceDetails.price * duration * bathroomMultiplier;
+            break;
+        case 'tank-cleaning':
+            total = serviceDetails.price * tankMultiplier;
+            break;
+        default:
+            total = serviceDetails.price;
+            break;
     }
     
     return total;
-  }, [booking]);
+  }, [booking, serviceDetails]);
 
   useEffect(() => {
     if (calculatedEstimate > 0) {
@@ -352,20 +398,35 @@ export default function ManagerBookingDetailPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg"><Calculator /> Calculate Estimate & Send for Approval</CardTitle>
                 </CardHeader>
-                <CardContent className='flex flex-col md:flex-row md:items-end gap-4'>
-                  <div className='flex-1'>
-                    <h4 className='font-semibold'>Calculation based on selection:</h4>
-                    <p className='text-sm text-muted-foreground'>
-                      Service Base: Rs. {booking.servicePrice}, based on customer's selected options.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="estimated-charge">Final Estimated Charge (Rs.)</Label>
-                    <Input id="estimated-charge" type="number" value={estimatedCharge} onChange={(e) => setEstimatedCharge(e.target.value)} placeholder="e.g., 500" className="max-w-[200px] text-lg font-bold" />
-                  </div>
-                  <Button onClick={handleSubmitEstimate} disabled={isSubmitting || !estimatedCharge}>
-                    {isSubmitting && <Loader2 className="animate-spin" />} Send to Customer
-                  </Button>
+                <CardContent className='flex flex-col gap-4'>
+                    <div className='flex flex-col md:flex-row gap-6'>
+                        <div className="flex-1 space-y-3 rounded-md border bg-background/50 p-4">
+                            <h4 className='font-semibold flex items-center gap-2'><ListTree className='w-4 h-4'/>Customer's Selections</h4>
+                            {customerSelections.map(selection => (
+                                <div key={selection.subCategoryName} className='text-sm'>
+                                    <p className='text-muted-foreground'>{selection.subCategoryName}:</p>
+                                    <p className='font-medium'>{selection.optionNames.join(', ')}</p>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex-1 space-y-2 rounded-md border bg-background/50 p-4">
+                            <h4 className='font-semibold'>Auto-Calculation</h4>
+                             <p className='text-sm text-muted-foreground'>
+                                Based on selections, the calculated base estimate is:
+                             </p>
+                             <p className='text-2xl font-bold'>Rs. {calculatedEstimate.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-col md:flex-row md:items-end gap-4 border-t pt-4">
+                        <div className="flex-1 space-y-2">
+                           <Label htmlFor="estimated-charge">Final Estimated Charge (Rs.)</Label>
+                           <Input id="estimated-charge" type="number" value={estimatedCharge} onChange={(e) => setEstimatedCharge(e.target.value)} placeholder="e.g., 500" className="max-w-[200px] text-lg font-bold" />
+                           <FormDescription>You can adjust the final price before sending.</FormDescription>
+                        </div>
+                        <Button onClick={handleSubmitEstimate} disabled={isSubmitting || !estimatedCharge}>
+                            {isSubmitting && <Loader2 className="animate-spin" />} Send to Customer
+                        </Button>
+                    </div>
                 </CardContent>
               </Card>
             ) : (
@@ -533,4 +594,3 @@ export default function ManagerBookingDetailPage() {
   );
 }
 
-    
