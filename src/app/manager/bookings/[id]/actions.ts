@@ -76,11 +76,12 @@ export async function refuseJob(bookingId: string, workerId: string) {
   }
 }
 
-export async function completeJob(bookingId: string) {
+export async function completeJob(bookingId: string, finalCharge: number) {
   try {
     const bookingRef = doc(db, 'bookings', bookingId);
     await updateDoc(bookingRef, {
       status: 'Completed',
+      estimatedCharge: finalCharge,
       statusHistory: arrayUnion({ status: 'Completed', timestamp: serverTimestamp() }),
     });
     return { success: true };

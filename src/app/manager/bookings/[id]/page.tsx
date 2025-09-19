@@ -84,6 +84,7 @@ export default function ManagerBookingDetailPage() {
   const [isReassigning, setIsReassigning] = useState(false);
   
   const [itemCosts, setItemCosts] = useState<Record<string, number | string>>({});
+  const [finalCharge, setFinalCharge] = useState<number | string>('');
 
   // A helper function to parse time strings like "09:00 AM" into a Date object
   const parseTime = (date: Date, timeStr: string) => {
@@ -167,6 +168,7 @@ export default function ManagerBookingDetailPage() {
         if (docSnap.exists()) {
           const bookingData = { id: docSnap.id, ...docSnap.data() } as Booking;
           setBooking(bookingData);
+           setFinalCharge(bookingData.estimatedCharge || '');
           
           if (bookingData.userId) {
               const userDocRef = doc(db, 'users', bookingData.userId);
@@ -311,12 +313,13 @@ export default function ManagerBookingDetailPage() {
   };
   
   const handleComplete = async () => {
-    if (!booking) return;
+    if (!booking || !finalCharge) return;
     setIsSubmitting(true);
-    const result = await completeJob(booking.id);
+    const charge = typeof finalCharge === 'string' ? parseFloat(finalCharge) : finalCharge;
+    const result = await completeJob(booking.id, charge);
     if (result.success) {
       toast({ title: 'Job Completed!', description: 'The job has been marked as completed.' });
-      setBooking(prev => prev ? { ...prev, status: 'Completed' } : null);
+      setBooking(prev => prev ? { ...prev, status: 'Completed', estimatedCharge: charge } : null);
     } else {
       toast({ variant: 'destructive', title: 'Error', description: result.error });
     }
@@ -458,28 +461,42 @@ export default function ManagerBookingDetailPage() {
         );
     
       case 'In Progress':
-        if(isReassigning) {
-            return (
-                <>
-                    <h3 className="font-semibold mb-4 text-lg">Re-assign Worker</h3>
-                    {renderWorkerAssignment()}
-                </>
-            )
-        }
         return (
             <>
                 <h3 className="font-semibold mb-4 text-lg">Update Progress</h3>
-                <div className="flex items-center gap-4">
+                <div className="p-4 border rounded-md bg-secondary/50">
+                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                        <div className='flex-1'>
+                            <Label htmlFor="final-charge">Confirm Final Charge (Rs.)</Label>
+                            <Input
+                                id="final-charge"
+                                type="number"
+                                value={finalCharge}
+                                onChange={(e) => setFinalCharge(e.target.value)}
+                                placeholder="e.g., 500.00"
+                                className="text-lg font-bold mt-1"
+                            />
+                        </div>
+                        <Button
+                            size="lg"
+                            onClick={handleComplete}
+                            disabled={isSubmitting || !finalCharge}
+                        >
+                            {isSubmitting ? <Loader2 className="animate-spin" /> : <CheckCircle />}
+                            Mark as Complete
+                        </Button>
+                    </div>
+                     <p className="text-xs text-muted-foreground mt-2">The estimated charge was Rs. {booking.estimatedCharge}. You can adjust the final amount if necessary before completing.</p>
+                </div>
+                <Separator className='my-4' />
+                <h4 className="font-semibold mb-2">Other Actions</h4>
+                <div className="flex items-center gap-2">
                     <Button size="sm" variant="outline" onClick={() => setIsReassigning(true)} disabled={isSubmitting}>
                         Re-assign Worker
                     </Button>
                      <Button size="sm" variant="destructive" onClick={handleRefuse} disabled={isSubmitting}>
                         {isSubmitting ? <Loader2 className="animate-spin" /> : <XCircle />}
                         Refuse Job
-                    </Button>
-                    <Button size="sm" onClick={handleComplete} disabled={isSubmitting}>
-                        {isSubmitting ? <Loader2 className="animate-spin" /> : <CheckCircle />}
-                        Mark as Complete
                     </Button>
                 </div>
             </>
