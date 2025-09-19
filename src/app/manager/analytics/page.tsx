@@ -26,6 +26,7 @@ type StatusHistoryItem = {
 type Booking = {
   id: string;
   serviceName: string;
+  customerName: string;
   estimatedCharge?: number;
   statusHistory?: StatusHistoryItem[];
   initialEstimate?: number; 
@@ -51,6 +52,7 @@ type Review = {
 type BookingSummary = {
     id: string;
     serviceName: string;
+    customerName: string;
     startDate: string | null;
     completionDate: string | null;
     initialEstimate: number;
@@ -139,6 +141,7 @@ export default function ManagerAnalyticsPage() {
                     return {
                         id: data.id,
                         serviceName: data.serviceName,
+                        customerName: data.customerName,
                         startDate,
                         completionDate,
                         initialEstimate,
@@ -209,6 +212,7 @@ export default function ManagerAnalyticsPage() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Booking ID</TableHead>
+                                    <TableHead>Customer Name</TableHead>
                                     <TableHead>Service</TableHead>
                                     <TableHead>Job Start Date</TableHead>
                                     <TableHead>Job Completion Date</TableHead>
@@ -222,6 +226,7 @@ export default function ManagerAnalyticsPage() {
                                 {summaries.map((summary) => (
                                 <TableRow key={summary.id}>
                                     <TableCell className="font-medium">{summary.id.substring(0,6)}</TableCell>
+                                    <TableCell>{summary.customerName}</TableCell>
                                     <TableCell>{summary.serviceName}</TableCell>
                                     <TableCell>{summary.startDate || 'N/A'}</TableCell>
                                     <TableCell>{summary.completionDate || 'N/A'}</TableCell>
