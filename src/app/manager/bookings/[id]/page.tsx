@@ -7,7 +7,7 @@ import OrderTracker from "@/components/order-tracker";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
-import { doc, getDoc, Timestamp, collection, query, where, getDocs, orderBy } from 'firestore';
+import { doc, getDoc, Timestamp, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck, Loader2, CheckCircle, XCircle, AlertTriangle, Calculator, ListTree } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -564,5 +564,3 @@ export default function ManagerBookingDetailPage() {
     </div>
   );
 }
-
-    
