@@ -63,6 +63,9 @@ export default function MainHeader() {
           <Link href="/#testimonials" className="transition-colors hover:text-primary">
             Testimonials
           </Link>
+          <Link href="/reviews" className="transition-colors hover:text-primary">
+            Reviews
+          </Link>
         </nav>
         <div className="flex items-center gap-4">
           {loading ? (
