@@ -37,7 +37,7 @@ type AuthFormProps = {
 
 type Role = 'customer' | 'worker' | 'manager';
 
-const SUPERADMIN_EMAIL = 'conceptreality@gmail.com';
+const SUPERADMIN_EMAIL = 'conceptreality61@gmail.com';
 
 function getRedirectPath(role: Role) {
   switch (role) {
