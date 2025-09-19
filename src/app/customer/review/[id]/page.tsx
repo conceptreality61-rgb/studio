@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '@/hooks/use-auth';
+import { Separator } from '@/components/ui/separator';
 
 const StarRating = ({
   rating,
@@ -48,17 +49,16 @@ export default function ReviewPage() {
   const params = useParams();
   const { toast } = useToast();
   
-  const [overallRating, setOverallRating] = useState(0);
-  const [punctualityRating, setPunctualityRating] = useState(0);
-  const [professionalismRating, setProfessionalismRating] = useState(0);
-  const [qualityRating, setQualityRating] = useState(0);
+  const [serviceQuality, setServiceQuality] = useState(0);
+  const [workerBehavior, setWorkerBehavior] = useState(0);
+  const [appExperience, setAppExperience] = useState(0);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const bookingId = params.id as string;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (overallRating === 0 || punctualityRating === 0 || professionalismRating === 0 || qualityRating === 0) {
+    if (serviceQuality === 0 || workerBehavior === 0 || appExperience === 0) {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -74,13 +74,15 @@ export default function ReviewPage() {
     
     setIsSubmitting(true);
     try {
+        const overallRating = (serviceQuality + workerBehavior + appExperience) / 3;
+
         await setDoc(doc(db, 'reviews', `${bookingId}_${user.uid}`), {
             bookingId,
             userId: user.uid,
-            rating: overallRating,
-            punctuality: punctualityRating,
-            professionalism: professionalismRating,
-            quality: qualityRating,
+            rating: parseFloat(overallRating.toFixed(2)),
+            serviceQuality: serviceQuality,
+            workerBehavior: workerBehavior,
+            appExperience: appExperience,
             comment,
             createdAt: serverTimestamp(),
             serviceName: 'Service', // In a real app, you'd fetch this from the booking
@@ -114,26 +116,32 @@ export default function ReviewPage() {
           <CardDescription>Share your experience for booking #{bookingId.substring(0,6)}. How did we do?</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
-          <div className="space-y-4">
-            <div className='flex justify-between items-center'>
-              <Label>Worker's Punctuality</Label>
-              <StarRating rating={punctualityRating} setRating={setPunctualityRating} />
+          <div className="space-y-6">
+             <div className='p-4 border rounded-md'>
+              <h3 className='font-semibold mb-3'>Service Feedback</h3>
+              <div className='flex justify-between items-center'>
+                <Label>Quality of the service provided</Label>
+                <StarRating rating={serviceQuality} setRating={setServiceQuality} />
+              </div>
             </div>
-             <div className='flex justify-between items-center'>
-              <Label>Worker's Professionalism</Label>
-              <StarRating rating={professionalismRating} setRating={setProfessionalismRating} />
+             <div className='p-4 border rounded-md'>
+              <h3 className='font-semibold mb-3'>Worker Feedback</h3>
+              <div className='flex justify-between items-center'>
+                <Label>Worker's professionalism and behavior</Label>
+                <StarRating rating={workerBehavior} setRating={setWorkerBehavior} />
+              </div>
             </div>
-             <div className='flex justify-between items-center'>
-              <Label>Quality of Service</Label>
-              <StarRating rating={qualityRating} setRating={setQualityRating} />
-            </div>
-            <div className='flex justify-between items-center'>
-              <Label className='font-bold'>Overall Experience</Label>
-              <StarRating rating={overallRating} setRating={setOverallRating} />
+             <div className='p-4 border rounded-md'>
+              <h3 className='font-semibold mb-3'>App & Booking Experience</h3>
+              <div className='flex justify-between items-center'>
+                <Label>Ease of using the app and booking process</Label>
+                <StarRating rating={appExperience} setRating={setAppExperience} />
+              </div>
             </div>
           </div>
+          <Separator />
           <div className="space-y-2">
-            <Label htmlFor="comment">Your Comments (Optional)</Label>
+            <Label htmlFor="comment">Additional Comments (Optional)</Label>
             <Textarea
               id="comment"
               placeholder="Tell us more about your experience..."

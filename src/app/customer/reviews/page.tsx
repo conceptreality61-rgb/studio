@@ -16,15 +16,15 @@ type Review = {
     serviceName: string;
     createdAt: Timestamp;
     rating: number;
-    punctuality: number;
-    professionalism: number;
-    quality: number;
+    serviceQuality: number;
+    workerBehavior: number;
+    appExperience: number;
     comment: string;
 };
 
 const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 !== 0;
+    const halfStar = rating % 1 >= 0.5;
     const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
     return (
         <div className="flex items-center">
@@ -101,16 +101,16 @@ export default function ReviewsPage() {
                             {review.comment && <p className="text-muted-foreground italic pt-1">"{review.comment}"</p>}
                              <div className="text-sm space-y-2 pt-2">
                                 <div className="flex items-center justify-between">
-                                    <p className="text-muted-foreground">Punctuality</p>
-                                    {renderStars(review.punctuality)}
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <p className="text-muted-foreground">Professionalism</p>
-                                    {renderStars(review.professionalism)}
-                                </div>
-                                <div className="flex items-center justify-between">
                                     <p className="text-muted-foreground">Service Quality</p>
-                                    {renderStars(review.quality)}
+                                    {renderStars(review.serviceQuality)}
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-muted-foreground">Worker Behavior</p>
+                                    {renderStars(review.workerBehavior)}
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-muted-foreground">App Experience</p>
+                                    {renderStars(review.appExperience)}
                                 </div>
                             </div>
                         </div>
