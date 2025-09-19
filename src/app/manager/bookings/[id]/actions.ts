@@ -9,8 +9,9 @@ export async function submitEstimate(bookingId: string, estimatedCharge: number)
     const bookingRef = doc(db, 'bookings', bookingId);
     await updateDoc(bookingRef, {
       estimatedCharge: estimatedCharge,
+      initialEstimate: estimatedCharge, // Also store the initial estimate
       status: 'Pending Customer Approval',
-      statusHistory: arrayUnion({ status: 'Pending Customer Approval', timestamp: new Date() }),
+      statusHistory: arrayUnion({ status: 'Pending Customer Approval', timestamp: new Date(), estimate: estimatedCharge }),
     });
     return { success: true };
   } catch (error: any) {
