@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,9 +11,10 @@ import { Star, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, getDoc, Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const StarRating = ({
   rating,
@@ -42,6 +43,11 @@ const StarRating = ({
   );
 };
 
+type BookingInfo = {
+    serviceName: string;
+    estimatedCharge?: number;
+};
+
 
 export default function ReviewPage() {
   const { user } = useAuth();
@@ -49,6 +55,8 @@ export default function ReviewPage() {
   const params = useParams();
   const { toast } = useToast();
   
+  const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null);
+  const [loading, setLoading] = useState(true);
   const [appExperience, setAppExperience] = useState(0);
   const [statusUpdateRating, setStatusUpdateRating] = useState(0);
   const [workerBehavior, setWorkerBehavior] = useState(0);
@@ -56,6 +64,29 @@ export default function ReviewPage() {
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const bookingId = params.id as string;
+
+  useEffect(() => {
+    if (!bookingId) return;
+
+    const fetchBookingInfo = async () => {
+        try {
+            const bookingDoc = await getDoc(doc(db, 'bookings', bookingId));
+            if (bookingDoc.exists()) {
+                const data = bookingDoc.data();
+                setBookingInfo({
+                    serviceName: data.serviceName,
+                    estimatedCharge: data.estimatedCharge
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch booking details for review page:", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    fetchBookingInfo();
+  }, [bookingId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +118,7 @@ export default function ReviewPage() {
             serviceQuality: serviceQuality,
             comment,
             createdAt: serverTimestamp(),
-            serviceName: 'Service', // In a real app, you'd fetch this from the booking
+            serviceName: bookingInfo?.serviceName || 'Service',
             userName: user.displayName
         });
 
@@ -110,16 +141,35 @@ export default function ReviewPage() {
     }
   };
 
+  if (loading) {
+      return (
+        <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+                <Skeleton className="h-8 w-1/2" />
+                <Skeleton className="h-5 w-3/4" />
+            </CardHeader>
+            <CardContent>
+                <Skeleton className="h-64 w-full" />
+            </CardContent>
+        </Card>
+      )
+  }
+
   return (
     <Card className="max-w-2xl mx-auto">
       <form onSubmit={handleSubmit}>
         <CardHeader>
           <CardTitle>Leave a Review</CardTitle>
-          <CardDescription>Share your experience for booking #{bookingId.substring(0,6)}. How did we do?</CardDescription>
+          <CardDescription>
+            Share your experience for booking #{bookingId.substring(0,6)}.
+            {bookingInfo?.estimatedCharge && (
+                <span> Final amount paid: <b>Rs. {bookingInfo.estimatedCharge}</b></span>
+            )}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
           <div className="space-y-6">
-            <div className='p-4 border rounded-md'>
+             <div className='p-4 border rounded-md'>
               <h3 className='font-semibold mb-3'>App & Booking Experience</h3>
               <div className='space-y-4'>
                 <div className='flex justify-between items-center'>
@@ -169,3 +219,4 @@ export default function ReviewPage() {
     </Card>
   );
 }
+
