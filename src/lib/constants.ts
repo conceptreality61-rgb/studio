@@ -222,7 +222,7 @@ export const services: Service[] = [
       {
         id: 'vehicle-type',
         name: 'Vehicle Type',
-        type: 'single',
+        type: 'multiple',
         options: [
           { id: 'hatchback', name: 'Hatchback' },
           { id: 'sedan', name: 'Sedan' },
