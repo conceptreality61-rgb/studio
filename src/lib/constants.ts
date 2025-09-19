@@ -242,6 +242,39 @@ export const services: Service[] = [
       },
     ]
   },
+  {
+    id: 'pest-control',
+    name: 'Pest Control',
+    description: 'Effective and safe pest control for your home.',
+    longDescription: 'Protect your home from unwanted pests with our expert pest control services. We handle everything from common insects to rodents, using safe and effective treatments.',
+    icon: Wrench,
+    imageId: 'gardening',
+    subCategories: [
+      {
+        id: 'pest-type',
+        name: 'Type of Pest',
+        type: 'multiple',
+        options: [
+          { id: 'cockroaches', name: 'Cockroaches' },
+          { id: 'ants', name: 'Ants' },
+          { id: 'termites', name: 'Termites' },
+          { id: 'rodents', name: 'Rodents' },
+          { id: 'other', name: 'Other' },
+        ],
+      },
+      {
+        id: 'property-size',
+        name: 'Property Size',
+        type: 'single',
+        options: [
+          { id: '1bhk', name: '1 BHK' },
+          { id: '2bhk', name: '2 BHK' },
+          { id: '3bhk', name: '3 BHK' },
+          { id: '4plus-bhk', name: '4+ BHK / Villa' },
+        ],
+      },
+    ],
+  },
 ];
 
 export type NavItem = {
