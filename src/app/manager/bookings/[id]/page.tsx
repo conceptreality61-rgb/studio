@@ -20,7 +20,6 @@ import { addHours, differenceInHours, startOfDay, endOfDay } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { services, ServiceSubCategory, ServiceSubCategoryOption } from '@/lib/constants';
-import { FormDescription } from '@/components/ui/form';
 
 type Booking = {
   id: string;
@@ -422,7 +421,7 @@ export default function ManagerBookingDetailPage() {
                         <div className="flex-1 space-y-2">
                            <Label htmlFor="estimated-charge">Final Estimated Charge (Rs.)</Label>
                            <Input id="estimated-charge" type="number" value={estimatedCharge} onChange={(e) => setEstimatedCharge(e.target.value)} placeholder="e.g., 500" className="max-w-[200px] text-lg font-bold" />
-                           <FormDescription>You can adjust the final price before sending.</FormDescription>
+                           <p className="text-sm text-muted-foreground">You can adjust the final price before sending.</p>
                         </div>
                         <Button onClick={handleSubmitEstimate} disabled={isSubmitting || !estimatedCharge}>
                             {isSubmitting && <Loader2 className="animate-spin" />} Send to Customer
@@ -595,4 +594,3 @@ export default function ManagerBookingDetailPage() {
   );
 }
 
-    
