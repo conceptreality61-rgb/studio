@@ -30,7 +30,6 @@ type Booking = {
   serviceName: string;
   date: Timestamp;
   status: string;
-  servicePrice: number;
   time: string;
   estimatedCharge?: number;
 };
@@ -199,7 +198,7 @@ export default function BookingsPage() {
                     <TableCell>
                       <Badge variant={statusVariant[booking.status] || 'default'}>{booking.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-right">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Rs.${booking.servicePrice}/hr`}</TableCell>
+                    <TableCell className="text-right">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending`}</TableCell>
                     <TableCell className="text-right">
                       {booking.status === 'Pending Customer Approval' ? (
                           isEstimateActionLoading === booking.id ? <Loader2 className="animate-spin" /> :

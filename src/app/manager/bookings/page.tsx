@@ -34,7 +34,6 @@ type Booking = {
   workerName?: string;
   date: Timestamp;
   status: 'Pending Manager Approval' | 'Pending Customer Approval' | 'Worker Assigned' | 'Completed' | 'Canceled' | 'In Progress';
-  servicePrice: number;
   refusedBy?: string[];
   canceledWorkerIds?: string[];
   estimatedCharge?: number;
@@ -276,7 +275,7 @@ export default function ManagerBookingsPage() {
                         {booking.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Rs. ${booking.servicePrice}/hr`}</TableCell>
+                    <TableCell className="text-right">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending`}</TableCell>
                     <TableCell>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>

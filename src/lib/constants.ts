@@ -22,7 +22,6 @@ export type Service = {
   longDescription: string;
   icon: LucideIcon;
   imageId: string;
-  price: number;
   subCategories?: ServiceSubCategory[];
 };
 
@@ -34,7 +33,6 @@ export const services: Service[] = [
     longDescription: 'Our professional house cleaning services provide a thorough cleaning of your home, ensuring a spotless and healthy living environment. We cover all rooms, including dusting, vacuuming, mopping, and surface sanitization.',
     icon: Sparkles,
     imageId: 'house-cleaning',
-    price: 25, // Base price per hour
     subCategories: [
       {
         id: 'tasks',
@@ -73,7 +71,6 @@ export const services: Service[] = [
     longDescription: 'We offer intensive bathroom cleaning services that tackle grime, soap scum, and bacteria. Our team will leave your toilets, showers, sinks, and floors sparkling clean and sanitized.',
     icon: Bath,
     imageId: 'bathroom-cleaning',
-    price: 35,
     subCategories: [
       {
         id: 'tasks',
@@ -116,7 +113,6 @@ export const services: Service[] = [
     longDescription: 'Ensure the quality of your water with our professional tank cleaning services. We use safe and effective methods to remove sediment, algae, and other contaminants from your water tank.',
     icon: Droplets,
     imageId: 'tank-cleaning',
-    price: 70, // Base price
     subCategories: [
       {
         id: 'tank-type',
@@ -156,7 +152,6 @@ export const services: Service[] = [
     longDescription: 'Our gardening services include lawn mowing, pruning, weeding, and general garden maintenance to keep your outdoor space beautiful and healthy. We cater to gardens of all sizes.',
     icon: Wrench,
     imageId: 'gardening',
-    price: 45,
     subCategories: [
        {
         id: 'tasks',
@@ -189,7 +184,6 @@ export const services: Service[] = [
     longDescription: 'Get your vehicle looking brand new with our comprehensive cleaning services. From a simple wash to full interior and exterior detailing, we make your car shine.',
     icon: Car,
     imageId: 'vehicle-cleaning',
-    price: 20,
     subCategories: [
       {
         id: 'vehicle-type',

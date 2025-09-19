@@ -15,7 +15,6 @@ type Booking = {
   date: Timestamp;
   time: string;
   workerName?: string;
-  servicePrice: number;
   status: string;
   estimatedCharge?: number;
 };
@@ -77,7 +76,7 @@ export default function OrderDetailPage() {
                     <div className="flex justify-between"><span>Time:</span> <span className="font-medium">{booking.time}</span></div>
                     <div className="flex justify-between"><span>Worker:</span> <span className="font-medium">{booking.workerName || 'Not assigned yet'}</span></div>
                     <Separator className="my-2" />
-                    <div className="flex justify-between text-base"><strong>Total:</strong> <strong className="text-primary">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Rs.${booking.servicePrice}/hr`}</strong></div>
+                    <div className="flex justify-between text-base"><strong>Total:</strong> <strong className="text-primary">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending Estimate`}</strong></div>
                 </div>
             ) : (
                 <p>Booking details not found.</p>

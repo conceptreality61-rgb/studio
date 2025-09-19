@@ -18,7 +18,7 @@ type Booking = {
   serviceName: string;
   date: Timestamp;
   status: string;
-  servicePrice: number;
+  estimatedCharge?: number;
 };
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
@@ -95,7 +95,7 @@ export default function CustomerDashboardPage() {
                   <TableCell>
                     <Badge variant={statusVariant[booking.status] || 'default'}>{booking.status}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">Rs.{booking.servicePrice}/hr</TableCell>
+                  <TableCell className="text-right">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending`}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" asChild>
                       <Link href={`/customer/orders/${booking.id}`}><ArrowRight className="h-4 w-4" /></Link>

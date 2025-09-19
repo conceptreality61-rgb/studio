@@ -80,7 +80,6 @@ export default function ServiceDetailPage() {
           customerName: user.displayName || 'Unnamed Customer',
           serviceId: service.id,
           serviceName: service.name,
-          servicePrice: service.price,
           date,
           time: selectedTime,
           options: selectedOptions,

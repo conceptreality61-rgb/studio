@@ -7,7 +7,6 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 export async function createBooking(bookingData: {
   serviceId: string;
   serviceName: string;
-  servicePrice: number;
   date: Date;
   time: string;
   options: Record<string, string | string[]>;

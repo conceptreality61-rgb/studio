@@ -29,7 +29,6 @@ type Booking = {
   time: string;
   workerId?: string;
   workerName?: string;
-  servicePrice: number;
   status: string;
   userId: string;
   customerName: string;
@@ -126,68 +125,6 @@ export default function ManagerBookingDetailPage() {
     return selections;
 
   }, [booking, serviceDetails]);
-
-  const calculatedEstimate = useMemo(() => {
-    if (!booking || !serviceDetails) return 0;
-
-    let total = 0;
-    let duration = 1;
-    let bathroomMultiplier = 1;
-    let tankMultiplier = 1;
-
-    // Get duration if it exists
-    const durationOptionId = booking.options.duration as string;
-    if (durationOptionId) {
-        const durationOption = serviceDetails.subCategories?.find(sc => sc.id === 'duration')?.options.find(opt => opt.id === durationOptionId);
-        if (durationOption) {
-            duration = parseInt(durationOption.name.split(' ')[0]) || 1;
-        }
-    }
-
-    // Get bathroom count if it exists
-    const bathroomOptionId = booking.options['num-bathrooms'] as string;
-    if (bathroomOptionId) {
-        const bathroomOption = serviceDetails.subCategories?.find(sc => sc.id === 'num-bathrooms')?.options.find(opt => opt.id === bathroomOptionId);
-        if (bathroomOption) {
-            bathroomMultiplier = parseInt(bathroomOption.name.split(' ')[0]) || 1;
-        }
-    }
-    
-    // Get tank count if it exists
-    const tankOptionId = booking.options['num-tanks'] as string;
-     if (tankOptionId) {
-        const tankOption = serviceDetails.subCategories?.find(sc => sc.id === 'num-tanks')?.options.find(opt => opt.id === tankOptionId);
-        if (tankOption) {
-            tankMultiplier = parseInt(tankOption.name.split(' ')[0]) || 1;
-        }
-    }
-
-    // Apply logic based on service type
-    switch (serviceDetails.id) {
-        case 'house-cleaning':
-        case 'gardening':
-            total = serviceDetails.price * duration;
-            break;
-        case 'bathroom-cleaning':
-            total = serviceDetails.price * duration * bathroomMultiplier;
-            break;
-        case 'tank-cleaning':
-            total = serviceDetails.price * tankMultiplier;
-            break;
-        default:
-            total = serviceDetails.price;
-            break;
-    }
-    
-    return total;
-  }, [booking, serviceDetails]);
-
-  useEffect(() => {
-    if (calculatedEstimate > 0) {
-      setEstimatedCharge(calculatedEstimate);
-    }
-  }, [calculatedEstimate]);
-
 
   useEffect(() => {
     const fetchBookingAndWorkers = async () => {
@@ -396,7 +333,7 @@ export default function ManagerBookingDetailPage() {
             {!booking.estimatedCharge ? (
               <Card className="bg-secondary/50">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg"><Calculator /> Calculate Estimate & Send for Approval</CardTitle>
+                    <CardTitle className="flex items-center gap-2 text-lg"><Calculator /> Create Estimate & Send for Approval</CardTitle>
                 </CardHeader>
                 <CardContent className='flex flex-col gap-4'>
                     <div className='flex flex-col md:flex-row gap-6'>
@@ -409,19 +346,12 @@ export default function ManagerBookingDetailPage() {
                                 </div>
                             ))}
                         </div>
-                        <div className="flex-1 space-y-2 rounded-md border bg-background/50 p-4">
-                            <h4 className='font-semibold'>Auto-Calculation</h4>
-                             <p className='text-sm text-muted-foreground'>
-                                Based on selections, the calculated base estimate is:
-                             </p>
-                             <p className='text-2xl font-bold'>Rs. {calculatedEstimate.toFixed(2)}</p>
-                        </div>
                     </div>
                     <div className="flex flex-col md:flex-row md:items-end gap-4 border-t pt-4">
                         <div className="flex-1 space-y-2">
                            <Label htmlFor="estimated-charge">Final Estimated Charge (Rs.)</Label>
                            <Input id="estimated-charge" type="number" value={estimatedCharge} onChange={(e) => setEstimatedCharge(e.target.value)} placeholder="e.g., 500" className="max-w-[200px] text-lg font-bold" />
-                           <p className="text-sm text-muted-foreground">You can adjust the final price before sending.</p>
+                           <p className="text-xs text-muted-foreground">Enter the final price to send to the customer.</p>
                         </div>
                         <Button onClick={handleSubmitEstimate} disabled={isSubmitting || !estimatedCharge}>
                             {isSubmitting && <Loader2 className="animate-spin" />} Send to Customer
@@ -544,7 +474,7 @@ export default function ManagerBookingDetailPage() {
                         <div className="flex items-center gap-3"><Clock className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{booking.time}</span></div>
                         <div className="flex items-center gap-3"><UserCheck className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{booking.workerName || 'Not assigned yet'}</span></div>
                         <Separator className="my-4" />
-                        <div className="flex items-center gap-3 text-base"><DollarSign className="w-4 h-4 text-muted-foreground" /> <strong>Total:</strong> <strong className="text-primary">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Rs.${booking.servicePrice}/hr (Base)`}</strong></div>
+                        <div className="flex items-center gap-3 text-base"><DollarSign className="w-4 h-4 text-muted-foreground" /> <strong>Total:</strong> <strong className="text-primary">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending Estimate`}</strong></div>
                     </div>
                 ) : (
                     <p>Booking details not found.</p>
@@ -593,4 +523,3 @@ export default function ManagerBookingDetailPage() {
     </div>
   );
 }
-
