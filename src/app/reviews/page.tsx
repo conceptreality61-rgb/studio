@@ -3,13 +3,15 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Star, StarHalf } from "lucide-react";
+import { Star, StarHalf, Home } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { db } from "@/lib/firebase";
 import { collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type Review = {
     id: string;
@@ -114,6 +116,14 @@ export default function AllReviewsPage() {
                     <p>No reviews have been submitted yet.</p>
                 </div>
             )}
+             <div className="text-center mt-16">
+                <Button asChild>
+                    <Link href="/">
+                        <Home className="mr-2 h-4 w-4" />
+                        Return to Home Page
+                    </Link>
+                </Button>
+            </div>
         </div>
     </div>
   );
