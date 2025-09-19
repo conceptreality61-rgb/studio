@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import StatCard from "@/components/dashboard/stat-card";
-import { DollarSign, Briefcase, Users, UserCheck } from 'lucide-react';
+import { Coins, Briefcase, Users, UserCheck } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -82,7 +82,7 @@ export default function ManagerDashboardPage() {
                 {loading ? <>
                     <Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" /><Skeleton className="h-28" />
                 </> : <>
-                    <StatCard title="Total Revenue" value={`Rs.${stats.totalRevenue.toFixed(2)}`} description="From completed bookings" icon={DollarSign} />
+                    <StatCard title="Total Revenue" value={`Rs.${stats.totalRevenue.toFixed(2)}`} description="From completed bookings" icon={Coins} />
                     <StatCard title="Active Bookings" value={String(stats.activeBookings)} description="Currently in progress" icon={Briefcase} />
                     <StatCard title="New Customers" value={`+${stats.newCustomers}`} description="In the last 30 days" icon={Users} />
                     <StatCard title="Total Workers" value={String(stats.totalWorkers)} description="Across all services" icon={UserCheck} />

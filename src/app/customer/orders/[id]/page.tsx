@@ -11,7 +11,7 @@ import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { services } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check, XCircle, Phone, User } from 'lucide-react';
+import { Loader2, Check, XCircle, Phone, User, Coins } from 'lucide-react';
 import { acceptEstimate, rejectEstimate } from '@/app/customer/bookings/actions';
 import { useToast } from '@/hooks/use-toast';
 
@@ -196,7 +196,7 @@ export default function OrderDetailPage() {
                     )}
 
                     <Separator className="my-2" />
-                    <div className="flex justify-between text-base"><strong>Total Estimated Value:</strong> <strong className="text-primary">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending Estimate`}</strong></div>
+                    <div className="flex justify-between text-base"><strong>Total Estimated Value:</strong> <strong className="text-primary flex items-center gap-1"><Coins className="w-4 h-4" />{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending Estimate`}</strong></div>
                     <div className="mt-4 text-xs text-muted-foreground space-y-1 border-t pt-2">
                         <p><b>Terms & Conditions:</b></p>
                         <ul className="list-disc list-inside">

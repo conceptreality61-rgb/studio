@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
 import { doc, getDoc, Timestamp, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck, Loader2, CheckCircle, XCircle, AlertTriangle, Calculator, ListTree } from 'lucide-react';
+import { User, MapPin, Calendar, Clock, Coins, Briefcase, UserCheck, Loader2, CheckCircle, XCircle, AlertTriangle, Calculator, ListTree } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -548,7 +548,7 @@ export default function ManagerBookingDetailPage() {
                         <div className="flex items-center gap-3"><Clock className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{booking.time}</span></div>
                         <div className="flex items-center gap-3"><UserCheck className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{booking.workerName || 'Not assigned yet'}</span></div>
                         <Separator className="my-4" />
-                        <div className="flex items-center gap-3 text-base"><DollarSign className="w-4 h-4 text-muted-foreground" /> <strong>Total Estimated Value:</strong> <strong className="text-primary">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending Estimate`}</strong></div>
+                        <div className="flex items-center gap-3 text-base"><Coins className="w-4 h-4 text-muted-foreground" /> <strong>Total Estimated Value:</strong> <strong className="text-primary">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending Estimate`}</strong></div>
                         <div className="mt-4 text-xs text-muted-foreground space-y-1 border-t pt-2">
                             <p><b>Terms & Conditions:</b></p>
                             <ul className="list-disc list-inside">
