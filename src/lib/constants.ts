@@ -56,6 +56,17 @@ export const services: Service[] = [
         ],
       },
       {
+        id: 'tasks',
+        name: 'Specific tasks',
+        type: 'multiple',
+        options: [
+          { id: 'room-cleaning', name: '1. Room Cleaning' },
+          { id: 'fridge-cleaning', name: '2. Fridge Cleaning' },
+          { id: 'wash-basin-cleaning', name: '3. Wash Basin Cleaning' },
+          { id: 'hall-balcony-cleaning', name: '4. Hall and Balcony Cleaning' },
+        ],
+      },
+      {
         id: 'duration',
         name: 'Select Duration',
         type: 'single',
@@ -100,6 +111,16 @@ export const services: Service[] = [
           { id: '2-toilets', name: '2' },
           { id: '3-toilets', name: '3' },
           { id: '4-plus-toilets', name: '4+' },
+        ],
+      },
+      {
+        id: 'tasks',
+        name: 'Specific tasks',
+        type: 'multiple',
+        options: [
+          { id: 'showers-tubs', name: 'Showers and Tubs' },
+          { id: 'tile-grout', name: 'Tile and Grout' },
+          { id: 'mirrors-fixtures', name: 'Mirrors and Fixtures' },
         ],
       },
       {
