@@ -11,7 +11,7 @@ import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { services } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check, XCircle } from 'lucide-react';
+import { Loader2, Check, XCircle, Phone, User } from 'lucide-react';
 import { acceptEstimate, rejectEstimate } from '@/app/customer/bookings/actions';
 import { useToast } from '@/hooks/use-toast';
 
@@ -21,10 +21,15 @@ type Booking = {
   serviceName: string;
   date: Timestamp;
   time: string;
+  workerId?: string;
   workerName?: string;
   status: string;
   estimatedCharge?: number;
   options: Record<string, string | string[]>;
+};
+
+type Worker = {
+    mobile?: string;
 };
 
 export default function OrderDetailPage() {
@@ -32,6 +37,7 @@ export default function OrderDetailPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [booking, setBooking] = useState<Booking | null>(null);
+  const [worker, setWorker] = useState<Worker | null>(null);
   const [loading, setLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
@@ -45,7 +51,17 @@ export default function OrderDetailPage() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setBooking({ id: docSnap.id, ...docSnap.data() } as Booking);
+          const bookingData = { id: docSnap.id, ...docSnap.data() } as Booking;
+          setBooking(bookingData);
+          
+          if (bookingData.workerId) {
+              const workerRef = doc(db, 'workers', bookingData.workerId);
+              const workerSnap = await getDoc(workerRef);
+              if (workerSnap.exists()) {
+                  setWorker(workerSnap.data() as Worker);
+              }
+          }
+
         } else {
           console.log("No such document!");
         }
@@ -153,7 +169,26 @@ export default function OrderDetailPage() {
                     </div>
                     <div className="flex justify-between"><span>Date:</span> <span className="font-medium">{formatDate(booking.date)}</span></div>
                     <div className="flex justify-between"><span>Time:</span> <span className="font-medium">{booking.time}</span></div>
-                    <div className="flex justify-between"><span>Worker:</span> <span className="font-medium">{booking.workerName || 'Not assigned yet'}</span></div>
+                    
+                    {['In Progress', 'Completed'].includes(booking.status) && booking.workerName && (
+                        <>
+                            <Separator />
+                            <div className='py-2'>
+                                <p className='font-medium mb-2'>Worker Details</p>
+                                <div className="flex justify-between items-center">
+                                    <span className='flex items-center gap-2'><User className='w-4 h-4 text-muted-foreground' /> Worker Name:</span> 
+                                    <span className="font-medium">{booking.workerName}</span>
+                                </div>
+                                {worker?.mobile && (
+                                    <div className="flex justify-between items-center">
+                                        <span className='flex items-center gap-2'><Phone className='w-4 h-4 text-muted-foreground' /> Mobile:</span> 
+                                        <span className="font-medium">{worker.mobile}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+
                     <Separator className="my-2" />
                     <div className="flex justify-between text-base"><strong>Total Estimated Value:</strong> <strong className="text-primary">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Pending Estimate`}</strong></div>
                     <div className="mt-4 text-xs text-muted-foreground space-y-1 border-t pt-2">
