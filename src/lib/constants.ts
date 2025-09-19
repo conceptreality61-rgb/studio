@@ -35,15 +35,24 @@ export const services: Service[] = [
     imageId: 'house-cleaning',
     subCategories: [
       {
-        id: 'tasks',
-        name: 'Specific tasks',
-        type: 'multiple',
+        id: 'num-kitchens',
+        name: 'Number of Kitchens',
+        type: 'single',
         options: [
-          { id: 'wash-basin-cleaning', name: '1. Wash Basin Cleaning' },
-          { id: 'kitchen-cleaning', name: '2. Kitchen Cleaning' },
-          { id: 'room-cleaning', name: '3. Room Cleaning' },
-          { id: 'fridge-cleaning', name: '4. Fridge Cleaning' },
-          { id: 'hall-balcony-cleaning', name: '5. Hall and Balcony Cleaning' },
+          { id: '1-kitchen', name: '1' },
+          { id: '2-kitchens', name: '2' },
+        ],
+      },
+       {
+        id: 'num-wash-basins',
+        name: 'Number of Wash Basins',
+        type: 'single',
+        options: [
+          { id: '1-basin', name: '1' },
+          { id: '2-basins', name: '2' },
+          { id: '3-basins', name: '3' },
+          { id: '4-basins', name: '4' },
+          { id: '5-plus-basins', name: '5+' },
         ],
       },
       {
@@ -71,26 +80,26 @@ export const services: Service[] = [
     icon: Bath,
     imageId: 'bathroom-cleaning',
     subCategories: [
-      {
-        id: 'tasks',
-        name: 'Specific tasks',
-        type: 'multiple',
-        options: [
-          { id: 'tile-grout-cleaning', name: 'Tile and Grout Cleaning' },
-          { id: 'toilet-sanitization', name: 'Toilet Sanitization' },
-          { id: 'shower-tub-cleaning', name: 'Shower and Tub Deep Clean' },
-          { id: 'sink-mirror-polishing', name: 'Sink and Mirror Polishing' },
-        ],
-      },
        {
         id: 'num-bathrooms',
         name: 'Number of Bathrooms',
         type: 'single',
         options: [
-          { id: '1-bathroom', name: '1 Bathroom' },
-          { id: '2-bathrooms', name: '2 Bathrooms' },
-          { id: '3-bathrooms', name: '3 Bathrooms' },
-          { id: '4-plus-bathrooms', name: '4+ Bathrooms' },
+          { id: '1-bathroom', name: '1' },
+          { id: '2-bathrooms', name: '2' },
+          { id: '3-bathrooms', name: '3' },
+          { id: '4-plus-bathrooms', name: '4+' },
+        ],
+      },
+      {
+        id: 'num-toilets',
+        name: 'Number of Toilets',
+        type: 'single',
+        options: [
+          { id: '1-toilet', name: '1' },
+          { id: '2-toilets', name: '2' },
+          { id: '3-toilets', name: '3' },
+          { id: '4-plus-toilets', name: '4+' },
         ],
       },
       {

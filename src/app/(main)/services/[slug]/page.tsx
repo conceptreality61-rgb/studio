@@ -152,7 +152,7 @@ export default function ServiceDetailPage() {
                                <RadioGroup
                                   value={selectedOptions[subCategory.id] as string || ''}
                                   onValueChange={(value) => handleOptionChange(subCategory.id, value, 'single')}
-                                  className={subCategory.id.includes('duration') || subCategory.id.includes('num-bathrooms') || subCategory.id.includes('num-tanks') ? 'grid grid-cols-2 gap-2' : ''}
+                                  className={subCategory.id.includes('duration') || subCategory.id.includes('num-') ? 'grid grid-cols-3 gap-2' : ''}
                                 >
                                 {subCategory.options.map(option => (
                                     <div key={option.id} className="flex items-center space-x-2">
