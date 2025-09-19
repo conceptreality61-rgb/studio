@@ -8,7 +8,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { ArrowUp, ArrowDown, Minus, Star } from 'lucide-react';
 
 type StatusHistoryItem = {
   status: string;
@@ -24,6 +24,11 @@ type Booking = {
   createdAt: Timestamp;
 };
 
+type Review = {
+    bookingId: string;
+    rating: number;
+};
+
 type BookingSummary = {
     id: string;
     serviceName: string;
@@ -32,7 +37,20 @@ type BookingSummary = {
     initialEstimate: number;
     finalCost: number;
     costDifference: number;
+    rating?: number;
 }
+
+const renderStars = (rating?: number) => {
+    if (rating === undefined) return <span className="text-muted-foreground">N/A</span>;
+    const fullStars = Math.floor(rating);
+    const emptyStars = 5 - fullStars;
+    return (
+        <div className="flex items-center">
+            {[...Array(fullStars)].map((_, i) => <Star key={`full-${i}`} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
+            {[...Array(emptyStars)].map((_, i) => <Star key={`empty-${i}`} className="h-4 w-4 text-gray-300" />)}
+        </div>
+    );
+};
 
 export default function ManagerAnalyticsPage() {
     const [summaries, setSummaries] = useState<BookingSummary[]>([]);
@@ -42,14 +60,24 @@ export default function ManagerAnalyticsPage() {
     useEffect(() => {
         const fetchCompletedBookings = async () => {
             try {
-                const q = query(
+                // Fetch completed bookings
+                const bookingsQuery = query(
                     collection(db, 'bookings'), 
                     where('status', '==', 'Completed')
                 );
-                const querySnapshot = await getDocs(q);
-
-                const completedBookings = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
+                const bookingsSnapshot = await getDocs(bookingsQuery);
+                const completedBookings = bookingsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
                 
+                // Fetch reviews
+                const reviewsQuery = query(collection(db, 'reviews'));
+                const reviewsSnapshot = await getDocs(reviewsQuery);
+                const reviewsData = reviewsSnapshot.docs.map(doc => doc.data() as Review);
+                const reviewsMap = new Map<string, number>();
+                reviewsData.forEach(review => {
+                    reviewsMap.set(review.bookingId, review.rating);
+                });
+
+
                 // Sort client-side
                 completedBookings.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
 
@@ -68,6 +96,7 @@ export default function ManagerAnalyticsPage() {
                     
                     const finalCost = data.estimatedCharge || 0;
                     const costDifference = finalCost - initialEstimate;
+                    const rating = reviewsMap.get(data.id);
 
                     return {
                         id: data.id,
@@ -77,6 +106,7 @@ export default function ManagerAnalyticsPage() {
                         initialEstimate,
                         finalCost,
                         costDifference,
+                        rating,
                     };
                 });
                 
@@ -116,6 +146,7 @@ export default function ManagerAnalyticsPage() {
                         <TableHead className="text-right">Estimated Cost</TableHead>
                         <TableHead className="text-right">Final Paid Amount</TableHead>
                         <TableHead className="text-right">Cost Difference</TableHead>
+                        <TableHead className="text-right">Rating</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -136,6 +167,9 @@ export default function ManagerAnalyticsPage() {
                                 summary.costDifference < 0 ? <ArrowDown size={14}/> : <Minus size={14}/>}
                                Rs. {Math.abs(summary.costDifference).toFixed(2)}
                            </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                            {renderStars(summary.rating)}
                         </TableCell>
                     </TableRow>
                     ))}
