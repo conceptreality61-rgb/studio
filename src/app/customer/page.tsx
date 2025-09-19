@@ -22,7 +22,9 @@ type Booking = {
 };
 
 type Review = {
+    id: string;
     bookingId: string;
+    userId: string;
 }
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "success" | "warning" | "magenta" } = {
