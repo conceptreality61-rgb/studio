@@ -18,6 +18,7 @@ type Booking = {
     serviceName: string;
     customerName: string;
     status: 'Pending Manager Approval' | 'Pending Worker Assignment' | 'Worker Assigned' | 'Completed' | 'Canceled' | 'In Progress';
+    estimatedCharge?: number;
 };
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "success" | "warning" | "magenta" } = {
@@ -42,7 +43,7 @@ export default function ManagerDashboardPage() {
                 const bookingsSnapshot = await getDocs(collection(db, 'bookings'));
                 const allBookings = bookingsSnapshot.docs.map(doc => doc.data());
                 
-                const totalRevenue = allBookings.reduce((sum, booking) => sum + (booking.status === 'Completed' ? booking.servicePrice : 0), 0);
+                const totalRevenue = allBookings.reduce((sum, booking) => sum + (booking.status === 'Completed' ? booking.estimatedCharge || 0 : 0), 0);
                 const activeBookings = allBookings.filter(b => ['Worker Assigned', 'In Progress'].includes(b.status)).length;
                 
                 const recentBookingsQuery = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'), limit(5));
