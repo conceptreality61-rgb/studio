@@ -87,6 +87,8 @@ export async function completeJob(bookingId: string, finalCharge: number) {
     return { success: true };
   } catch (error: any) {
     console.error('Error completing job:', error);
-    return { success: false, error: error.message || 'Failed to complete job. Please check the logs.' };
+    return { success: false, error: error.message };
   }
 }
+
+    

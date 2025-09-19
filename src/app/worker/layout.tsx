@@ -40,8 +40,8 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
   };
 
   const isNavItemActive = (itemHref: string) => {
-    if (itemHref === '/worker') {
-      return pathname === '/worker/tasks';
+    if (itemHref === '/worker/tasks' && pathname === '/worker') {
+        return true;
     }
     return pathname.startsWith(itemHref);
   }
@@ -113,7 +113,7 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
           <div className='flex items-center gap-4'>
             <SidebarTrigger className="md:hidden" />
             <h1 className="text-xl font-semibold capitalize">
-              {pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}
+              {pathname.split('/').pop()?.replace('-', ' ') || 'Tasks'}
             </h1>
           </div>
         </header>
@@ -122,3 +122,5 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
     </SidebarProvider>
   );
 }
+
+    

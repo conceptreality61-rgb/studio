@@ -146,32 +146,35 @@ function LoginForm({ role, onAuthSuccess }: { role: Role, onAuthSuccess: (role: 
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Check 'users' collection first (managers, customers)
-      let userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (userDoc.exists()) {
-          const userRole = userDoc.data().role as Role;
-          if (userRole === role) {
-            toast({ title: 'Logged in successfully!' });
-            onAuthSuccess(userRole);
-            return;
-          } else {
-             await auth.signOut();
-             throw new Error(`You are not authorized to log in as a ${role}.`);
-          }
-      }
+      let userDoc;
+      let userRole: Role | null = null;
+      let authorized = false;
 
-      // If not in 'users', check 'workers' collection
+      // Determine the expected role and fetch the corresponding document
       if (role === 'worker') {
-        const workerDoc = await getDoc(doc(db, 'workers', user.uid));
-        if (workerDoc.exists()) {
-             toast({ title: 'Logged in successfully!' });
-             onAuthSuccess('worker');
-             return;
+        userDoc = await getDoc(doc(db, 'workers', user.uid));
+        if (userDoc.exists()) {
+          userRole = 'worker';
+          authorized = true;
+        }
+      } else {
+        userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const fetchedRole = userDoc.data().role as Role;
+          if (fetchedRole === role) {
+            userRole = fetchedRole;
+            authorized = true;
+          }
         }
       }
-      
-      await auth.signOut();
-      throw new Error(`Your user data could not be found for the selected role.`);
+
+      if (authorized && userRole) {
+        toast({ title: 'Logged in successfully!' });
+        onAuthSuccess(userRole);
+      } else {
+        await auth.signOut();
+        throw new Error(`You are not authorized to log in as a ${role}.`);
+      }
 
     } catch (error: any) {
       toast({
@@ -312,12 +315,16 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="customer" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="customer">Customer</TabsTrigger>
+              <TabsTrigger value="worker">Worker</TabsTrigger>
               <TabsTrigger value="manager">Manager</TabsTrigger>
             </TabsList>
             <TabsContent value="customer" className="mt-4">
               <LoginForm role="customer" onAuthSuccess={handleAuthSuccess} />
+            </TabsContent>
+            <TabsContent value="worker" className="mt-4">
+              <LoginForm role="worker" onAuthSuccess={handleAuthSuccess} />
             </TabsContent>
             <TabsContent value="manager" className="mt-4">
               <LoginForm role="manager" onAuthSuccess={handleAuthSuccess}/>
@@ -333,3 +340,5 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
     </Card>
   );
 }
+
+    

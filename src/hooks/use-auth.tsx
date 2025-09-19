@@ -5,7 +5,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 type Role = 'customer' | 'worker' | 'manager';
 
@@ -27,11 +27,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(user);
       if (user) {
         try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          // Check 'users' collection first (for customers and managers)
+          let userDoc = await getDoc(doc(db, 'users', user.uid));
           if (userDoc.exists()) {
             setUserRole(userDoc.data().role as Role);
           } else {
-             setUserRole(null);
+            // If not in 'users', check 'workers' collection
+            const workerDoc = await getDoc(doc(db, 'workers', user.uid));
+            if (workerDoc.exists()) {
+              setUserRole('worker');
+            } else {
+              setUserRole(null);
+            }
           }
         } catch (e) {
           console.error("Error fetching user role", e);
@@ -64,6 +71,7 @@ export const useAuth = () => {
 export const useRequireAuth = (requiredRole?: Role) => {
     const { user, userRole, loading } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         if (loading) return;
@@ -73,9 +81,29 @@ export const useRequireAuth = (requiredRole?: Role) => {
             return;
         }
 
-        if (requiredRole && userRole && userRole !== requiredRole) {
-            // Redirect user to their correct dashboard if they are in the wrong section
-            switch (userRole) {
+        const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
+
+        if (requiredRole) {
+            if (userRole !== requiredRole) {
+                // Redirect user to their correct dashboard if they are on the wrong page
+                switch (userRole) {
+                    case 'manager':
+                        router.push('/manager');
+                        break;
+                    case 'worker':
+                        router.push('/worker/tasks');
+                        break;
+                    case 'customer':
+                        router.push('/customer');
+                        break;
+                    default:
+                        // If role is null or mismatched, send back to home/login
+                        router.push('/');
+                }
+            }
+        } else if (user && userRole && isAuthPage) {
+            // If a logged-in user with a role tries to access login/signup, redirect them
+             switch (userRole) {
                 case 'manager':
                     router.push('/manager');
                     break;
@@ -89,7 +117,10 @@ export const useRequireAuth = (requiredRole?: Role) => {
                     router.push('/');
             }
         }
-    }, [user, userRole, loading, router, requiredRole]);
+
+    }, [user, userRole, loading, router, requiredRole, pathname]);
 
     return { user, userRole, loading };
 };
+
+    
