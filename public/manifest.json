@@ -4,8 +4,8 @@
   "description": "Modern service booking for household needs.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#facc15",
+  "background_color": "#EAF2FF",
+  "theme_color": "#77B5FE",
   "prefer_related_applications": false,
   "icons": [
     {
