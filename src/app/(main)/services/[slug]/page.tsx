@@ -17,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { createBooking } from './actions';
 import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function ServiceDetailPage() {
   const { user } = useAuth();
@@ -26,6 +27,7 @@ export default function ServiceDetailPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string | string[]>>({});
+  const [otherRequirements, setOtherRequirements] = useState('');
   const [isClient, setIsClient] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
 
@@ -83,6 +85,7 @@ export default function ServiceDetailPage() {
           date,
           time: selectedTime,
           options: selectedOptions,
+          otherRequirements,
           status: 'Pending Manager Approval',
         });
 
@@ -206,6 +209,15 @@ export default function ServiceDetailPage() {
                             </div>
                         ))}
                         </RadioGroup>
+                    </div>
+
+                    <div>
+                        <h3 className="font-semibold mb-2">Any other requirement</h3>
+                        <Textarea
+                            placeholder="Please provide any specific instructions or requirements..."
+                            value={otherRequirements}
+                            onChange={(e) => setOtherRequirements(e.target.value)}
+                        />
                     </div>
                 </div>
 

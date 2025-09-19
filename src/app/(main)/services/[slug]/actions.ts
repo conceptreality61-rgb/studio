@@ -10,6 +10,7 @@ export async function createBooking(bookingData: {
   date: Date;
   time: string;
   options: Record<string, string | string[]>;
+  otherRequirements: string;
   userId: string;
   customerName: string;
   status: string;
