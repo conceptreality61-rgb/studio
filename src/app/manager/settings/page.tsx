@@ -10,23 +10,25 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
 
+const MANAGER_EMAIL = 'conceptreality61@gmail.com';
+
 export default function ManagerSettingsPage() {
     const { user } = useAuth();
     const { toast } = useToast();
     const [isSending, setIsSending] = useState(false);
     
     const handleSendResetLink = async () => {
-        if (!user || !user.email) {
-            toast({ variant: 'destructive', title: 'Error', description: 'You are not logged in or your email is not available.'});
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to perform this action.'});
             return;
         }
         
         setIsSending(true);
         try {
-            await sendPasswordResetEmail(auth, user.email);
+            await sendPasswordResetEmail(auth, MANAGER_EMAIL);
             toast({ 
                 title: 'Password Reset Link Sent', 
-                description: `A password reset link has been sent to ${user.email}. Please check your inbox.` 
+                description: `A password reset link has been sent to ${MANAGER_EMAIL}. Please check your inbox.` 
             });
         } catch (error: any) {
              toast({ variant: 'destructive', title: 'Error', description: error.message });
@@ -44,7 +46,7 @@ export default function ManagerSettingsPage() {
             </CardHeader>
             <CardContent>
                 <p className="text-sm text-muted-foreground">
-                    To change your password, we will send a secure link to your registered email address. Click the button below to receive your link.
+                    To change your password, we will send a secure link to your registered email address ({MANAGER_EMAIL}). Click the button below to receive your link.
                 </p>
             </CardContent>
             <CardFooter>
