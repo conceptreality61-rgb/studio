@@ -185,16 +185,17 @@ function LoginForm({ role, onAuthSuccess }: { role: Role, onAuthSuccess: (role: 
   };
   
   const handlePasswordReset = async () => {
-    if (!resetEmail) {
+    const emailToReset = role === 'manager' ? SUPERADMIN_EMAIL : resetEmail;
+    if (!emailToReset) {
         toast({ variant: 'destructive', title: 'Error', description: 'Please enter your email address.' });
         return;
     }
     setIsResetting(true);
     try {
-        await sendPasswordResetEmail(auth, resetEmail);
+        await sendPasswordResetEmail(auth, emailToReset);
         toast({
             title: 'Password Reset Email Sent',
-            description: 'Check your inbox for a link to reset your password.',
+            description: `Check your inbox at ${emailToReset} for a link to reset your password.`,
         });
     } catch (error: any) {
         toast({
@@ -232,7 +233,7 @@ function LoginForm({ role, onAuthSuccess }: { role: Role, onAuthSuccess: (role: 
                     </AlertDialogHeader>
                     <div className="space-y-2">
                         <Label htmlFor="reset-email">Email Address</Label>
-                        <Input id="reset-email" type="email" placeholder="you@example.com" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} />
+                        <Input id="reset-email" type="email" placeholder="you@example.com" value={role === 'manager' ? SUPERADMIN_EMAIL : resetEmail} onChange={(e) => setResetEmail(e.target.value)} readOnly={role === 'manager'} />
                     </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -256,11 +257,20 @@ function LoginForm({ role, onAuthSuccess }: { role: Role, onAuthSuccess: (role: 
 
 export function AuthForm({ isSignUp = false }: AuthFormProps) {
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleAuthSuccess = (role: Role) => {
     const path = getRedirectPath(role);
     router.push(path);
   };
+  
+  if (!isClient) {
+    return null;
+  }
   
   if (isSignUp) {
     return (
@@ -323,3 +333,5 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
     </Card>
   );
 }
+
+    
