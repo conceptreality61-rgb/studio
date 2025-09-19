@@ -120,7 +120,7 @@ export const services: Service[] = [
       },
       {
         id: 'num-toilets',
-        name: 'Number of Toilets',
+        name: 'Toilets cleaning',
         type: 'single',
         options: [
           { id: '1-toilet', name: '1' },
