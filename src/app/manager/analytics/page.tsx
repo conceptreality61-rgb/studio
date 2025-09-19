@@ -44,6 +44,7 @@ type Review = {
     workerBehavior: number;
     serviceQuality: number;
     serviceCost?: number;
+    paidAmount?: number;
 };
 
 type BookingSummary = {
@@ -53,7 +54,7 @@ type BookingSummary = {
     completionDate: string | null;
     initialEstimate: number;
     finalCost: number;
-    costDifference: number;
+    customerPaidAmount?: number;
     rating?: number;
     comment?: string;
 }
@@ -132,7 +133,6 @@ export default function ManagerAnalyticsPage() {
                     const initialEstimate = initialEstimateEntry && 'estimate' in initialEstimateEntry ? (initialEstimateEntry as any).estimate : data.initialEstimate || 0;
                     
                     const finalCost = data.estimatedCharge || 0;
-                    const costDifference = finalCost - initialEstimate;
                     const review = reviewsMap.get(data.id);
 
                     return {
@@ -142,7 +142,7 @@ export default function ManagerAnalyticsPage() {
                         completionDate,
                         initialEstimate,
                         finalCost,
-                        costDifference,
+                        customerPaidAmount: review?.paidAmount,
                         rating: review?.rating,
                         comment: review?.comment,
                     };
@@ -212,8 +212,8 @@ export default function ManagerAnalyticsPage() {
                                     <TableHead>Job Start Date</TableHead>
                                     <TableHead>Job Completion Date</TableHead>
                                     <TableHead className="text-right">Estimated Cost</TableHead>
-                                    <TableHead className="text-right">Final Paid Amount</TableHead>
-                                    <TableHead className="text-right">Cost Difference</TableHead>
+                                    <TableHead className="text-right">Final Bill Amount</TableHead>
+                                    <TableHead className="text-right">Customer Paid Amount</TableHead>
                                     <TableHead className="text-right">Rating</TableHead>
                                     <TableHead className="text-center">Comment</TableHead>
                                 </TableRow>
@@ -228,14 +228,7 @@ export default function ManagerAnalyticsPage() {
                                     <TableCell className="text-right">Rs. {summary.initialEstimate.toFixed(2)}</TableCell>
                                     <TableCell className="text-right">Rs. {summary.finalCost.toFixed(2)}</TableCell>
                                     <TableCell className="text-right">
-                                    <div className={`flex items-center justify-end gap-1 ${
-                                        summary.costDifference > 0 ? 'text-destructive' : 
-                                        summary.costDifference < 0 ? 'text-green-600' : 'text-muted-foreground'
-                                    }`}>
-                                        {summary.costDifference > 0 ? <ArrowUp size={14}/> : 
-                                            summary.costDifference < 0 ? <ArrowDown size={14}/> : <Minus size={14}/>}
-                                        Rs. {Math.abs(summary.costDifference).toFixed(2)}
-                                    </div>
+                                        {summary.customerPaidAmount !== undefined ? `Rs. ${summary.customerPaidAmount.toFixed(2)}` : <span className="text-muted-foreground text-xs">N/A</span>}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         {renderStars(summary.rating)}
