@@ -10,7 +10,7 @@ export async function submitEstimate(bookingId: string, estimatedCharge: number)
     await updateDoc(bookingRef, {
       estimatedCharge: estimatedCharge,
       status: 'Pending Customer Approval',
-      statusHistory: arrayUnion({ status: 'Pending Customer Approval', timestamp: serverTimestamp() }),
+      statusHistory: arrayUnion({ status: 'Pending Customer Approval', timestamp: new Date() }),
     });
     return { success: true };
   } catch (error: any) {
@@ -35,7 +35,7 @@ export async function assignWorkerToBooking(
 
     const newStatusHistory = [
       ...(existingData.statusHistory || []), 
-      { status: 'Worker Assigned', timestamp: serverTimestamp() }
+      { status: 'Worker Assigned', timestamp: new Date() }
     ];
 
     const newCanceledWorkerIds = [...(existingData.canceledWorkerIds || [])];
@@ -65,7 +65,7 @@ export async function acceptJob(bookingId: string) {
     const bookingRef = doc(db, 'bookings', bookingId);
     await updateDoc(bookingRef, {
       status: 'In Progress',
-      statusHistory: arrayUnion({ status: 'In Progress', timestamp: serverTimestamp() }),
+      statusHistory: arrayUnion({ status: 'In Progress', timestamp: new Date() }),
     });
     return { success: true };
   } catch (error: any) {
@@ -86,7 +86,7 @@ export async function refuseJob(bookingId: string, workerId: string) {
     const newRefusedBy = [...(existingData.refusedBy || []), workerId];
     const newStatusHistory = [
       ...(existingData.statusHistory || []),
-      { status: 'Pending Manager Approval', timestamp: serverTimestamp(), reason: `Refused by ${workerId}` }
+      { status: 'Pending Manager Approval', timestamp: new Date(), reason: `Refused by ${workerId}` }
     ];
 
     await updateDoc(bookingRef, {
@@ -110,7 +110,7 @@ export async function completeJob(bookingId: string, finalCharge: number) {
     await updateDoc(bookingRef, {
       status: 'Completed',
       estimatedCharge: finalCharge,
-      statusHistory: arrayUnion({ status: 'Completed', timestamp: serverTimestamp() }),
+      statusHistory: arrayUnion({ status: 'Completed', timestamp: new Date() }),
     });
     return { success: true };
   } catch (error: any) {

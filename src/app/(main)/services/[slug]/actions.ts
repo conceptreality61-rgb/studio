@@ -18,7 +18,7 @@ export async function createBooking(bookingData: {
     const docRef = await addDoc(collection(db, 'bookings'), {
       ...bookingData,
       createdAt: serverTimestamp(),
-      statusHistory: [{ status: bookingData.status, timestamp: serverTimestamp() }],
+      statusHistory: [{ status: bookingData.status, timestamp: new Date() }],
     });
     return { success: true, bookingId: docRef.id };
   } catch (error) {

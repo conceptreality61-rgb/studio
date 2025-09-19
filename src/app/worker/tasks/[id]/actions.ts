@@ -9,7 +9,7 @@ export async function acceptJob(bookingId: string) {
     const bookingRef = doc(db, 'bookings', bookingId);
     await updateDoc(bookingRef, {
       status: 'In Progress',
-      statusHistory: arrayUnion({ status: 'In Progress', timestamp: serverTimestamp() }),
+      statusHistory: arrayUnion({ status: 'In Progress', timestamp: new Date() }),
     });
     return { success: true };
   } catch (error: any) {
@@ -30,7 +30,7 @@ export async function refuseJob(bookingId: string, workerId: string) {
     const newRefusedBy = [...(existingData.refusedBy || []), workerId];
     const newStatusHistory = [
       ...(existingData.statusHistory || []),
-      { status: 'Pending Manager Approval', timestamp: serverTimestamp(), reason: `Refused by ${workerId}` }
+      { status: 'Pending Manager Approval', timestamp: new Date(), reason: `Refused by ${workerId}` }
     ];
 
     await updateDoc(bookingRef, {

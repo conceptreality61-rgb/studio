@@ -9,7 +9,7 @@ export async function acceptEstimate(bookingId: string) {
     const bookingRef = doc(db, 'bookings', bookingId);
     await updateDoc(bookingRef, {
       status: 'Pending Worker Assignment',
-      statusHistory: arrayUnion({ status: 'Pending Worker Assignment', timestamp: serverTimestamp() }),
+      statusHistory: arrayUnion({ status: 'Pending Worker Assignment', timestamp: new Date() }),
     });
     return { success: true };
   } catch (error: any) {
@@ -22,7 +22,7 @@ export async function rejectEstimate(bookingId: string) {
     const bookingRef = doc(db, 'bookings', bookingId);
     await updateDoc(bookingRef, {
       status: 'Canceled',
-      statusHistory: arrayUnion({ status: 'Canceled', timestamp: serverTimestamp() }),
+      statusHistory: arrayUnion({ status: 'Canceled', timestamp: new Date() }),
     });
     return { success: true };
   } catch (error: any) {
