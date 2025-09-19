@@ -48,7 +48,7 @@ export const services: Service[] = [
       },
       {
         id: 'num-kitchens',
-        name: 'Number of Kitchens',
+        name: 'Kitchen cleaning',
         type: 'single',
         options: [
           { id: '1-kitchen', name: '1' },
