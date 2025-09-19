@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import OrderTracker from "@/components/order-tracker";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -9,14 +9,17 @@ import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { services } from '@/lib/constants';
 
 type Booking = {
+  serviceId: string;
   serviceName: string;
   date: Timestamp;
   time: string;
   workerName?: string;
   status: string;
   estimatedCharge?: number;
+  options: Record<string, string | string[]>;
 };
 
 export default function OrderDetailPage() {
@@ -45,6 +48,32 @@ export default function OrderDetailPage() {
 
     fetchBooking();
   }, [params.id]);
+
+  const serviceDetails = useMemo(() => {
+    if (!booking) return null;
+    return services.find(s => s.id === booking.serviceId);
+  }, [booking]);
+
+  const customerSelections = useMemo(() => {
+    if (!booking || !serviceDetails) return [];
+    
+    const selections: string[] = [];
+
+    serviceDetails.subCategories?.forEach(subCat => {
+        const selection = booking.options[subCat.id];
+        if (selection) {
+            const selectedIds = Array.isArray(selection) ? selection : [selection];
+
+            selectedIds.forEach(id => {
+                const option = subCat.options.find(opt => opt.id === id);
+                if(option) {
+                    selections.push(option.name);
+                }
+            });
+        }
+    });
+    return selections;
+  }, [booking, serviceDetails]);
   
   const formatDate = (timestamp: Timestamp) => {
     if (!timestamp) return 'N/A';
@@ -71,7 +100,17 @@ export default function OrderDetailPage() {
                 </div>
             ) : booking ? (
                 <div className="space-y-2 text-sm">
-                    <div className="flex justify-between"><span>Service:</span> <span className="font-medium">{booking.serviceName}</span></div>
+                    <div className="flex justify-between">
+                        <span>Service:</span> 
+                        <div className="text-right">
+                          <span className="font-medium">{booking.serviceName}</span>
+                          {customerSelections.length > 0 && (
+                            <div className="text-xs text-muted-foreground">
+                              {customerSelections.join(' • ')}
+                            </div>
+                          )}
+                        </div>
+                    </div>
                     <div className="flex justify-between"><span>Date:</span> <span className="font-medium">{formatDate(booking.date)}</span></div>
                     <div className="flex justify-between"><span>Time:</span> <span className="font-medium">{booking.time}</span></div>
                     <div className="flex justify-between"><span>Worker:</span> <span className="font-medium">{booking.workerName || 'Not assigned yet'}</span></div>
