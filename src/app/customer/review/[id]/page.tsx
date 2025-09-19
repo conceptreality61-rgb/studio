@@ -15,6 +15,7 @@ import { doc, setDoc, serverTimestamp, getDoc, Timestamp } from 'firebase/firest
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
 
 const StarRating = ({
   rating,
@@ -62,6 +63,7 @@ export default function ReviewPage() {
   const [workerBehavior, setWorkerBehavior] = useState(0);
   const [serviceQuality, setServiceQuality] = useState(0);
   const [comment, setComment] = useState('');
+  const [paidAmount, setPaidAmount] = useState<number | string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const bookingId = params.id as string;
 
@@ -77,6 +79,7 @@ export default function ReviewPage() {
                     serviceName: data.serviceName,
                     estimatedCharge: data.estimatedCharge
                 });
+                setPaidAmount(data.estimatedCharge || '');
             }
         } catch (error) {
             console.error("Failed to fetch booking details for review page:", error);
@@ -107,6 +110,7 @@ export default function ReviewPage() {
     setIsSubmitting(true);
     try {
         const overallRating = (appExperience + statusUpdateRating + workerBehavior + serviceQuality) / 4;
+        const finalPaidAmount = typeof paidAmount === 'string' ? parseFloat(paidAmount) : paidAmount;
 
         await setDoc(doc(db, 'reviews', `${bookingId}_${user.uid}`), {
             bookingId,
@@ -120,7 +124,7 @@ export default function ReviewPage() {
             createdAt: serverTimestamp(),
             serviceName: bookingInfo?.serviceName || 'Service',
             userName: user.displayName,
-            paidAmount: bookingInfo?.estimatedCharge || 0
+            paidAmount: isNaN(finalPaidAmount) ? 0 : finalPaidAmount
         });
 
         toast({
@@ -194,12 +198,20 @@ export default function ReviewPage() {
                     <Label>Quality of the service provided</Label>
                     <StarRating rating={serviceQuality} setRating={setServiceQuality} />
                   </div>
-                  {bookingInfo?.estimatedCharge && (
-                    <div className='flex justify-between items-center text-sm'>
-                       <Label>Final amount paid</Label>
-                       <span className="font-bold">Rs. {bookingInfo.estimatedCharge}</span>
+                    <div className='flex justify-between items-center'>
+                       <Label htmlFor="paid-amount">Final amount paid</Label>
+                       <div className="flex items-center gap-2">
+                         <span className="font-bold">Rs.</span>
+                         <Input 
+                            id="paid-amount"
+                            type="number"
+                            className="w-28 font-bold"
+                            value={paidAmount}
+                            onChange={(e) => setPaidAmount(e.target.value)}
+                            placeholder="0.00"
+                          />
+                       </div>
                    </div>
-                  )}
               </div>
             </div>
           </div>
@@ -226,4 +238,4 @@ export default function ReviewPage() {
   );
 }
 
-
+    
