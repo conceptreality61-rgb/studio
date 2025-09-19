@@ -24,6 +24,8 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogTrigger,
+  AlertDialogFooter,
+  AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 
 type StatusHistoryItem = {
@@ -404,10 +406,15 @@ export default function ManagerAnalyticsPage() {
                             )}
                         </div>
                     </div>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Close</AlertDialogCancel>
+                    </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
         )}
     </div>
   );
+
+    
 
     
