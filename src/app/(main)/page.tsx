@@ -7,7 +7,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import ServiceCard from '@/components/service-card';
 import { services } from '@/lib/constants';
-import { CheckCircle, Users, Calendar, Star } from 'lucide-react';
+import { CheckCircle, Users, Calendar, Star, Download } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -39,6 +39,7 @@ type Review = {
 
 export default function HomePage() {
   const heroImage = PlaceHolderImages.find((p) => p.id === 'hero');
+  const pwaImage = PlaceHolderImages.find((p) => p.id === 'pwa-install');
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loadingTestimonials, setLoadingTestimonials] = useState(true);
   const [latestReviews, setLatestReviews] = useState<Review[]>([]);
@@ -177,7 +178,39 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="testimonials" className="py-16 md:py-24 bg-background">
+      <section id="pwa-install" className="py-16 md:py-24 bg-background">
+        <div className="container">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="text-center md:text-left">
+              <h2 className="text-3xl md:text-4xl font-headline font-bold">Get Our App</h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                Experience CleanSweep on the go! Install our Progressive Web App (PWA) on your phone or desktop for a faster, app-like experience. No app store required!
+              </p>
+              <p className="mt-2 text-muted-foreground">
+                Get quick access to booking, tracking, and managing your services with a single tap.
+              </p>
+              <Button size="lg" className="mt-8">
+                <Download className="mr-2 h-5 w-5" />
+                Install App
+              </Button>
+            </div>
+            <div className="flex justify-center">
+                {pwaImage && (
+                    <Image
+                        src={pwaImage.imageUrl}
+                        alt={pwaImage.description}
+                        width={600}
+                        height={500}
+                        className="rounded-lg shadow-xl"
+                        data-ai-hint={pwaImage.imageHint}
+                    />
+                )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="testimonials" className="py-16 md:py-24 bg-secondary">
         <div className="container">
           <div className="text-center">
             <h2 className="text-3xl md:text-4xl font-headline font-bold">What Our Customers Say</h2>
@@ -234,7 +267,7 @@ export default function HomePage() {
         </div>
       </section>
 
-       <section id="reviews" className="py-16 md:py-24 bg-secondary">
+       <section id="reviews" className="py-16 md:py-24 bg-background">
         <div className="container">
           <div className="text-center">
             <h2 className="text-3xl md:text-4xl font-headline font-bold">Latest Reviews</h2>

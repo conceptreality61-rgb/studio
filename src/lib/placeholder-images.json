@@ -60,6 +60,12 @@
       "description": "A custom background image for the hero section, uploaded by the user.",
       "imageUrl": "/my-hero-background.jpg",
       "imageHint": "home services collage"
+    },
+    {
+      "id": "pwa-install",
+      "description": "An illustration of a smartphone screen showing an app icon being installed.",
+      "imageUrl": "https://picsum.photos/seed/pwa/600/500",
+      "imageHint": "app install"
     }
   ]
 }
