@@ -16,7 +16,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
-import { format, subDays, startOfMonth, startOfWeek } from 'date-fns';
+import { format, subDays, startOfMonth, startOfWeek, endOfDay, startOfDay } from 'date-fns';
 import { cn } from "@/lib/utils";
 
 type Booking = {
@@ -88,32 +88,34 @@ export default function ManagerDashboardPage() {
 
         const { bookings, users, workers } = allData;
         
-        // Filter completed bookings by date
         const completedBookings = bookings.filter(b => b.status === 'Completed');
         
         let filteredRevenueBookings = completedBookings;
 
-        let range: { from: Date, to: Date } | undefined;
+        if (filter !== 'all') {
+            let fromDate: Date | undefined;
+            let toDate: Date | undefined;
 
-        if (filter === 'month') {
-            range = { from: startOfMonth(new Date()), to: new Date() };
-        } else if (filter === 'week') {
-            range = { from: subDays(new Date(), 6), to: new Date() };
-        } else if (filter === 'custom' && dateRange?.from) {
-            range = { from: dateRange.from, to: dateRange.to || dateRange.from };
-        }
-
-        if (range) {
-            const from = range.from;
-            const to = new Date(range.to);
-            to.setHours(23, 59, 59, 999); // Include the whole end day
-
-            filteredRevenueBookings = completedBookings.filter(b => {
-                const completionEntry = b.statusHistory?.find(h => h.status === 'Completed');
-                if (!completionEntry) return false;
-                const completionDate = completionEntry.timestamp.toDate();
-                return completionDate >= from && completionDate <= to;
-            });
+            if (filter === 'month') {
+                fromDate = startOfMonth(new Date());
+                toDate = new Date();
+            } else if (filter === 'week') {
+                fromDate = startOfWeek(new Date());
+                toDate = new Date();
+            } else if (filter === 'custom' && dateRange?.from) {
+                fromDate = startOfDay(dateRange.from);
+                toDate = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+            }
+            
+            if (fromDate && toDate) {
+                const finalToDate = toDate;
+                filteredRevenueBookings = completedBookings.filter(b => {
+                    const completionEntry = b.statusHistory?.find(h => h.status === 'Completed');
+                    if (!completionEntry) return false;
+                    const completionDate = completionEntry.timestamp.toDate();
+                    return completionDate >= fromDate! && completionDate <= finalToDate;
+                });
+            }
         }
         
         const totalRevenue = filteredRevenueBookings.reduce((sum, booking) => sum + (booking.estimatedCharge || 0), 0);
