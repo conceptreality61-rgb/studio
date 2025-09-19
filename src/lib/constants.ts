@@ -39,11 +39,11 @@ export const services: Service[] = [
         name: 'Specific tasks',
         type: 'multiple',
         options: [
-          { id: 'wash-basin-cleaning', name: 'Wash Basin Cleaning' },
-          { id: 'kitchen-cleaning', name: 'Kitchen Cleaning' },
-          { id: 'room-cleaning', name: 'Room Cleaning' },
-          { id: 'fridge-cleaning', name: 'Fridge Cleaning' },
-          { id: 'hall-balcony-cleaning', name: 'Hall and Balcony Cleaning' },
+          { id: 'wash-basin-cleaning', name: '1. Wash Basin Cleaning' },
+          { id: 'kitchen-cleaning', name: '2. Kitchen Cleaning' },
+          { id: 'room-cleaning', name: '3. Room Cleaning' },
+          { id: 'fridge-cleaning', name: '4. Fridge Cleaning' },
+          { id: 'hall-balcony-cleaning', name: '5. Hall and Balcony Cleaning' },
         ],
       },
       {
