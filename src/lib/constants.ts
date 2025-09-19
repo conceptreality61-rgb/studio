@@ -43,7 +43,7 @@ export const services: Service[] = [
           { id: 'kitchen-cleaning', name: 'Kitchen Cleaning' },
           { id: 'room-cleaning', name: 'Room Cleaning' },
           { id: 'fridge-cleaning', name: 'Fridge Cleaning' },
-          { id: 'baby-care', name: 'Baby Care' },
+          { id: 'hall-balcony-cleaning', name: 'Hall and Balcony Cleaning' },
         ],
       },
       {
