@@ -532,6 +532,7 @@ export default function ManagerBookingDetailPage() {
                                 <li>Service will be provided as per the service description and estimated value.</li>
                                 <li>Estimated value may change as per actual condition.</li>
                                 <li>All cleaning material will be provided by the service provider.</li>
+                                <li>Discuss for final value as per actual requirement before work starts.</li>
                                 <li>No extra tips to be paid to the worker.</li>
                                 <li>Please try to make payments in online mode.</li>
                             </ul>
