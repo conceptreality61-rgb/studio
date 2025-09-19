@@ -29,6 +29,7 @@ export async function refuseJob(bookingId: string, workerId: string) {
     });
     return { success: true };
   } catch (error: any) {
+    console.error('Error refusing job:', error);
     return { success: false, error: 'Failed to refuse job.' };
   }
 }
