@@ -19,6 +19,7 @@ type Booking = {
   date: Timestamp;
   status: string;
   estimatedCharge?: number;
+  createdAt: Timestamp;
 };
 
 type Review = {
