@@ -35,6 +35,18 @@ export const services: Service[] = [
     imageId: 'house-cleaning',
     subCategories: [
       {
+        id: 'num-rooms',
+        name: 'Number of Rooms',
+        type: 'single',
+        options: [
+          { id: '1-room', name: '1' },
+          { id: '2-rooms', name: '2' },
+          { id: '3-rooms', name: '3' },
+          { id: '4-rooms', name: '4' },
+          { id: '5-plus-rooms', name: '5+' },
+        ],
+      },
+      {
         id: 'num-kitchens',
         name: 'Number of Kitchens',
         type: 'single',
@@ -56,14 +68,33 @@ export const services: Service[] = [
         ],
       },
       {
-        id: 'tasks',
-        name: 'Specific tasks',
-        type: 'multiple',
+        id: 'num-fridges',
+        name: 'Number of Fridges',
+        type: 'single',
         options: [
-          { id: 'room-cleaning', name: '1. Room Cleaning' },
-          { id: 'fridge-cleaning', name: '2. Fridge Cleaning' },
-          { id: 'wash-basin-cleaning', name: '3. Wash Basin Cleaning' },
-          { id: 'hall-balcony-cleaning', name: '4. Hall and Balcony Cleaning' },
+          { id: '1-fridge', name: '1' },
+          { id: '2-fridges', name: '2' },
+          { id: '3-plus-fridges', name: '3+' },
+        ],
+      },
+      {
+        id: 'num-halls',
+        name: 'Number of Halls',
+        type: 'single',
+        options: [
+          { id: '1-hall', name: '1' },
+          { id: '2-halls', name: '2' },
+          { id: '3-plus-halls', name: '3+' },
+        ],
+      },
+      {
+        id: 'num-balconies',
+        name: 'Number of Balconies',
+        type: 'single',
+        options: [
+          { id: '1-balcony', name: '1' },
+          { id: '2-balconies', name: '2' },
+          { id: '3-plus-balconies', name: '3+' },
         ],
       },
       {
