@@ -4,6 +4,19 @@
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 
+export async function submitEstimate(bookingId: string, estimatedCharge: number) {
+  try {
+    const bookingRef = doc(db, 'bookings', bookingId);
+    await updateDoc(bookingRef, {
+      estimatedCharge: estimatedCharge,
+      status: 'Pending Customer Approval',
+    });
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: 'Failed to submit estimate.' };
+  }
+}
+
 export async function assignWorkerToBooking(
   bookingId: string, 
   workerId: string, 

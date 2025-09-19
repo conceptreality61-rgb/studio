@@ -2,7 +2,7 @@
 'use client';
 
 import { cn } from "@/lib/utils"
-import { CheckCircle, Loader, Clock, UserCheck, Check, FileCheck } from "lucide-react";
+import { CheckCircle, Loader, Clock, UserCheck, Check, FileCheck, CircleHelp, AlertTriangle } from "lucide-react";
 import { useMemo } from "react";
 
 type Step = {
@@ -19,6 +19,7 @@ export default function OrderTracker({ status }: OrderTrackerProps) {
 
   const steps: Step[] = useMemo(() => [
     { name: 'Pending Approval', status: 'upcoming', icon: <FileCheck /> },
+    { name: 'Pending Customer Approval', status: 'upcoming', icon: <CircleHelp />},
     { name: 'Worker Assigned', status: 'upcoming', icon: <UserCheck /> },
     { name: 'In Progress', status: 'upcoming', icon: <Loader className="animate-spin" /> },
     { name: 'Service Completed', status: 'upcoming', icon: <Check /> },
@@ -27,13 +28,27 @@ export default function OrderTracker({ status }: OrderTrackerProps) {
   const currentStepIndex = useMemo(() => {
     switch (status) {
         case 'Pending Manager Approval': return 0;
-        case 'Worker Assigned': return 1;
-        case 'In Progress': return 2;
-        case 'Completed': return 3;
+        case 'Pending Customer Approval': return 1;
+        case 'Worker Assigned': return 2;
+        case 'In Progress': return 3;
+        case 'Completed': return 4;
+        case 'Canceled': return -2; // Special case for canceled
         default: return -1;
     }
   }, [status]);
   
+  if (currentStepIndex === -2) {
+    return (
+      <div className="flex items-center gap-3 bg-red-50 border-l-4 border-destructive p-4 rounded-md">
+        <AlertTriangle className="text-destructive" />
+        <div>
+          <p className="font-semibold">Booking Canceled</p>
+          <p className="text-sm text-muted-foreground">This booking has been canceled and will not proceed.</p>
+        </div>
+      </div>
+    );
+  }
+
   const processedSteps = useMemo(() => {
     return steps.map((step, index) => {
         if (index < currentStepIndex) {

@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, Star, XCircle, PlusCircle, Loader2 } from "lucide-react";
+import { ArrowRight, Star, XCircle, PlusCircle, Loader2, Check, AlertTriangle, CircleHelp } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +23,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, updateDoc, Timestamp, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { acceptEstimate, rejectEstimate } from './actions';
 
 type Booking = {
   id: string;
@@ -31,15 +32,18 @@ type Booking = {
   status: string;
   servicePrice: number;
   time: string;
+  estimatedCharge?: number;
 };
 
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
+const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "warning" } = {
   Completed: "default",
   "Worker Assigned": "secondary",
   "Pending Manager Approval": "outline",
+  "Pending Customer Approval": "warning",
   "In Progress": "secondary",
   Canceled: "destructive"
 };
+
 
 export default function BookingsPage() {
   const { user } = useAuth();
@@ -47,6 +51,10 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(true);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
+  const [isEstimateActionLoading, setIsEstimateActionLoading] = useState<string | null>(null);
+  const [estimateAction, setEstimateAction] = useState<'accept' | 'reject' | null>(null);
+  const [estimateAlertOpen, setEstimateAlertOpen] = useState(false);
+  const [selectedBookingForEstimate, setSelectedBookingForEstimate] = useState<Booking | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -78,6 +86,45 @@ export default function BookingsPage() {
 
     fetchBookings();
   }, [user, toast]);
+
+  const handleEstimateActionClick = (booking: Booking, action: 'accept' | 'reject') => {
+    setSelectedBookingForEstimate(booking);
+    setEstimateAction(action);
+    setEstimateAlertOpen(true);
+  }
+
+  const handleConfirmEstimateAction = async () => {
+    if (!selectedBookingForEstimate || !estimateAction) return;
+
+    setIsEstimateActionLoading(selectedBookingForEstimate.id);
+    try {
+      let result;
+      if (estimateAction === 'accept') {
+        result = await acceptEstimate(selectedBookingForEstimate.id);
+        if (result.success) {
+          toast({ title: "Estimate Accepted", description: "The manager has been notified to proceed." });
+          setBookings(current => current.map(b => b.id === selectedBookingForEstimate.id ? { ...b, status: 'Pending Manager Approval' } : b));
+        } else {
+          throw new Error(result.error);
+        }
+      } else { // reject
+        result = await rejectEstimate(selectedBookingForEstimate.id);
+        if (result.success) {
+          toast({ title: "Estimate Rejected", description: "This booking has been canceled." });
+          setBookings(current => current.map(b => b.id === selectedBookingForEstimate.id ? { ...b, status: 'Canceled' } : b));
+        } else {
+          throw new Error(result.error);
+        }
+      }
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Action Failed', description: error.message });
+    } finally {
+      setIsEstimateActionLoading(null);
+      setEstimateAlertOpen(false);
+      setSelectedBookingForEstimate(null);
+      setEstimateAction(null);
+    }
+  };
 
 
   const handleCancelClick = (bookingId: string) => {
@@ -124,7 +171,7 @@ export default function BookingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>My Bookings</CardTitle>
-          <CardDescription>View your booking history and leave reviews for completed services.</CardDescription>
+          <CardDescription>View your booking history and manage upcoming services.</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -141,7 +188,7 @@ export default function BookingsPage() {
                   <TableHead>Date & Time</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
-                  <TableHead></TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -152,13 +199,19 @@ export default function BookingsPage() {
                     <TableCell>
                       <Badge variant={statusVariant[booking.status] || 'default'}>{booking.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-right">Rs.{booking.servicePrice}/hr</TableCell>
+                    <TableCell className="text-right">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Rs.${booking.servicePrice}/hr`}</TableCell>
                     <TableCell className="text-right">
-                      {booking.status === 'Completed' ? (
+                      {booking.status === 'Pending Customer Approval' ? (
+                          isEstimateActionLoading === booking.id ? <Loader2 className="animate-spin" /> :
+                          <div className="flex gap-2 justify-end">
+                            <Button size="sm" onClick={() => handleEstimateActionClick(booking, 'accept')}><Check className="mr-2 h-4 w-4" />Accept</Button>
+                            <Button size="sm" variant="destructive" onClick={() => handleEstimateActionClick(booking, 'reject')}><XCircle className="mr-2 h-4 w-4" />Reject</Button>
+                          </div>
+                      ) : booking.status === 'Completed' ? (
                         <Button variant="outline" size="sm" asChild>
                           <Link href={`/customer/review/${booking.id}`}>
                             <Star className="mr-2 h-4 w-4" />
-                            Leave a Review
+                            Leave Review
                           </Link>
                         </Button>
                       ) : !['Completed', 'Canceled'].includes(booking.status) ? (
@@ -202,6 +255,29 @@ export default function BookingsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setBookingToCancel(null)}>Back</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmCancel}>Confirm Cancellation</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+       <AlertDialog open={estimateAlertOpen} onOpenChange={setEstimateAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+                {estimateAction === 'accept' ? <Check className="text-green-500"/> : <AlertTriangle className="text-destructive"/>}
+                Confirm Your Decision
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {estimateAction === 'accept' 
+                ? `You are about to accept the estimated charge of Rs. ${selectedBookingForEstimate?.estimatedCharge}. The manager will be notified to proceed with assigning a worker.`
+                : `You are about to reject the estimated charge. This will cancel the booking. Are you sure?`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Back</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmEstimateAction}>
+              {estimateAction === 'accept' ? 'Yes, Accept Estimate' : 'Yes, Reject and Cancel'}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

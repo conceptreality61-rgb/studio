@@ -33,10 +33,11 @@ type Booking = {
   workerId?: string;
   workerName?: string;
   date: Timestamp;
-  status: 'Pending Manager Approval' | 'Worker Assigned' | 'Completed' | 'Canceled' | 'In Progress';
+  status: 'Pending Manager Approval' | 'Pending Customer Approval' | 'Worker Assigned' | 'Completed' | 'Canceled' | 'In Progress';
   servicePrice: number;
   refusedBy?: string[];
   canceledWorkerIds?: string[];
+  estimatedCharge?: number;
 };
 
 type Worker = {
@@ -46,6 +47,7 @@ type Worker = {
 
 const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "success" | "warning" } = {
   'Pending Manager Approval': "destructive",
+  'Pending Customer Approval': 'warning',
   'Worker Assigned': "info",
   'In Progress': "secondary",
   'Completed': "success",
@@ -98,10 +100,11 @@ export default function ManagerBookingsPage() {
 
                 const statusOrder = {
                     'Pending Manager Approval': 1,
-                    'Worker Assigned': 2,
-                    'In Progress': 3,
-                    'Completed': 4,
-                    'Canceled': 5,
+                    'Pending Customer Approval': 2,
+                    'Worker Assigned': 3,
+                    'In Progress': 4,
+                    'Completed': 5,
+                    'Canceled': 6,
                 };
                 
                 bookingsData.sort((a, b) => {
@@ -273,7 +276,7 @@ export default function ManagerBookingsPage() {
                         {booking.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">Rs.{booking.servicePrice}/hr</TableCell>
+                    <TableCell className="text-right">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Rs. ${booking.servicePrice}/hr`}</TableCell>
                     <TableCell>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>

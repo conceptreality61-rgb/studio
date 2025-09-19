@@ -9,14 +9,16 @@ import { Separator } from "@/components/ui/separator";
 import { db } from '@/lib/firebase';
 import { doc, getDoc, Timestamp, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { User, MapPin, Calendar, Clock, DollarSign, Briefcase, UserCheck, Loader2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { assignWorkerToBooking, acceptJob, refuseJob, completeJob } from './actions';
+import { assignWorkerToBooking, acceptJob, refuseJob, completeJob, submitEstimate } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { addHours, differenceInHours, startOfDay, endOfDay } from 'date-fns';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Booking = {
   id: string;
@@ -32,6 +34,7 @@ type Booking = {
   customerName: string;
   refusedBy?: string[];
   canceledWorkerIds?: string[];
+  estimatedCharge?: number;
 };
 
 type CustomerProfile = {
@@ -49,10 +52,11 @@ type Worker = {
     status: 'Active' | 'Inactive';
 };
 
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" } = {
+const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "warning" } = {
   Completed: "default",
   "Worker Assigned": "info",
   "Pending Manager Approval": "outline",
+  "Pending Customer Approval": "warning",
   "In Progress": "secondary",
   Canceled: "destructive"
 };
@@ -65,6 +69,7 @@ export default function ManagerBookingDetailPage() {
   const [customer, setCustomer] = useState<CustomerProfile | null>(null);
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [selectedWorkerId, setSelectedWorkerId] = useState<string | undefined>(undefined);
+  const [estimatedCharge, setEstimatedCharge] = useState<number | string>('');
   const [isAssigning, setIsAssigning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -175,6 +180,20 @@ export default function ManagerBookingDetailPage() {
     if (!timestamp) return 'N/A';
     return timestamp.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   }
+
+  const handleSubmitEstimate = async () => {
+    if (!booking || !estimatedCharge) return;
+    setIsSubmitting(true);
+    const charge = typeof estimatedCharge === 'string' ? parseFloat(estimatedCharge) : estimatedCharge;
+    const result = await submitEstimate(booking.id, charge);
+    if (result.success) {
+      toast({ title: 'Estimate Submitted', description: 'The customer has been notified for approval.' });
+      setBooking(prev => prev ? { ...prev, status: 'Pending Customer Approval', estimatedCharge: charge } : null);
+    } else {
+      toast({ variant: 'destructive', title: 'Submission Failed', description: result.error });
+    }
+    setIsSubmitting(false);
+  }
   
   const handleAssignWorker = async () => {
       if (!selectedWorkerId || !booking) return;
@@ -277,12 +296,40 @@ export default function ManagerBookingDetailPage() {
       case 'Pending Manager Approval':
         return (
           <>
-            <h3 className="font-semibold mb-4 text-lg">Assign Worker</h3>
-            {renderWorkerAssignment()}
-            {booking?.refusedBy && booking.refusedBy.length > 0 && (
-              <p className="text-xs text-destructive mt-2">Note: This job was previously refused by {booking.refusedBy.length} worker(s).</p>
+            {!booking.estimatedCharge ? (
+              <>
+                <h3 className="font-semibold mb-4 text-lg">Submit Estimated Charge</h3>
+                <div className='flex items-end gap-4'>
+                  <div className="space-y-2">
+                    <Label htmlFor="estimated-charge">Estimated Charge (Rs.)</Label>
+                    <Input id="estimated-charge" type="number" value={estimatedCharge} onChange={(e) => setEstimatedCharge(e.target.value)} placeholder="e.g., 500" />
+                  </div>
+                  <Button onClick={handleSubmitEstimate} disabled={isSubmitting || !estimatedCharge}>
+                    {isSubmitting && <Loader2 className="animate-spin" />} Send to Customer
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="font-semibold mb-4 text-lg">Assign Worker</h3>
+                {renderWorkerAssignment()}
+                {booking?.refusedBy && booking.refusedBy.length > 0 && (
+                  <p className="text-xs text-destructive mt-2">Note: This job was previously refused by {booking.refusedBy.length} worker(s).</p>
+                )}
+              </>
             )}
           </>
+        );
+
+      case 'Pending Customer Approval':
+        return (
+          <div className="flex items-center gap-3 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+            <AlertTriangle className="text-yellow-500" />
+            <div>
+              <p className="font-semibold">Waiting for Customer</p>
+              <p className="text-sm text-muted-foreground">The estimated charge of Rs. {booking.estimatedCharge} has been sent. Awaiting customer acceptance or rejection.</p>
+            </div>
+          </div>
         );
 
       case 'Worker Assigned':
@@ -377,7 +424,7 @@ export default function ManagerBookingDetailPage() {
                         <div className="flex items-center gap-3"><Clock className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{booking.time}</span></div>
                         <div className="flex items-center gap-3"><UserCheck className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{booking.workerName || 'Not assigned yet'}</span></div>
                         <Separator className="my-4" />
-                        <div className="flex items-center gap-3 text-base"><DollarSign className="w-4 h-4 text-muted-foreground" /> <strong>Total:</strong> <strong className="text-primary">Rs.{booking.servicePrice}/hr</strong></div>
+                        <div className="flex items-center gap-3 text-base"><DollarSign className="w-4 h-4 text-muted-foreground" /> <strong>Total:</strong> <strong className="text-primary">{booking.estimatedCharge ? `Rs. ${booking.estimatedCharge}` : `Rs.${booking.servicePrice}/hr (Base)`}</strong></div>
                     </div>
                 ) : (
                     <p>Booking details not found.</p>
@@ -426,4 +473,3 @@ export default function ManagerBookingDetailPage() {
     </div>
   );
 }
-
