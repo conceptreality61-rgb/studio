@@ -20,6 +20,7 @@ import { addHours, differenceInHours, startOfDay, endOfDay } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { services, ServiceSubCategory, ServiceSubCategoryOption } from '@/lib/constants';
+import { FormDescription } from '@/components/ui/form';
 
 type Booking = {
   id: string;
@@ -594,3 +595,4 @@ export default function ManagerBookingDetailPage() {
   );
 }
 
+    
