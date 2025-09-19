@@ -53,11 +53,18 @@ export default function ReviewsPage() {
       try {
         const q = query(
           collection(db, 'reviews'),
-          where('userId', '==', user.uid),
-          orderBy('createdAt', 'desc')
+          where('userId', '==', user.uid)
         );
         const querySnapshot = await getDocs(q);
         const userReviews = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
+        
+        // Sort client-side
+        userReviews.sort((a, b) => {
+            const dateA = a.createdAt ? a.createdAt.toMillis() : 0;
+            const dateB = b.createdAt ? b.createdAt.toMillis() : 0;
+            return dateB - dateA;
+        });
+
         setReviews(userReviews);
       } catch (error) {
         console.error("Error fetching reviews: ", error);
