@@ -44,6 +44,8 @@
     --warning-foreground: 45 40% 98%;
     --danger: 350 90% 50%;
     --danger-foreground: 350 40% 98%;
+    --magenta: 300 80% 55%;
+    --magenta-foreground: 300 40% 98%;
   }
 
   .dark {
@@ -87,6 +89,8 @@
     --warning-foreground: 45 40% 98%;
     --danger: 350 90% 50%;
     --danger-foreground: 350 40% 98%;
+    --magenta: 300 80% 55%;
+    --magenta-foreground: 300 40% 98%;
   }
 }
 

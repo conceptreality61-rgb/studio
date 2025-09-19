@@ -68,6 +68,10 @@ export default {
           DEFAULT: 'hsl(var(--danger))',
           foreground: 'hsl(var(--danger-foreground))',
         },
+        magenta: {
+          DEFAULT: 'hsl(var(--magenta))',
+          foreground: 'hsl(var(--magenta-foreground))',
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',

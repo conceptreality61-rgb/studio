@@ -44,9 +44,9 @@ type Worker = {
     displayName: string;
 }
 
-const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "success" | "warning" } = {
+const statusVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" | "info" | "success" | "warning" | "magenta" } = {
   'Pending Manager Approval': "destructive",
-  'Pending Worker Assignment': "success",
+  'Pending Worker Assignment': "magenta",
   'Pending Customer Approval': 'warning',
   'Worker Assigned': "info",
   'In Progress': "secondary",
