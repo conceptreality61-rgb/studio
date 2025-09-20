@@ -54,13 +54,14 @@ export default function CustomerDashboardPage() {
         // Fetch recent bookings
         const recentBookingsQuery = query(
             collection(db, 'bookings'), 
-            where('userId', '==', user.uid),
-            orderBy('createdAt', 'desc'),
-            limit(3)
+            where('userId', '==', user.uid)
         );
         const recentBookingsSnapshot = await getDocs(recentBookingsQuery);
         const bookings = recentBookingsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
-        setRecentBookings(bookings);
+        
+        // Sort bookings by creation date descending client-side
+        bookings.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
+        setRecentBookings(bookings.slice(0, 3));
 
         // Fetch completed bookings for review check
         const completedBookingsQuery = query(
