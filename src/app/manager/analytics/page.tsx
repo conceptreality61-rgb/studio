@@ -394,7 +394,8 @@ export default function ManagerAnalyticsPage() {
                         </TableHeader>
                         <TableBody>
                             {summaries.map(summary => {
-                                const variance = (summary.customerPaidAmount !== undefined)
+                                const variance =
+                                    typeof summary.customerPaidAmount === 'number'
                                     ? summary.customerPaidAmount - summary.finalCost
                                     : null;
                                 return (
@@ -405,7 +406,7 @@ export default function ManagerAnalyticsPage() {
                                         <TableCell className="text-right">Rs. {summary.initialEstimate.toFixed(2)}</TableCell>
                                         <TableCell className="text-right">Rs. {summary.finalCost.toFixed(2)}</TableCell>
                                         <TableCell className="text-right font-semibold">
-                                            {summary.customerPaidAmount !== undefined ? `Rs. ${summary.customerPaidAmount.toFixed(2)}` : <span className="text-muted-foreground text-xs">N/A</span>}
+                                            {typeof summary.customerPaidAmount === 'number' ? `Rs. ${summary.customerPaidAmount.toFixed(2)}` : <span className="text-muted-foreground text-xs">N/A</span>}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             {variance !== null ? (
