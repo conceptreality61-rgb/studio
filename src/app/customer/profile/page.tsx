@@ -60,6 +60,7 @@ export default function CustomerProfilePage() {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otp, setOtp] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
 
 
@@ -156,15 +157,20 @@ export default function CustomerProfilePage() {
         try {
             const phoneNumber = `${profile.mobile.countryCode}${profile.mobile.number}`;
             
-            // Render reCAPTCHA verifier
-            if (!recaptchaContainerRef.current) throw new Error("reCAPTCHA container not found.");
+            let verifier = recaptchaVerifier;
+            if (!verifier && recaptchaContainerRef.current) {
+                verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
+                    'size': 'invisible',
+                    'callback': (response: any) => {
+                        // reCAPTCHA solved, allow signInWithPhoneNumber.
+                    }
+                });
+                setRecaptchaVerifier(verifier);
+            }
             
-            const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
-                'size': 'invisible',
-                'callback': (response: any) => {
-                    // reCAPTCHA solved, allow signInWithPhoneNumber.
-                }
-            });
+            if (!verifier) {
+                throw new Error("reCAPTCHA verifier not initialized.");
+            }
 
             const result = await signInWithPhoneNumber(auth, phoneNumber, verifier);
             setConfirmationResult(result);
@@ -348,9 +354,9 @@ export default function CustomerProfilePage() {
                         </SelectContent>
                     </Select>
                     <Input id="mobile-number" name="mobile-number" type="tel" value={profile?.mobile?.number ?? ''} onChange={(e) => handleNestedInputChange('mobile', 'number', e.target.value)} placeholder="10-digit number" maxLength={10} readOnly={showOtpInput || profile?.mobile?.verified} />
-                    {!profile?.mobile?.verified && !showOtpInput && (
-                        <Button type="button" variant="outline" size="sm" onClick={handleSendOtp} disabled={isVerifyingMobile || !profile?.mobile?.number}>
-                            {isVerifyingMobile ? <Loader2 className="animate-spin" /> : 'Verify'}
+                    {!profile?.mobile?.verified && (
+                        <Button type="button" variant="outline" size="sm" onClick={handleSendOtp} disabled={isVerifyingMobile || !profile?.mobile?.number || showOtpInput}>
+                            {isVerifyingMobile && !showOtpInput ? <Loader2 className="animate-spin" /> : 'Verify'}
                         </Button>
                     )}
                      {profile?.mobile?.verified && (
@@ -460,3 +466,5 @@ export default function CustomerProfilePage() {
     </Card>
   );
 }
+
+    
