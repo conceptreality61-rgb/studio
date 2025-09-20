@@ -358,7 +358,7 @@ export default function CustomerProfilePage() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Input id="mobile-number" name="mobile-number" type="tel" value={profile?.mobile?.number ?? ''} onChange={(e) => handleNestedInputChange('mobile', 'number', e.target.value)} placeholder="10-digit number" maxLength={10} readOnly={showOtpInput || profile?.mobile?.verified} />
+                    <Input id="mobile-number" name="mobile-number" type="tel" value={profile?.mobile?.number ?? ''} onChange={(e) => handleNestedInputChange('mobile', 'number', e.target.value)} placeholder="10-digit number" maxLength={10} readOnly={showOtpInput || profile?.mobile?.verified} className="flex-1" />
                     {!profile?.mobile?.verified && !showOtpInput && (
                         <Button type="button" variant="outline" size="sm" onClick={handleSendOtp} disabled={isVerifyingMobile || !profile?.mobile?.number}>
                             {isVerifyingMobile ? <Loader2 className="animate-spin" /> : <><Smartphone className="mr-2 h-4 w-4" />Verify</>}
