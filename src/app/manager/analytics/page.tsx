@@ -162,11 +162,6 @@ export default function ManagerAnalyticsPage() {
 
                     const startDate = findTimestamp('In Progress');
                     const completionDate = findTimestamp('Completed');
-
-                    const initialEstimateEntry = booking.statusHistory?.find(h => h.status === 'Pending Customer Approval');
-                    const initialEstimate = initialEstimateEntry && 'estimate' in initialEstimateEntry ? (initialEstimateEntry as any).estimate : booking.initialEstimate || 0;
-                    
-                    const finalCost = booking.estimatedCharge || 0;
                     const review = reviewsMap.get(booking.id);
 
                     return {
@@ -175,8 +170,8 @@ export default function ManagerAnalyticsPage() {
                         customerName: booking.customerName,
                         startDate,
                         completionDate,
-                        initialEstimate,
-                        finalCost,
+                        initialEstimate: booking.initialEstimate || 0,
+                        finalCost: booking.estimatedCharge || 0,
                         customerPaidAmount: review?.paidAmount,
                         comment: review?.comment,
                     };
@@ -393,13 +388,15 @@ export default function ManagerAnalyticsPage() {
                                 <TableHead>Completed On</TableHead>
                                 <TableHead className="text-right">Estimate</TableHead>
                                 <TableHead className="text-right">Final Cost</TableHead>
-                                <TableHead className="text-right">Variance</TableHead>
                                 <TableHead className="text-right">Customer Paid</TableHead>
+                                <TableHead className="text-right">Variance</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {summaries.map(summary => {
-                                const variance = summary.finalCost - summary.initialEstimate;
+                                const variance = (summary.customerPaidAmount !== undefined)
+                                    ? summary.customerPaidAmount - summary.finalCost
+                                    : null;
                                 return (
                                     <TableRow key={summary.id}>
                                         <TableCell>{summary.serviceName}</TableCell>
@@ -407,23 +404,27 @@ export default function ManagerAnalyticsPage() {
                                         <TableCell>{summary.completionDate}</TableCell>
                                         <TableCell className="text-right">Rs. {summary.initialEstimate.toFixed(2)}</TableCell>
                                         <TableCell className="text-right">Rs. {summary.finalCost.toFixed(2)}</TableCell>
-                                        <TableCell className="text-right">
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger>
-                                                        <span className={`flex items-center justify-end gap-1 font-medium ${variance > 0 ? 'text-destructive' : variance < 0 ? 'text-green-600' : ''}`}>
-                                                            {variance > 0 ? <ArrowUp size={14}/> : variance < 0 ? <ArrowDown size={14}/> : <Minus size={14}/>}
-                                                            Rs. {Math.abs(variance).toFixed(2)}
-                                                        </span>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>{variance > 0 ? 'Over estimate' : variance < 0 ? 'Under estimate' : 'Met estimate'}</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                        </TableCell>
                                         <TableCell className="text-right font-semibold">
                                             {summary.customerPaidAmount !== undefined ? `Rs. ${summary.customerPaidAmount.toFixed(2)}` : <span className="text-muted-foreground text-xs">N/A</span>}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            {variance !== null ? (
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger>
+                                                            <span className={`flex items-center justify-end gap-1 font-medium ${variance > 0 ? 'text-green-600' : variance < 0 ? 'text-destructive' : ''}`}>
+                                                                {variance > 0 ? <ArrowUp size={14}/> : variance < 0 ? <ArrowDown size={14}/> : <Minus size={14}/>}
+                                                                Rs. {Math.abs(variance).toFixed(2)}
+                                                            </span>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>{variance > 0 ? 'Overpaid' : variance < 0 ? 'Underpaid' : 'Paid in full'}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            ) : (
+                                                <span className="text-muted-foreground text-xs">N/A</span>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 )
