@@ -36,7 +36,7 @@ export const services: Service[] = [
     subCategories: [
       {
         id: 'num-rooms',
-        name: 'room cleaning',
+        name: 'Room cleaning',
         type: 'single',
         options: [
           { id: '0-rooms', name: '0' },
@@ -139,7 +139,7 @@ export const services: Service[] = [
       },
       {
         id: 'tasks',
-        name: 'Specific tasks',
+        name: 'Select Specific tasks',
         type: 'multiple',
         options: [
           { id: 'showers-tubs', name: 'Showers and Tubs' },
@@ -199,7 +199,7 @@ export const services: Service[] = [
     subCategories: [
        {
         id: 'tasks',
-        name: 'Specific tasks',
+        name: 'Select Specific tasks',
         type: 'multiple',
         options: [
           { id: 'lawn-mowing', name: 'Lawn Mowing' },
