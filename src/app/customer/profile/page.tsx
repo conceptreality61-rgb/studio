@@ -191,6 +191,13 @@ export default function CustomerProfilePage() {
                     description: 'The reCAPTCHA check failed. Make sure your app\'s domain is added to the list of authorized domains in your Firebase Console authentication settings.',
                     duration: 12000,
                 });
+            } else if (error.code === 'auth/too-many-requests') {
+                 toast({ 
+                    variant: 'destructive', 
+                    title: 'Too Many Requests', 
+                    description: 'You have requested an OTP too many times. Please wait a while before trying again.',
+                    duration: 10000,
+                });
             } else {
                 toast({ variant: 'destructive', title: 'Error Sending OTP', description: error.message });
             }
@@ -466,4 +473,6 @@ export default function CustomerProfilePage() {
 }
 
     
+    
+
     
