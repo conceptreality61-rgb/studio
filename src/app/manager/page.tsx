@@ -23,7 +23,7 @@ type Booking = {
     id: string;
     serviceName: string;
     customerName: string;
-    status: 'Pending Manager Approval' | 'Pending Worker Assignment' | 'Worker Assigned' | 'Completed' | 'Canceled' | 'In Progress';
+    status: 'Pending Manager Approval' | 'Pending Worker Assignment' | 'Pending Customer Approval' | 'Worker Assigned' | 'Completed' | 'Canceled' | 'In Progress';
     estimatedCharge?: number;
     createdAt: Timestamp;
     statusHistory?: { status: string; timestamp: Timestamp }[];
@@ -140,7 +140,7 @@ export default function ManagerDashboardPage() {
         
         const totalRevenue = filteredRevenueBookings.reduce((sum, booking) => sum + (booking.estimatedCharge || 0), 0);
         
-        const activeBookings = bookings.filter(b => ['Worker Assigned', 'In Progress'].includes(b.status)).length;
+        const activeBookings = bookings.filter(b => b.status !== 'Canceled').length;
         
         const customers = users.filter(u => u.role === 'customer');
         const monthAgo = new Date();
@@ -250,8 +250,8 @@ export default function ManagerDashboardPage() {
                              </div>
                         </CardContent>
                     </Card>
-                    <Link href="/manager/bookings?status=In Progress">
-                        <StatCard title="Active Bookings" value={String(stats.activeBookings)} description="Click here to show job status wise" icon={Briefcase} />
+                    <Link href="/manager/bookings">
+                        <StatCard title="Total Bookings" value={String(stats.activeBookings)} description="Total bookings across all statuses" icon={Briefcase} />
                     </Link>
                     <StatCard title="New Customers" value={`+${stats.newCustomers}`} description="In the last 30 days" icon={Users} />
                     <StatCard title="Total Workers" value={String(stats.totalWorkers)} description="Across all services" icon={UserCheck} />
