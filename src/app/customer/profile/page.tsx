@@ -156,11 +156,21 @@ export default function CustomerProfilePage() {
         try {
             const phoneNumber = `${profile.mobile.countryCode}${profile.mobile.number}`;
             
+            // Ensure the reCAPTCHA container is empty and visible
             if (recaptchaContainerRef.current) {
                 recaptchaContainerRef.current.innerHTML = '';
+            } else {
+                 toast({ 
+                    variant: 'destructive', 
+                    title: 'Error', 
+                    description: 'reCAPTCHA container not found. Cannot send OTP.',
+                    duration: 10000,
+                });
+                setIsVerifyingMobile(false);
+                return;
             }
 
-            const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current!, {
+            const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
                 'size': 'invisible',
             });
             
@@ -174,9 +184,9 @@ export default function CustomerProfilePage() {
             if (error.code === 'auth/captcha-check-failed') {
                  toast({ 
                     variant: 'destructive', 
-                    title: 'Verification Failed', 
-                    description: 'The reCAPTCHA check failed. Make sure your app\'s domain is added to the list of authorized domains in your Firebase Console authentication settings.',
-                    duration: 12000,
+                    title: 'Verification Failed: Hostname Not Allowed', 
+                    description: "Your app's domain is not authorized. Please go to the Firebase Console -> Authentication -> Settings -> Authorized Domains and add your domain.",
+                    duration: 15000,
                 });
             } else if (error.code === 'auth/operation-not-allowed') {
                  toast({ 
@@ -285,7 +295,7 @@ export default function CustomerProfilePage() {
 
   return (
     <Card>
-        <div ref={recaptchaContainerRef}></div>
+        <div id="recaptcha-container" ref={recaptchaContainerRef}></div>
       <CardHeader>
         <div className="flex items-center gap-4">
             <div className="relative group">
