@@ -157,21 +157,19 @@ export default function CustomerProfilePage() {
         try {
             const phoneNumber = `${profile.mobile.countryCode}${profile.mobile.number}`;
             
-            let verifier = recaptchaVerifier;
-            if (!verifier && recaptchaContainerRef.current) {
-                verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
-                    'size': 'invisible',
-                    'callback': (response: any) => {
-                        // reCAPTCHA solved, allow signInWithPhoneNumber.
-                    }
-                });
-                setRecaptchaVerifier(verifier);
+            // Ensure the container is empty before rendering
+            if (recaptchaContainerRef.current) {
+                recaptchaContainerRef.current.innerHTML = '';
             }
             
-            if (!verifier) {
-                throw new Error("reCAPTCHA verifier not initialized.");
-            }
-
+            const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current!, {
+                'size': 'invisible',
+                'callback': (response: any) => {
+                    // reCAPTCHA solved, allow signInWithPhoneNumber.
+                }
+            });
+            setRecaptchaVerifier(verifier);
+            
             const result = await signInWithPhoneNumber(auth, phoneNumber, verifier);
             setConfirmationResult(result);
             setShowOtpInput(true);
@@ -184,7 +182,7 @@ export default function CustomerProfilePage() {
                     variant: 'destructive', 
                     title: 'Verification Failed', 
                     description: 'Phone number sign-in is not enabled. Please enable it in your Firebase console under Authentication > Sign-in method.',
-                    duration: 9000,
+                    duration: 12000,
                 });
             } else if (error.code === 'auth/captcha-check-failed') {
                  toast({ 
@@ -467,4 +465,5 @@ export default function CustomerProfilePage() {
   );
 }
 
+    
     
