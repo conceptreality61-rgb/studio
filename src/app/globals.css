@@ -103,3 +103,9 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+@layer components {
+  .group:hover .book-now-btn {
+    @apply bg-info text-info-foreground;
+  }
+}
