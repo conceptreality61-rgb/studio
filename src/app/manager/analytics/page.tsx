@@ -154,25 +154,25 @@ export default function ManagerAnalyticsPage() {
                 completedBookings.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
 
 
-                const summariesData: BookingSummary[] = completedBookings.map(data => {
+                const summariesData: BookingSummary[] = completedBookings.map(booking => {
                     const findTimestamp = (status: string) => {
-                        const entry = data.statusHistory?.find(h => h.status === status);
+                        const entry = booking.statusHistory?.find(h => h.status === status);
                         return entry ? entry.timestamp.toDate().toLocaleString() : null;
                     };
 
                     const startDate = findTimestamp('In Progress');
                     const completionDate = findTimestamp('Completed');
 
-                    const initialEstimateEntry = data.statusHistory?.find(h => h.status === 'Pending Customer Approval');
-                    const initialEstimate = initialEstimateEntry && 'estimate' in initialEstimateEntry ? (initialEstimateEntry as any).estimate : data.initialEstimate || 0;
+                    const initialEstimateEntry = booking.statusHistory?.find(h => h.status === 'Pending Customer Approval');
+                    const initialEstimate = initialEstimateEntry && 'estimate' in initialEstimateEntry ? (initialEstimateEntry as any).estimate : booking.initialEstimate || 0;
                     
-                    const finalCost = data.estimatedCharge || 0;
-                    const review = reviewsMap.get(data.id);
+                    const finalCost = booking.estimatedCharge || 0;
+                    const review = reviewsMap.get(booking.id);
 
                     return {
-                        id: data.id,
-                        serviceName: data.serviceName,
-                        customerName: data.customerName,
+                        id: booking.id,
+                        serviceName: booking.serviceName,
+                        customerName: booking.customerName,
                         startDate,
                         completionDate,
                         initialEstimate,
@@ -447,6 +447,8 @@ export default function ManagerAnalyticsPage() {
         )}
     </div>
   );
+
+    
 
     
 
