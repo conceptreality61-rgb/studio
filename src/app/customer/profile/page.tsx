@@ -16,7 +16,7 @@ import { countries } from '@/lib/countries';
 import React, { useState, useEffect, useRef } from 'react';
 import { db, auth } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { updateProfile, sendEmailVerification, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { updateProfile, sendEmailVerification } from 'firebase/auth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 
@@ -55,14 +55,6 @@ export default function CustomerProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Mobile verification state
-  const [isVerifyingMobile, setIsVerifyingMobile] = useState(false);
-  const [showOtpInput, setShowOtpInput] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
-
-
   useEffect(() => {
     const fetchProfile = async () => {
       if (user) {
@@ -74,10 +66,6 @@ export default function CustomerProfilePage() {
               data.mobile = { ...data.mobile, countryCode: '+91', number: data.mobile?.number || '', verified: data.mobile?.verified || false };
             }
             setProfile(data);
-             if(data.mobile?.verified) {
-                setShowOtpInput(false);
-                setIsVerifyingMobile(false);
-            }
           } else {
             const initialProfile: UserProfile = {
               displayName: user.displayName || '',
@@ -147,98 +135,6 @@ export default function CustomerProfilePage() {
     }
   };
 
-    const handleSendOtp = async () => {
-        if (!profile?.mobile?.number || !profile.mobile.countryCode) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Please enter a valid mobile number and country code.' });
-            return;
-        }
-        setIsVerifyingMobile(true);
-        try {
-            const phoneNumber = `${profile.mobile.countryCode}${profile.mobile.number}`;
-            
-            // Ensure the reCAPTCHA container is empty and visible
-            if (recaptchaContainerRef.current) {
-                recaptchaContainerRef.current.innerHTML = '';
-            } else {
-                 toast({ 
-                    variant: 'destructive', 
-                    title: 'Error', 
-                    description: 'reCAPTCHA container not found. Cannot send OTP.',
-                    duration: 10000,
-                });
-                setIsVerifyingMobile(false);
-                return;
-            }
-
-            const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
-                'size': 'invisible',
-            });
-            
-            const result = await signInWithPhoneNumber(auth, phoneNumber, verifier);
-            setConfirmationResult(result);
-            setShowOtpInput(true);
-            toast({ title: 'OTP Sent', description: 'An OTP has been sent to your mobile number.' });
-
-        } catch (error: any) {
-            console.error("Mobile verification error:", error);
-            if (error.code === 'auth/captcha-check-failed') {
-                 toast({ 
-                    variant: 'destructive', 
-                    title: 'Verification Failed: Hostname Not Allowed', 
-                    description: "Your app's domain is not authorized. Please go to the Firebase Console -> Authentication -> Settings -> Authorized Domains and add your domain.",
-                    duration: 15000,
-                });
-            } else if (error.code === 'auth/operation-not-allowed') {
-                 toast({ 
-                    variant: 'destructive', 
-                    title: 'Verification Failed', 
-                    description: 'Phone number sign-in is not enabled. Please enable it in your Firebase console under Authentication > Sign-in method.',
-                    duration: 12000,
-                });
-            } else if (error.code === 'auth/too-many-requests') {
-                 toast({ 
-                    variant: 'destructive', 
-                    title: 'Too Many Requests', 
-                    description: 'You have requested an OTP too many times. Please wait a while before trying again.',
-                    duration: 10000,
-                });
-            } else {
-                toast({ variant: 'destructive', title: 'Error Sending OTP', description: error.message });
-            }
-            setIsVerifyingMobile(false);
-        }
-    };
-    
-    const handleVerifyOtp = async () => {
-        if (!confirmationResult || !otp) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Please enter the OTP.' });
-            return;
-        }
-        setIsVerifyingMobile(true);
-        try {
-            await confirmationResult.confirm(otp);
-            
-            // Update Firestore to mark mobile as verified
-            if (user && profile) {
-                const userRef = doc(db, 'users', user.uid);
-                await updateDoc(userRef, {
-                    'mobile.verified': true
-                });
-                handleNestedInputChange('mobile', 'verified', true);
-            }
-
-            toast({ title: 'Mobile Verified!', description: 'Your mobile number has been successfully verified.' });
-            setShowOtpInput(false);
-            refreshUser();
-
-        } catch (error: any) {
-             toast({ variant: 'destructive', title: 'Invalid OTP', description: 'The OTP you entered is incorrect. Please try again.' });
-        } finally {
-            setIsVerifyingMobile(false);
-        }
-    };
-
-
   const handleSaveChanges = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user || !profile) return;
@@ -295,7 +191,6 @@ export default function CustomerProfilePage() {
 
   return (
     <Card>
-        <div id="recaptcha-container" ref={recaptchaContainerRef}></div>
       <CardHeader>
         <div className="flex items-center gap-4">
             <div className="relative group">
@@ -362,28 +257,9 @@ export default function CustomerProfilePage() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Input id="mobile-number" name="mobile-number" type="tel" value={profile?.mobile?.number ?? ''} onChange={(e) => handleNestedInputChange('mobile', 'number', e.target.value)} placeholder="10-digit number" maxLength={10} readOnly={showOtpInput || profile?.mobile?.verified} className="flex-1" />
-                    {!profile?.mobile?.verified && !showOtpInput && (
-                        <Button type="button" variant="outline" size="sm" onClick={handleSendOtp} disabled={isVerifyingMobile || !profile?.mobile?.number}>
-                            {isVerifyingMobile ? <Loader2 className="animate-spin" /> : <><Smartphone className="mr-2 h-4 w-4" />Verify</>}
-                        </Button>
-                    )}
-                     {profile?.mobile?.verified && (
-                         <Badge variant="success" className="gap-1"><ShieldCheck className="h-4 w-4" />Verified</Badge>
-                    )}
+                    <Input id="mobile-number" name="mobile-number" type="tel" value={profile?.mobile?.number ?? ''} onChange={(e) => handleNestedInputChange('mobile', 'number', e.target.value)} placeholder="10-digit number" maxLength={10} className="flex-1" />
                 </div>
             </div>
-                 {showOtpInput && (
-                    <div className="flex items-end gap-2 mt-2">
-                         <div className="flex-1 space-y-1">
-                            <Label htmlFor="otp">Enter OTP</Label>
-                            <Input id="otp" type="text" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="6-digit code" maxLength={6} />
-                         </div>
-                        <Button type="button" onClick={handleVerifyOtp} disabled={isVerifyingMobile}>
-                            {isVerifyingMobile ? <Loader2 className="animate-spin" /> : 'Submit OTP'}
-                        </Button>
-                    </div>
-                )}
            </div>
            <div className="space-y-2">
               <Label htmlFor="address">Address</Label>
@@ -475,5 +351,3 @@ export default function CustomerProfilePage() {
     </Card>
   );
 }
-
-    
