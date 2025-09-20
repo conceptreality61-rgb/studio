@@ -166,7 +166,16 @@ export default function CustomerProfilePage() {
 
         } catch (error: any) {
             console.error("Mobile verification error:", error);
-            toast({ variant: 'destructive', title: 'Error Sending OTP', description: error.message });
+            if (error.code === 'auth/operation-not-allowed') {
+                 toast({ 
+                    variant: 'destructive', 
+                    title: 'Verification Failed', 
+                    description: 'Phone number sign-in is not enabled. Please enable it in your Firebase console under Authentication > Sign-in method.',
+                    duration: 9000,
+                });
+            } else {
+                toast({ variant: 'destructive', title: 'Error Sending OTP', description: error.message });
+            }
             setIsVerifyingMobile(false);
         }
     };
@@ -438,3 +447,5 @@ export default function CustomerProfilePage() {
     </Card>
   );
 }
+
+    
