@@ -173,6 +173,13 @@ export default function CustomerProfilePage() {
                     description: 'Phone number sign-in is not enabled. Please enable it in your Firebase console under Authentication > Sign-in method.',
                     duration: 9000,
                 });
+            } else if (error.code === 'auth/captcha-check-failed') {
+                 toast({ 
+                    variant: 'destructive', 
+                    title: 'Verification Failed', 
+                    description: 'The reCAPTCHA check failed. Make sure your app\'s domain is added to the list of authorized domains in your Firebase Console authentication settings.',
+                    duration: 12000,
+                });
             } else {
                 toast({ variant: 'destructive', title: 'Error Sending OTP', description: error.message });
             }
@@ -446,7 +453,3 @@ export default function CustomerProfilePage() {
     </Card>
   );
 }
-
-    
-
-    
