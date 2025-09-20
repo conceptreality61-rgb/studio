@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { createBooking } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import { Slider } from '@/components/ui/slider';
 
 export default function ServiceDetailPage() {
   const { user } = useAuth();
@@ -57,6 +58,20 @@ export default function ServiceDetailPage() {
       return newOptions;
     });
   };
+
+   const handleSliderChange = (subCategoryId: string, value: number[]) => {
+    const subCategory = service?.subCategories?.find(sc => sc.id === subCategoryId);
+    if (!subCategory) return;
+    const selectedValue = value[0];
+    const option = subCategory.options[selectedValue];
+    if (option) {
+      setSelectedOptions(prev => ({
+        ...prev,
+        [subCategoryId]: option.id
+      }));
+    }
+  };
+
 
   const isBookingDisabled = () => {
     if (!date || !selectedTime || isBooking) return true;
@@ -145,38 +160,57 @@ export default function ServiceDetailPage() {
                 <h2 className="text-2xl font-bold font-headline text-center mb-4">Book This Service</h2>
                 
                 <div className='space-y-6'>
-                    {subCategories.map(subCategory => (
-                        <div key={subCategory.id}>
-                            <h3 className="font-semibold mb-2">{subCategory.name}</h3>
-                            {subCategory.type === 'single' ? (
-                               <RadioGroup
-                                  value={selectedOptions[subCategory.id] as string || ''}
-                                  onValueChange={(value) => handleOptionChange(subCategory.id, value, 'single')}
-                                  className={subCategory.id.includes('duration') || subCategory.id.includes('num-') ? 'grid grid-cols-3 gap-2' : ''}
-                                >
-                                {subCategory.options.map(option => (
-                                    <div key={option.id} className="flex items-center space-x-2">
-                                        <RadioGroupItem value={option.id} id={`${subCategory.id}-${option.id}`} />
-                                        <Label htmlFor={`${subCategory.id}-${option.id}`} className="font-normal">{option.name}</Label>
+                    {subCategories.map(subCategory => {
+                        const isNumerical = subCategory.id.includes('num-');
+                        const selectedSliderOption = subCategory.options.findIndex(opt => opt.id === selectedOptions[subCategory.id]);
+                        const sliderValue = selectedSliderOption > -1 ? selectedSliderOption : 0;
+                        
+                        return (
+                            <div key={subCategory.id}>
+                                <h3 className="font-semibold mb-2">{subCategory.name}</h3>
+                                {isNumerical ? (
+                                    <div className="flex items-center gap-4">
+                                        <Slider
+                                            defaultValue={[sliderValue]}
+                                            max={subCategory.options.length - 1}
+                                            step={1}
+                                            onValueChange={(value) => handleSliderChange(subCategory.id, value)}
+                                            className="flex-1"
+                                        />
+                                        <div className="font-bold text-lg w-10 text-center">
+                                            {subCategory.options[sliderValue]?.name}
+                                        </div>
                                     </div>
-                                ))}
-                               </RadioGroup>
-                            ) : (
-                                <div className="grid grid-cols-2 gap-2">
+                                ) : subCategory.type === 'single' ? (
+                                   <RadioGroup
+                                      value={selectedOptions[subCategory.id] as string || ''}
+                                      onValueChange={(value) => handleOptionChange(subCategory.id, value, 'single')}
+                                      className={subCategory.id.includes('duration') || subCategory.id.includes('num-') ? 'grid grid-cols-3 gap-2' : ''}
+                                    >
                                     {subCategory.options.map(option => (
                                         <div key={option.id} className="flex items-center space-x-2">
-                                            <Checkbox
-                                                id={`${subCategory.id}-${option.id}`}
-                                                checked={(selectedOptions[subCategory.id] as string[] | undefined)?.includes(option.id) || false}
-                                                onCheckedChange={() => handleOptionChange(subCategory.id, option.id, 'multiple')}
-                                            />
+                                            <RadioGroupItem value={option.id} id={`${subCategory.id}-${option.id}`} />
                                             <Label htmlFor={`${subCategory.id}-${option.id}`} className="font-normal">{option.name}</Label>
                                         </div>
                                     ))}
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                                   </RadioGroup>
+                                ) : (
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {subCategory.options.map(option => (
+                                            <div key={option.id} className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id={`${subCategory.id}-${option.id}`}
+                                                    checked={(selectedOptions[subCategory.id] as string[] | undefined)?.includes(option.id) || false}
+                                                    onCheckedChange={() => handleOptionChange(subCategory.id, option.id, 'multiple')}
+                                                />
+                                                <Label htmlFor={`${subCategory.id}-${option.id}`} className="font-normal">{option.name}</Label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )
+                    })}
                     
                     <div>
                         <h3 className="font-semibold mb-2">Select a Date</h3>
