@@ -344,10 +344,10 @@ export default function CustomerProfilePage() {
                 </div>
             </div>
           </div>
-           <div className="grid md:grid-cols-2 gap-6 items-start">
-              <div className="space-y-2 w-full">
-                <Label htmlFor="mobile-number">Mobile Number</Label>
-                <div className="flex items-center gap-2">
+           <div className="space-y-2">
+            <Label htmlFor="mobile-number">Mobile Number</Label>
+            <div className="flex items-start gap-2">
+                <div className="flex items-center gap-2 w-full">
                     <Select value={profile?.mobile?.countryCode} onValueChange={(val) => handleNestedInputChange('mobile', 'countryCode', val)}>
                         <SelectTrigger className="w-[80px]">
                             <SelectValue placeholder="Code" />
@@ -368,6 +368,7 @@ export default function CustomerProfilePage() {
                          <Badge variant="success" className="gap-1"><ShieldCheck className="h-4 w-4" />Verified</Badge>
                     )}
                 </div>
+            </div>
                  {showOtpInput && (
                     <div className="flex items-end gap-2 mt-2">
                          <div className="flex-1 space-y-1">
@@ -379,7 +380,6 @@ export default function CustomerProfilePage() {
                         </Button>
                     </div>
                 )}
-              </div>
            </div>
            <div className="space-y-2">
               <Label htmlFor="address">Address</Label>
@@ -471,3 +471,5 @@ export default function CustomerProfilePage() {
     </Card>
   );
 }
+
+    
