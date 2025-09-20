@@ -70,15 +70,22 @@ export default function CustomerProfilePage() {
           const userDoc = await getDoc(doc(db, 'users', user.uid));
           if (userDoc.exists()) {
             const data = userDoc.data() as UserProfile;
+             if (!data.mobile || !data.mobile.countryCode) {
+              data.mobile = { ...data.mobile, countryCode: '+91', number: data.mobile?.number || '', verified: data.mobile?.verified || false };
+            }
             setProfile(data);
              if(data.mobile?.verified) {
                 setShowOtpInput(false);
                 setIsVerifyingMobile(false);
             }
           } else {
-            const initialProfile = {
+            const initialProfile: UserProfile = {
               displayName: user.displayName || '',
-              email: user.email || '',
+              mobile: {
+                countryCode: '+91',
+                number: '',
+                verified: false
+              }
             };
             setProfile(initialProfile);
           }
@@ -99,7 +106,7 @@ export default function CustomerProfilePage() {
     setProfile(p => ({ ...p, [field]: value }));
   };
 
-  const handleNestedInputChange = (parent: keyof UserProfile, field: string, value: string) => {
+  const handleNestedInputChange = (parent: keyof UserProfile, field: string, value: any) => {
       setProfile(p => ({
           ...p,
           [parent]: {
@@ -202,7 +209,7 @@ export default function CustomerProfilePage() {
                 await updateDoc(userRef, {
                     'mobile.verified': true
                 });
-                handleNestedInputChange('mobile', 'verified', 'true');
+                handleNestedInputChange('mobile', 'verified', true);
             }
 
             toast({ title: 'Mobile Verified!', description: 'Your mobile number has been successfully verified.' });
