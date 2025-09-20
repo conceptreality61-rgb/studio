@@ -177,18 +177,18 @@ export default function CustomerProfilePage() {
 
         } catch (error: any) {
             console.error("Mobile verification error:", error);
-            if (error.code === 'auth/operation-not-allowed') {
-                 toast({ 
-                    variant: 'destructive', 
-                    title: 'Verification Failed', 
-                    description: 'Phone number sign-in is not enabled. Please enable it in your Firebase console under Authentication > Sign-in method.',
-                    duration: 12000,
-                });
-            } else if (error.code === 'auth/captcha-check-failed') {
+            if (error.code === 'auth/captcha-check-failed') {
                  toast({ 
                     variant: 'destructive', 
                     title: 'Verification Failed', 
                     description: 'The reCAPTCHA check failed. Make sure your app\'s domain is added to the list of authorized domains in your Firebase Console authentication settings.',
+                    duration: 12000,
+                });
+            } else if (error.code === 'auth/operation-not-allowed') {
+                 toast({ 
+                    variant: 'destructive', 
+                    title: 'Verification Failed', 
+                    description: 'Phone number sign-in is not enabled. Please enable it in your Firebase console under Authentication > Sign-in method.',
                     duration: 12000,
                 });
             } else if (error.code === 'auth/too-many-requests') {
@@ -471,5 +471,7 @@ export default function CustomerProfilePage() {
     </Card>
   );
 }
+
+    
 
     
