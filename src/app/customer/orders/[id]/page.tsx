@@ -11,9 +11,10 @@ import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { services } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check, XCircle, Phone, User, Coins } from 'lucide-react';
+import { Loader2, Check, XCircle, Phone, User, Coins, ArrowLeft } from 'lucide-react';
 import { acceptEstimate, rejectEstimate } from '@/app/customer/bookings/actions';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 type StatusHistoryItem = {
   status: string;
@@ -230,18 +231,23 @@ export default function OrderDetailPage() {
           <OrderTracker status={booking?.status} statusHistory={booking?.statusHistory} />
         </div>
       </CardContent>
-      {booking?.status === 'Pending Customer Approval' && (
-        <CardFooter className="border-t pt-4 flex justify-end gap-2">
-            <Button variant="destructive" onClick={() => handleEstimateAction('reject')} disabled={isActionLoading}>
-                {isActionLoading ? <Loader2 className="animate-spin" /> : <XCircle />}
-                Reject Estimate
+       <CardFooter className="border-t pt-4 flex justify-between">
+            <Button variant="outline" asChild>
+                <Link href="/customer/bookings"><ArrowLeft /> Back to My Bookings</Link>
             </Button>
-            <Button onClick={() => handleEstimateAction('accept')} disabled={isActionLoading}>
-                {isActionLoading ? <Loader2 className="animate-spin" /> : <Check />}
-                Accept Estimate
-            </Button>
-        </CardFooter>
-      )}
+            {booking?.status === 'Pending Customer Approval' && (
+                <div className="flex justify-end gap-2">
+                    <Button variant="destructive" onClick={() => handleEstimateAction('reject')} disabled={isActionLoading}>
+                        {isActionLoading ? <Loader2 className="animate-spin" /> : <XCircle />}
+                        Reject Estimate
+                    </Button>
+                    <Button onClick={() => handleEstimateAction('accept')} disabled={isActionLoading}>
+                        {isActionLoading ? <Loader2 className="animate-spin" /> : <Check />}
+                        Accept Estimate
+                    </Button>
+                </div>
+            )}
+       </CardFooter>
     </Card>
   );
 }
