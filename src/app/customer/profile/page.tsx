@@ -60,7 +60,6 @@ export default function CustomerProfilePage() {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otp, setOtp] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-  const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
 
 
@@ -157,18 +156,13 @@ export default function CustomerProfilePage() {
         try {
             const phoneNumber = `${profile.mobile.countryCode}${profile.mobile.number}`;
             
-            // Ensure the container is empty before rendering
             if (recaptchaContainerRef.current) {
                 recaptchaContainerRef.current.innerHTML = '';
             }
-            
+
             const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current!, {
                 'size': 'invisible',
-                'callback': (response: any) => {
-                    // reCAPTCHA solved, allow signInWithPhoneNumber.
-                }
             });
-            setRecaptchaVerifier(verifier);
             
             const result = await signInWithPhoneNumber(auth, phoneNumber, verifier);
             setConfirmationResult(result);
@@ -471,7 +465,5 @@ export default function CustomerProfilePage() {
     </Card>
   );
 }
-
-    
 
     
