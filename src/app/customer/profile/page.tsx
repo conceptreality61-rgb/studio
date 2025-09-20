@@ -164,8 +164,7 @@ export default function CustomerProfilePage() {
             setShowOtpInput(true);
             toast({ title: 'OTP Sent', description: 'An OTP has been sent to your mobile number.' });
 
-        } catch (error: any)
-{
+        } catch (error: any) {
             console.error("Mobile verification error:", error);
             if (error.code === 'auth/operation-not-allowed') {
                  toast({ 
@@ -335,7 +334,7 @@ export default function CustomerProfilePage() {
                         </SelectContent>
                     </Select>
                     <Input id="mobile-number" name="mobile-number" type="tel" value={profile?.mobile?.number ?? ''} onChange={(e) => handleNestedInputChange('mobile', 'number', e.target.value)} placeholder="10-digit number" maxLength={10} readOnly={showOtpInput || profile?.mobile?.verified} />
-                    {!profile?.mobile?.verified && (
+                    {!profile?.mobile?.verified && !showOtpInput && (
                         <Button type="button" variant="outline" size="sm" onClick={handleSendOtp} disabled={isVerifyingMobile || !profile?.mobile?.number}>
                             {isVerifyingMobile ? <Loader2 className="animate-spin" /> : 'Verify'}
                         </Button>
@@ -447,5 +446,7 @@ export default function CustomerProfilePage() {
     </Card>
   );
 }
+
+    
 
     
