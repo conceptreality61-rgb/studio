@@ -337,8 +337,8 @@ export default function CustomerProfilePage() {
                     {profile?.mobile?.verified ? (
                          <Badge variant="success" className="gap-1"><ShieldCheck className="h-4 w-4" />Verified</Badge>
                     ) : (
-                        profile?.mobile?.number && !showOtpInput && (
-                            <Button type="button" variant="outline" size="sm" onClick={handleSendOtp} disabled={isVerifyingMobile}>
+                        !showOtpInput && (
+                            <Button type="button" variant="outline" size="sm" onClick={handleSendOtp} disabled={isVerifyingMobile || !profile?.mobile?.number}>
                                 {isVerifyingMobile ? <Loader2 className="animate-spin" /> : 'Verify'}
                             </Button>
                         )
@@ -447,5 +447,3 @@ export default function CustomerProfilePage() {
     </Card>
   );
 }
-
-    
