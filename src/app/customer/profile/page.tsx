@@ -324,7 +324,7 @@ export default function CustomerProfilePage() {
         <form onSubmit={handleSaveChanges} className="space-y-6">
           <Separator />
           <h3 className="text-lg font-medium">Personal Information</h3>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <Input id="name" value={profile?.displayName ?? ''} onChange={(e) => handleInputChange('displayName', e.target.value)} />
@@ -346,8 +346,8 @@ export default function CustomerProfilePage() {
           </div>
            <div className="space-y-2">
             <Label htmlFor="mobile-number">Mobile Number</Label>
-            <div className="flex items-start gap-2">
-                <div className="flex items-center gap-2 w-full">
+            <div className="w-full">
+                <div className="flex items-center gap-2">
                     <Select value={profile?.mobile?.countryCode} onValueChange={(val) => handleNestedInputChange('mobile', 'countryCode', val)}>
                         <SelectTrigger className="w-[80px]">
                             <SelectValue placeholder="Code" />
