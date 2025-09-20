@@ -197,7 +197,11 @@ export default function BookingsPage() {
               <TableBody>
                 {bookings.map((booking) => (
                   <TableRow key={booking.id}>
-                    <TableCell className="font-medium">{booking.serviceName}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link href={`/customer/orders/${booking.id}`} className="hover:underline hover:text-primary">
+                        {booking.serviceName}
+                      </Link>
+                    </TableCell>
                     <TableCell>{formatDate(booking.date)} at {booking.time}</TableCell>
                     <TableCell>
                       <Badge variant={statusVariant[booking.status] || 'default'}>{booking.status}</Badge>
