@@ -144,6 +144,7 @@ export default function ServiceDetailPage() {
             <Card>
               <CardContent className="p-6">
                 <h2 className="text-2xl font-bold font-headline text-center mb-4">Book This Service</h2>
+                <h3 className="text-xl font-bold font-headline text-center mb-6">Specific Tasks</h3>
                 
                 <div className='space-y-6'>
                     {subCategories.map(subCategory => {
