@@ -264,7 +264,7 @@ export default function CustomerProfilePage() {
                     {profile?.mobile?.verified ? (
                          <Badge variant="success" className="gap-1"><ShieldCheck className="h-4 w-4" />Verified</Badge>
                     ) : (
-                        profile?.mobile?.number && <Button type="button" variant="outline" size="sm" disabled>Verify</Button>
+                        profile?.mobile?.number && <Button type="button" variant="outline" size="sm">Verify</Button>
                     )}
                 </div>
               </div>
