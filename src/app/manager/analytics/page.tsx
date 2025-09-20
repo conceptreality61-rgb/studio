@@ -376,6 +376,67 @@ export default function ManagerAnalyticsPage() {
                 </AlertDialogContent>
             </AlertDialog>
         )}
+         <Card>
+            <CardHeader>
+                <CardTitle>Booking Summary</CardTitle>
+                <CardDescription>An overview of completed job costs and customer payments.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {loading ? (
+                    <Skeleton className="h-40 w-full" />
+                ) : summaries.length > 0 ? (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Service</TableHead>
+                                <TableHead>Customer</TableHead>
+                                <TableHead>Completed On</TableHead>
+                                <TableHead className="text-right">Estimate</TableHead>
+                                <TableHead className="text-right">Final Cost</TableHead>
+                                <TableHead className="text-right">Variance</TableHead>
+                                <TableHead className="text-right">Customer Paid</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {summaries.map(summary => {
+                                const variance = summary.finalCost - summary.initialEstimate;
+                                return (
+                                    <TableRow key={summary.id}>
+                                        <TableCell>{summary.serviceName}</TableCell>
+                                        <TableCell>{summary.customerName}</TableCell>
+                                        <TableCell>{summary.completionDate}</TableCell>
+                                        <TableCell className="text-right">Rs. {summary.initialEstimate.toFixed(2)}</TableCell>
+                                        <TableCell className="text-right">Rs. {summary.finalCost.toFixed(2)}</TableCell>
+                                        <TableCell className="text-right">
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger>
+                                                        <span className={`flex items-center justify-end gap-1 font-medium ${variance > 0 ? 'text-destructive' : variance < 0 ? 'text-green-600' : ''}`}>
+                                                            {variance > 0 ? <ArrowUp size={14}/> : variance < 0 ? <ArrowDown size={14}/> : <Minus size={14}/>}
+                                                            Rs. {Math.abs(variance).toFixed(2)}
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>{variance > 0 ? 'Over estimate' : variance < 0 ? 'Under estimate' : 'Met estimate'}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </TableCell>
+                                        <TableCell className="text-right font-semibold">
+                                            {summary.customerPaidAmount !== undefined ? `Rs. ${summary.customerPaidAmount.toFixed(2)}` : <span className="text-muted-foreground text-xs">N/A</span>}
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            })}
+                        </TableBody>
+                    </Table>
+                ) : (
+                     <div className="text-center text-muted-foreground py-12">
+                        <p>No completed bookings found yet.</p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     </div>
   );
 
