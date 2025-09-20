@@ -250,7 +250,9 @@ export default function ManagerDashboardPage() {
                              </div>
                         </CardContent>
                     </Card>
-                    <StatCard title="Active Bookings" value={String(stats.activeBookings)} description="Currently in progress" icon={Briefcase} />
+                    <Link href="/manager/bookings?status=In Progress">
+                        <StatCard title="Active Bookings" value={String(stats.activeBookings)} description="Click here to show job status wise" icon={Briefcase} />
+                    </Link>
                     <StatCard title="New Customers" value={`+${stats.newCustomers}`} description="In the last 30 days" icon={Users} />
                     <StatCard title="Total Workers" value={String(stats.totalWorkers)} description="Across all services" icon={UserCheck} />
                 </>}
