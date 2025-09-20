@@ -334,14 +334,13 @@ export default function CustomerProfilePage() {
                         </SelectContent>
                     </Select>
                     <Input id="mobile-number" name="mobile-number" type="tel" value={profile?.mobile?.number ?? ''} onChange={(e) => handleNestedInputChange('mobile', 'number', e.target.value)} placeholder="10-digit number" maxLength={10} readOnly={showOtpInput || profile?.mobile?.verified} />
-                    {profile?.mobile?.verified ? (
+                    {!profile?.mobile?.verified && !showOtpInput && (
+                        <Button type="button" variant="outline" size="sm" onClick={handleSendOtp} disabled={isVerifyingMobile || !profile?.mobile?.number}>
+                            {isVerifyingMobile ? <Loader2 className="animate-spin" /> : 'Verify'}
+                        </Button>
+                    )}
+                     {profile?.mobile?.verified && (
                          <Badge variant="success" className="gap-1"><ShieldCheck className="h-4 w-4" />Verified</Badge>
-                    ) : (
-                        !showOtpInput && (
-                            <Button type="button" variant="outline" size="sm" onClick={handleSendOtp} disabled={isVerifyingMobile || !profile?.mobile?.number}>
-                                {isVerifyingMobile ? <Loader2 className="animate-spin" /> : 'Verify'}
-                            </Button>
-                        )
                     )}
                 </div>
                  {showOtpInput && (
@@ -447,3 +446,5 @@ export default function CustomerProfilePage() {
     </Card>
   );
 }
+
+    
