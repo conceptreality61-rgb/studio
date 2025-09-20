@@ -9,21 +9,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { CreditCard, Landmark, Smartphone, Loader2, Camera } from 'lucide-react';
+import { CreditCard, Landmark, Smartphone, Loader2, Camera, ShieldCheck, MailWarning } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { countries } from '@/lib/countries';
 import React, { useState, useEffect, useRef } from 'react';
 import { db, auth } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { updateProfile } from 'firebase/auth';
+import { updateProfile, sendEmailVerification } from 'firebase/auth';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 type UserProfile = {
   displayName?: string;
   mobile?: {
     countryCode: string;
     number: string;
+    verified: boolean;
   };
   landline?: {
     countryCode: string;
@@ -53,6 +55,7 @@ export default function CustomerProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sendingVerification, setSendingVerification] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -107,6 +110,26 @@ export default function CustomerProfilePage() {
       };
       reader.readAsDataURL(file);
       // In a real app, you would upload the file here
+    }
+  };
+
+  const handleSendVerificationEmail = async () => {
+    if (!user) return;
+    setSendingVerification(true);
+    try {
+        await sendEmailVerification(user);
+        toast({
+            title: 'Verification Email Sent',
+            description: 'Please check your inbox to verify your email address.',
+        });
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: error.message,
+        });
+    } finally {
+        setSendingVerification(false);
     }
   };
 
@@ -209,8 +232,18 @@ export default function CustomerProfilePage() {
               <Input id="name" value={profile?.displayName ?? ''} onChange={(e) => handleInputChange('displayName', e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" value={user?.email ?? ''} readOnly />
+                <Label htmlFor="email">Email Address</Label>
+                <div className="flex items-center gap-2">
+                    <Input id="email" type="email" value={user?.email ?? ''} readOnly className="flex-1" />
+                    {user?.emailVerified ? (
+                        <Badge variant="success" className="gap-1"><ShieldCheck className="h-4 w-4" />Verified</Badge>
+                    ) : (
+                        <Button type="button" variant="outline" size="sm" onClick={handleSendVerificationEmail} disabled={sendingVerification}>
+                            {sendingVerification ? <Loader2 className="animate-spin" /> : <MailWarning />}
+                            Verify Now
+                        </Button>
+                    )}
+                </div>
             </div>
           </div>
            <div className="grid md:grid-cols-2 gap-6">
@@ -228,6 +261,11 @@ export default function CustomerProfilePage() {
                         </SelectContent>
                     </Select>
                     <Input id="mobile-number" name="mobile-number" type="tel" value={profile?.mobile?.number ?? ''} onChange={(e) => handleNestedInputChange('mobile', 'number', e.target.value)} placeholder="10-digit number" maxLength={10} />
+                    {profile?.mobile?.verified ? (
+                         <Badge variant="success" className="gap-1"><ShieldCheck className="h-4 w-4" />Verified</Badge>
+                    ) : (
+                        profile?.mobile?.number && <Button type="button" variant="outline" size="sm">Verify</Button>
+                    )}
                 </div>
               </div>
               <div className="space-y-2">
