@@ -39,6 +39,7 @@ export const services: Service[] = [
         name: 'room cleaning',
         type: 'single',
         options: [
+          { id: '0-rooms', name: '0' },
           { id: '1-room', name: '1' },
           { id: '2-rooms', name: '2' },
           { id: '3-rooms', name: '3' },
@@ -51,6 +52,7 @@ export const services: Service[] = [
         name: 'Kitchen cleaning',
         type: 'single',
         options: [
+          { id: '0-kitchens', name: '0' },
           { id: '1-kitchen', name: '1' },
           { id: '2-kitchens', name: '2' },
         ],
@@ -60,6 +62,7 @@ export const services: Service[] = [
         name: 'Wash Basin cleaning',
         type: 'single',
         options: [
+          { id: '0-basins', name: '0' },
           { id: '1-basin', name: '1' },
           { id: '2-basins', name: '2' },
           { id: '3-basins', name: '3' },
@@ -72,6 +75,7 @@ export const services: Service[] = [
         name: 'Fridge cleaning',
         type: 'single',
         options: [
+          { id: '0-fridges', name: '0' },
           { id: '1-fridge', name: '1' },
           { id: '2-fridges', name: '2' },
           { id: '3-plus-fridges', name: '3+' },
@@ -82,6 +86,7 @@ export const services: Service[] = [
         name: 'Hall cleaning',
         type: 'single',
         options: [
+          { id: '0-halls', name: '0' },
           { id: '1-hall', name: '1' },
           { id: '2-halls', name: '2' },
           { id: '3-plus-halls', name: '3+' },
@@ -92,6 +97,7 @@ export const services: Service[] = [
         name: 'Balcony cleaning',
         type: 'single',
         options: [
+          { id: '0-balconies', name: '0' },
           { id: '1-balcony', name: '1' },
           { id: '2-balconies', name: '2' },
           { id: '3-plus-balconies', name: '3+' },
@@ -112,6 +118,7 @@ export const services: Service[] = [
         name: 'Bathroom cleaning',
         type: 'single',
         options: [
+          { id: '0-bathrooms', name: '0' },
           { id: '1-bathroom', name: '1' },
           { id: '2-bathrooms', name: '2' },
           { id: '3-bathrooms', name: '3' },
@@ -123,6 +130,7 @@ export const services: Service[] = [
         name: 'Toilets cleaning',
         type: 'single',
         options: [
+          { id: '0-toilets', name: '0' },
           { id: '1-toilet', name: '1' },
           { id: '2-toilets', name: '2' },
           { id: '3-toilets', name: '3' },
@@ -163,6 +171,7 @@ export const services: Service[] = [
         name: 'Number of Tanks',
         type: 'single',
         options: [
+            { id: '0-tanks', name: '0 Tanks' },
             { id: '1-tank', name: '1 Tank' },
             { id: '2-tanks', name: '2 Tanks' },
             { id: '3-tanks', name: '3 Tanks' },
@@ -214,6 +223,7 @@ export const services: Service[] = [
         name: 'Number of Vehicles',
         type: 'single',
         options: [
+          { id: '0-vehicles', name: '0' },
           { id: '1-vehicle', name: '1' },
           { id: '2-vehicles', name: '2' },
           { id: '3-plus-vehicles', name: '3+' },
