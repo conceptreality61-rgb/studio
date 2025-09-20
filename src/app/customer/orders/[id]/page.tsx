@@ -89,19 +89,28 @@ export default function OrderDetailPage() {
   const customerSelections = useMemo(() => {
     if (!booking || !serviceDetails) return [];
     
-    const selections: string[] = [];
+    const selections: { name: string, value: string }[] = [];
 
     serviceDetails.subCategories?.forEach(subCat => {
         const selection = booking.options[subCat.id];
-        if (selection) {
+        if (selection && (!Array.isArray(selection) || selection.length > 0)) {
             const selectedIds = Array.isArray(selection) ? selection : [selection];
-
-            selectedIds.forEach(id => {
+            
+            const selectedOptions = selectedIds.map(id => {
                 const option = subCat.options.find(opt => opt.id === id);
-                if(option) {
-                    selections.push(option.name);
+                return option ? option.name : '';
+            }).filter(name => name);
+
+            if (selectedOptions.length > 0) {
+                 if (subCat.type === 'multiple') {
+                    selections.push({ name: subCat.name, value: selectedOptions.join(', ') });
+                } else {
+                    const value = selectedOptions[0];
+                    if (value !== '0') { // Don't show if the value is "0"
+                        selections.push({ name: subCat.name, value });
+                    }
                 }
-            });
+            }
         }
     });
     return selections;
@@ -164,15 +173,18 @@ export default function OrderDetailPage() {
                 <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                         <span>Service:</span> 
-                        <div className="text-right">
-                          <span className="font-medium">{booking.serviceName}</span>
-                          {customerSelections.length > 0 && (
-                            <div className="text-xs text-muted-foreground">
-                              {customerSelections.join(' • ')}
-                            </div>
-                          )}
-                        </div>
+                        <span className="font-medium text-right">{booking.serviceName}</span>
                     </div>
+                     {customerSelections.length > 0 && (
+                        <div className="pl-4 border-l-2 ml-1">
+                            {customerSelections.map((selection, index) => (
+                                <div key={index} className="flex justify-between text-xs text-muted-foreground">
+                                    <span>{selection.name}:</span>
+                                    <span className="font-medium text-right">{selection.value}</span>
+                                </div>
+                            ))}
+                        </div>
+                     )}
                     <div className="flex justify-between"><span>Date:</span> <span className="font-medium">{formatDate(booking.date)}</span></div>
                     <div className="flex justify-between"><span>Time:</span> <span className="font-medium">{booking.time}</span></div>
                     

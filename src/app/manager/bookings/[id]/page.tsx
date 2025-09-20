@@ -136,6 +136,36 @@ export default function ManagerBookingDetailPage() {
 
   }, [booking, serviceDetails]);
 
+  const customerSelectionsForDisplay = useMemo(() => {
+    if (!booking || !serviceDetails) return [];
+    
+    const selections: { name: string, value: string }[] = [];
+
+    serviceDetails.subCategories?.forEach(subCat => {
+        const selection = booking.options[subCat.id];
+        if (selection && (!Array.isArray(selection) || selection.length > 0)) {
+            const selectedIds = Array.isArray(selection) ? selection : [selection];
+            
+            const selectedOptions = selectedIds.map(id => {
+                const option = subCat.options.find(opt => opt.id === id);
+                return option ? option.name : '';
+            }).filter(name => name);
+
+            if (selectedOptions.length > 0) {
+                 if (subCat.type === 'multiple') {
+                    selections.push({ name: subCat.name, value: selectedOptions.join(', ') });
+                } else {
+                    const value = selectedOptions[0];
+                    if (value !== '0') {
+                        selections.push({ name: subCat.name, value });
+                    }
+                }
+            }
+        }
+    });
+    return selections;
+  }, [booking, serviceDetails]);
+
   const calculatedEstimate = useMemo(() => {
     return Object.values(itemCosts).reduce((total, cost) => {
         const numericCost = typeof cost === 'string' ? parseFloat(cost) : cost;
@@ -534,17 +564,19 @@ export default function ManagerBookingDetailPage() {
                     </div>
                 ) : booking ? (
                     <div className="space-y-3 text-sm">
-                        <div className="flex items-start gap-3">
-                          <Briefcase className="w-4 h-4 text-muted-foreground mt-1" /> 
-                          <div>
-                            <span className="font-medium">{booking.serviceName}</span>
-                            {customerSelections.length > 0 && (
-                                <div className="text-xs text-muted-foreground">
-                                    {customerSelections.map(s => s.optionNames.join(', ')).join(' • ')}
-                                </div>
-                            )}
-                          </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className='flex items-center gap-3'><Briefcase className="w-4 h-4 text-muted-foreground mt-1" /> <span className="font-medium">{booking.serviceName}</span></div>
                         </div>
+                        {customerSelectionsForDisplay.length > 0 && (
+                            <div className="pl-4 border-l-2 ml-1">
+                                {customerSelectionsForDisplay.map((selection, index) => (
+                                    <div key={index} className="flex justify-between text-xs text-muted-foreground">
+                                        <span>{selection.name}:</span>
+                                        <span className="font-medium text-right">{selection.value}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         <div className="flex items-center gap-3"><Calendar className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{formatDate(booking.date)}</span></div>
                         <div className="flex items-center gap-3"><Clock className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{booking.time}</span></div>
                         <div className="flex items-center gap-3"><UserCheck className="w-4 h-4 text-muted-foreground" /> <span className="font-medium">{booking.workerName || 'Not assigned yet'}</span></div>
