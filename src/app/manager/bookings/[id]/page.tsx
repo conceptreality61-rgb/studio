@@ -120,7 +120,7 @@ export default function ManagerBookingDetailPage() {
 
             selectedIds.forEach(id => {
                 const option = subCat.options.find(opt => opt.id === id);
-                if(option) {
+                if(option && option.name !== '0') {
                     selections.push({
                         subCategoryName: subCat.name,
                         optionNames: [option.name], // Keep it simple for display
@@ -402,9 +402,11 @@ export default function ManagerBookingDetailPage() {
                         <h4 className='font-semibold flex items-center gap-2'><ListTree className='w-4 h-4'/>Customer's Selections</h4>
                         {customerSelections.length > 0 ? customerSelections.map(selection => {
                             const itemKey = `${selection.subCatId}-${selection.optionId}`;
+                            const isNumerical = selection.subCatId.startsWith('num-');
+                            const label = isNumerical ? `${selection.optionNames[0]} x ${selection.subCategoryName}` : selection.optionNames.join(', ');
                             return (
                                 <div key={itemKey} className='flex items-center justify-between gap-4'>
-                                    <Label htmlFor={itemKey} className='flex-1'>{selection.optionNames.join(', ')}</Label>
+                                    <Label htmlFor={itemKey} className='flex-1'>{label}</Label>
                                     <div className='flex items-center gap-2'>
                                         <span className="text-sm text-muted-foreground">Rs.</span>
                                         <Input 
