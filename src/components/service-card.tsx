@@ -1,3 +1,4 @@
+
 import type { FC } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -15,7 +16,7 @@ const ServiceCard: FC<ServiceCardProps> = ({ service }) => {
   const placeholder = PlaceHolderImages.find((p) => p.id === service.imageId);
 
   return (
-    <Card className="flex flex-col overflow-hidden transition-all hover:shadow-lg">
+    <Card className="group flex flex-col overflow-hidden transition-all hover:shadow-lg">
       {placeholder && (
         <div className="aspect-[4/3] overflow-hidden">
           <Image
@@ -24,7 +25,7 @@ const ServiceCard: FC<ServiceCardProps> = ({ service }) => {
             width={400}
             height={300}
             data-ai-hint={placeholder.imageHint}
-            className="w-full h-full object-cover transition-transform hover:scale-105"
+            className="w-full h-full object-cover transition-transform group-hover:scale-105"
           />
         </div>
       )}
