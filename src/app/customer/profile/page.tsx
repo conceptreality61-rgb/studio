@@ -27,10 +27,6 @@ type UserProfile = {
     number: string;
     verified: boolean;
   };
-  landline?: {
-    countryCode: string;
-    number: string;
-  };
   address?: string;
   paymentMethod?: {
     cardType: string;
@@ -350,22 +346,6 @@ export default function CustomerProfilePage() {
                         </Button>
                     </div>
                 )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="landline-number">Landline Number</Label>
-                <div className="flex gap-2">
-                    <Select value={profile?.landline?.countryCode} onValueChange={(val) => handleNestedInputChange('landline', 'countryCode', val)}>
-                        <SelectTrigger className="w-[80px]">
-                            <SelectValue placeholder="Code" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {countries.map(country => (
-                                <SelectItem key={country.name} value={country.code}>{country.code}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Input id="landline-number" type="tel" value={profile?.landline?.number ?? ''} onChange={(e) => handleNestedInputChange('landline', 'number', e.target.value)} placeholder="Landline number" />
-                </div>
               </div>
            </div>
            <div className="space-y-2">
