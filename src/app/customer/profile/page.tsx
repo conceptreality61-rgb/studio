@@ -249,7 +249,7 @@ export default function CustomerProfilePage() {
            <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="mobile-number">Mobile Number</Label>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                     <Select value={profile?.mobile?.countryCode} onValueChange={(val) => handleNestedInputChange('mobile', 'countryCode', val)}>
                         <SelectTrigger className="w-[80px]">
                             <SelectValue placeholder="Code" />
@@ -375,5 +375,3 @@ export default function CustomerProfilePage() {
     </Card>
   );
 }
-
-    
