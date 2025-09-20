@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -13,14 +13,24 @@ interface AuthContextType {
   user: User | null;
   userRole: Role | null;
   loading: boolean;
+  refreshUser: () => void;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, userRole: null, loading: true });
+const AuthContext = createContext<AuthContextType>({ user: null, userRole: null, loading: true, refreshUser: () => {} });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<Role | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshUser = useCallback(async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      await currentUser.reload();
+      const freshUser = auth.currentUser;
+      setUser(freshUser);
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -54,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, userRole, loading }}>
+    <AuthContext.Provider value={{ user, userRole, loading, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
@@ -122,5 +132,3 @@ export const useRequireAuth = (requiredRole?: Role) => {
 
     return { user, userRole, loading };
 };
-
-    

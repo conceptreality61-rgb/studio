@@ -16,7 +16,7 @@ import { countries } from '@/lib/countries';
 import React, { useState, useEffect, useRef } from 'react';
 import { db, auth } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { updateProfile, sendEmailVerification } from 'firebase/auth';
+import { updateProfile, sendEmailVerification, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 
@@ -50,7 +50,7 @@ const banks = [
 ]
 
 export default function CustomerProfilePage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,15 +59,27 @@ export default function CustomerProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Mobile verification state
+  const [isVerifyingMobile, setIsVerifyingMobile] = useState(false);
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
+
+
   useEffect(() => {
     const fetchProfile = async () => {
       if (user) {
         try {
           const userDoc = await getDoc(doc(db, 'users', user.uid));
           if (userDoc.exists()) {
-            setProfile(userDoc.data() as UserProfile);
+            const data = userDoc.data() as UserProfile;
+            setProfile(data);
+             if(data.mobile?.verified) {
+                setShowOtpInput(false);
+                setIsVerifyingMobile(false);
+            }
           } else {
-            // If no profile exists, create one with basic info
             const initialProfile = {
               displayName: user.displayName || '',
               email: user.email || '',
@@ -109,15 +121,14 @@ export default function CustomerProfilePage() {
         setAvatarPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-      // In a real app, you would upload the file here
     }
   };
 
   const handleSendVerificationEmail = async () => {
-    if (!user) return;
+    if (!auth.currentUser) return;
     setSendingVerification(true);
     try {
-        await sendEmailVerification(user);
+        await sendEmailVerification(auth.currentUser);
         toast({
             title: 'Verification Email Sent',
             description: 'Please check your inbox to verify your email address.',
@@ -133,6 +144,67 @@ export default function CustomerProfilePage() {
     }
   };
 
+    const handleSendOtp = async () => {
+        if (!profile?.mobile?.number || !profile.mobile.countryCode) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Please enter a valid mobile number and country code.' });
+            return;
+        }
+        setIsVerifyingMobile(true);
+        try {
+            const phoneNumber = `${profile.mobile.countryCode}${profile.mobile.number}`;
+            
+            // Render reCAPTCHA verifier
+            if (!recaptchaContainerRef.current) throw new Error("reCAPTCHA container not found.");
+            
+            const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
+                'size': 'invisible',
+                'callback': (response: any) => {
+                    // reCAPTCHA solved, allow signInWithPhoneNumber.
+                }
+            });
+
+            const result = await signInWithPhoneNumber(auth, phoneNumber, verifier);
+            setConfirmationResult(result);
+            setShowOtpInput(true);
+            toast({ title: 'OTP Sent', description: 'An OTP has been sent to your mobile number.' });
+
+        } catch (error: any) {
+            console.error("Mobile verification error:", error);
+            toast({ variant: 'destructive', title: 'Error Sending OTP', description: error.message });
+            setIsVerifyingMobile(false);
+        }
+    };
+    
+    const handleVerifyOtp = async () => {
+        if (!confirmationResult || !otp) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Please enter the OTP.' });
+            return;
+        }
+        setIsVerifyingMobile(true);
+        try {
+            await confirmationResult.confirm(otp);
+            
+            // Update Firestore to mark mobile as verified
+            if (user && profile) {
+                const userRef = doc(db, 'users', user.uid);
+                await updateDoc(userRef, {
+                    'mobile.verified': true
+                });
+                handleNestedInputChange('mobile', 'verified', 'true');
+            }
+
+            toast({ title: 'Mobile Verified!', description: 'Your mobile number has been successfully verified.' });
+            setShowOtpInput(false);
+            refreshUser();
+
+        } catch (error: any) {
+             toast({ variant: 'destructive', title: 'Invalid OTP', description: 'The OTP you entered is incorrect. Please try again.' });
+        } finally {
+            setIsVerifyingMobile(false);
+        }
+    };
+
+
   const handleSaveChanges = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user || !profile) return;
@@ -143,22 +215,17 @@ export default function CustomerProfilePage() {
       
       const { displayName, ...profileData } = profile;
 
-      // Update Firestore document
       await setDoc(userRef, profileData, { merge: true });
 
-      // Update auth profile if name changed
       if (auth.currentUser && displayName && auth.currentUser.displayName !== displayName) {
         await updateProfile(auth.currentUser, { displayName });
       }
-
-      // Note: In a real app, if avatarPreview has a value,
-      // you would upload the file to Firebase Storage, get the URL,
-      // and update the user's photoURL in both Firebase Auth and Firestore.
 
       toast({
         title: 'Profile Updated',
         description: 'Your changes have been saved successfully.',
       });
+      refreshUser();
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({
@@ -194,6 +261,7 @@ export default function CustomerProfilePage() {
 
   return (
     <Card>
+        <div ref={recaptchaContainerRef}></div>
       <CardHeader>
         <div className="flex items-center gap-4">
             <div className="relative group">
@@ -246,7 +314,7 @@ export default function CustomerProfilePage() {
                 </div>
             </div>
           </div>
-           <div className="grid md:grid-cols-2 gap-6">
+           <div className="grid md:grid-cols-2 gap-6 items-start">
               <div className="space-y-2">
                 <Label htmlFor="mobile-number">Mobile Number</Label>
                 <div className="flex items-center gap-2">
@@ -260,13 +328,28 @@ export default function CustomerProfilePage() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Input id="mobile-number" name="mobile-number" type="tel" value={profile?.mobile?.number ?? ''} onChange={(e) => handleNestedInputChange('mobile', 'number', e.target.value)} placeholder="10-digit number" maxLength={10} />
+                    <Input id="mobile-number" name="mobile-number" type="tel" value={profile?.mobile?.number ?? ''} onChange={(e) => handleNestedInputChange('mobile', 'number', e.target.value)} placeholder="10-digit number" maxLength={10} readOnly={showOtpInput || profile?.mobile?.verified} />
                     {profile?.mobile?.verified ? (
                          <Badge variant="success" className="gap-1"><ShieldCheck className="h-4 w-4" />Verified</Badge>
                     ) : (
-                        profile?.mobile?.number && <Button type="button" variant="outline" size="sm">Verify</Button>
+                        profile?.mobile?.number && !showOtpInput && (
+                            <Button type="button" variant="outline" size="sm" onClick={handleSendOtp} disabled={isVerifyingMobile}>
+                                {isVerifyingMobile ? <Loader2 className="animate-spin" /> : 'Verify'}
+                            </Button>
+                        )
                     )}
                 </div>
+                 {showOtpInput && (
+                    <div className="flex items-end gap-2 mt-2">
+                         <div className="flex-1 space-y-1">
+                            <Label htmlFor="otp">Enter OTP</Label>
+                            <Input id="otp" type="text" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="6-digit code" maxLength={6} />
+                         </div>
+                        <Button type="button" onClick={handleVerifyOtp} disabled={isVerifyingMobile}>
+                            {isVerifyingMobile ? <Loader2 className="animate-spin" /> : 'Submit OTP'}
+                        </Button>
+                    </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="landline-number">Landline Number</Label>
