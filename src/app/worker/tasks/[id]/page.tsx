@@ -25,13 +25,14 @@ type Booking = {
   status: 'Worker Assigned' | 'In Progress' | 'Completed' | 'Canceled';
   userId: string;
   customerName: string;
+  statusHistory?: { status: string; timestamp: Timestamp }[];
 };
 
 type CustomerProfile = {
     address?: string;
 };
 
-const statusVariant: { [key: string]: any } = {
+const statusVariant: { [key in Booking['status']]: any } = {
   'Worker Assigned': "info",
   'In Progress': "secondary",
   Completed: "success",
@@ -181,7 +182,7 @@ export default function WorkerTaskDetailPage() {
                 <CardDescription>Follow the progress of the service.</CardDescription>
             </CardHeader>
             <CardContent>
-                <OrderTracker status={booking.status} />
+                <OrderTracker status={booking.status} statusHistory={booking.statusHistory} />
             </CardContent>
         </Card>
     </div>
