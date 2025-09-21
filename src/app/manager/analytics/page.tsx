@@ -441,11 +441,4 @@ export default function ManagerAnalyticsPage() {
         </Card>
     </div>
   );
-
-    
-
-    
-
-    
-
-    
+}
