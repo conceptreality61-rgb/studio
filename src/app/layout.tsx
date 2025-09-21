@@ -8,7 +8,6 @@ import { ThemeProvider } from '@/hooks/use-theme';
 export const metadata: Metadata = {
   title: 'CleanSweep',
   description: 'Modern service booking for household needs.',
-  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

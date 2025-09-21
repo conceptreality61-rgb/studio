@@ -36,53 +36,12 @@ type Review = {
   serviceName: string;
 }
 
-interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: Array<string>;
-  readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed',
-    platform: string
-  }>;
-  prompt(): Promise<void>;
-}
-
-
 export default function HomePage() {
   const heroImage = PlaceHolderImages.find((p) => p.id === 'hero');
-  const appInstallImage = PlaceHolderImages.find((p) => p.id === 'app-install');
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loadingTestimonials, setLoadingTestimonials] = useState(true);
   const [latestReviews, setLatestReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showInstallBanner, setShowInstallBanner] = useState(false);
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e as BeforeInstallPromptEvent);
-      setShowInstallBanner(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, []);
-
-  const handleInstallClick = () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    installPrompt.userChoice.then((choiceResult) => {
-      if (choiceResult.outcome === 'accepted') {
-        console.log('User accepted the install prompt');
-      } else {
-        console.log('User dismissed the install prompt');
-      }
-      setInstallPrompt(null);
-      setShowInstallBanner(false);
-    });
-  };
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -216,38 +175,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {showInstallBanner && appInstallImage && (
-        <section id="get-app" className="py-16 md:py-24 bg-background">
-          <div className="container">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="text-center md:text-left">
-                <h2 className="text-3xl md:text-4xl font-headline font-bold">Get Our App</h2>
-                <p className="mt-4 max-w-md mx-auto md:mx-0 text-muted-foreground">
-                  Install our app on your device for quick access to booking, tracking, and managing your services anytime, anywhere.
-                </p>
-                <Button size="lg" className="mt-6" onClick={handleInstallClick}>
-                  <Smartphone className="mr-2 h-5 w-5" />
-                  Install App
-                </Button>
-                 <p className="text-xs text-muted-foreground mt-2">
-                  (This is a Progressive Web App - no App Store needed!)
-                </p>
-              </div>
-              <div className="flex justify-center">
-                <Image
-                    src={appInstallImage.imageUrl}
-                    alt={appInstallImage.description}
-                    width={300}
-                    height={600}
-                    className="object-contain"
-                    data-ai-hint={appInstallImage.imageHint}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       <section id="testimonials" className="py-16 md:py-24 bg-secondary">
         <div className="container">
