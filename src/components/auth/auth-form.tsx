@@ -315,12 +315,16 @@ export function AuthForm({ isSignUp = false }: AuthFormProps) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="customer" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="customer">Customer</TabsTrigger>
+              <TabsTrigger value="worker">Worker</TabsTrigger>
               <TabsTrigger value="manager">Manager</TabsTrigger>
             </TabsList>
             <TabsContent value="customer" className="mt-4">
               <LoginForm role="customer" onAuthSuccess={handleAuthSuccess} />
+            </TabsContent>
+            <TabsContent value="worker" className="mt-4">
+              <LoginForm role="worker" onAuthSuccess={handleAuthSuccess} />
             </TabsContent>
             <TabsContent value="manager" className="mt-4">
               <LoginForm role="manager" onAuthSuccess={handleAuthSuccess}/>
