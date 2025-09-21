@@ -1,6 +1,4 @@
 
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -11,7 +9,6 @@ import { CheckCircle, Users, Calendar, Star, Smartphone } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useEffect, useState } from 'react';
 import { collection, getDocs, orderBy, query, Timestamp, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -36,43 +33,33 @@ type Review = {
   serviceName: string;
 }
 
-export default function HomePage() {
-  const heroImage = PlaceHolderImages.find((p) => p.id === 'hero');
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [loadingTestimonials, setLoadingTestimonials] = useState(true);
-  const [latestReviews, setLatestReviews] = useState<Review[]>([]);
-  const [loadingReviews, setLoadingReviews] = useState(true);
+const fetchTestimonials = async () => {
+  try {
+    const q = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial));
+  } catch (error) {
+    console.error("Error fetching testimonials: ", error);
+    return [];
+  }
+};
 
-  useEffect(() => {
-    const fetchTestimonials = async () => {
-      try {
-        const q = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc'));
+const fetchLatestReviews = async () => {
+    try {
+        const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(3));
         const querySnapshot = await getDocs(q);
-        const fetchedTestimonials = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial));
-        setTestimonials(fetchedTestimonials);
-      } catch (error) {
-        console.error("Error fetching testimonials: ", error);
-      } finally {
-        setLoadingTestimonials(false);
-      }
-    };
-    
-    const fetchLatestReviews = async () => {
-        try {
-            const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(3));
-            const querySnapshot = await getDocs(q);
-            const fetchedReviews = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
-            setLatestReviews(fetchedReviews);
-        } catch (error) {
-            console.error("Error fetching latest reviews:", error);
-        } finally {
-            setLoadingReviews(false);
-        }
-    };
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
+    } catch (error) {
+        console.error("Error fetching latest reviews:", error);
+        return [];
+    }
+};
 
-    fetchTestimonials();
-    fetchLatestReviews();
-  }, []);
+
+export default async function HomePage() {
+  const heroImage = PlaceHolderImages.find((p) => p.id === 'hero');
+  const testimonials = await fetchTestimonials();
+  const latestReviews = await fetchLatestReviews();
 
   const formatTimestamp = (timestamp?: Timestamp) => {
     if (!timestamp) return null;
@@ -184,11 +171,7 @@ export default function HomePage() {
               Read real stories from satisfied customers.
             </p>
           </div>
-           {loadingTestimonials ? (
-                <div className="flex justify-center mt-12">
-                    <Skeleton className="h-64 w-full max-w-4xl" />
-                </div>
-            ) : testimonials.length > 0 ? (
+           {testimonials.length > 0 ? (
           <Carousel
             opts={{
               align: "start",
@@ -242,13 +225,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="mt-12">
-            {loadingReviews ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Skeleton className="h-48 w-full" />
-                    <Skeleton className="h-48 w-full" />
-                    <Skeleton className="h-48 w-full" />
-                </div>
-            ) : latestReviews.length > 0 ? (
+            {latestReviews.length > 0 ? (
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {latestReviews.map((review) => (
                        <Card key={review.id}>
